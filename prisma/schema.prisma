@@ -1,0 +1,442 @@
+// Saudi Future Tech — Prisma Database Schema
+// Phase 6: Publishing Workflow, Scheduler & Newsletter
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------------------------------
+
+enum UserRole {
+  SUPER_ADMIN
+  EDITOR
+  AUTHOR
+}
+
+enum ArticleStatus {
+  DRAFT
+  IN_REVIEW
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum SubscriberStatus {
+  ACTIVE
+  UNSUBSCRIBED
+  BOUNCED
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  FAILED
+}
+
+enum OpportunityCategory {
+  GRANT
+  ACCELERATOR
+  INCUBATOR
+  SUBSIDY
+  GOVERNMENT_PROGRAM
+  SUBSIDIZED_PERK
+  HACKATHON
+}
+
+enum OpportunityStatus {
+  OPEN
+  CLOSING_SOON
+  ROLLING
+  CLOSED
+}
+
+enum StartupStage {
+  BOOTSTRAPPED
+  PRE_SEED
+  SEED
+  SERIES_A
+  SERIES_B
+  SERIES_C
+  SERIES_B_PLUS
+  GROWTH
+}
+
+enum BusinessModel {
+  B2B
+  B2C
+  B2B2C
+  B2G
+  MARKETPLACE
+}
+
+enum InvestorType {
+  VENTURE_CAPITAL
+  CORPORATE_VC
+  GOVERNMENT_FUND
+  FAMILY_OFFICE
+  ANGEL_NETWORK
+  ACCELERATOR_FUND
+}
+
+// ------------------------------------------------------------------------------
+// 1. USER MODEL (Admin & Editorial Staff)
+// ------------------------------------------------------------------------------
+
+model User {
+  id              String                  @id @default(cuid())
+  name            String
+  email           String                  @unique
+  passwordHash    String?
+  role            UserRole                @default(AUTHOR)
+  isActive        Boolean                 @default(true)
+  authorId        String?                 @unique
+  author          Author?                 @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  reviewHistories ArticleReviewHistory[]
+  campaigns       NewsletterCampaign[]
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  @@index([email])
+}
+
+// ------------------------------------------------------------------------------
+// 2. AUTHOR MODEL (Byline & Journalist Profiles)
+// ------------------------------------------------------------------------------
+
+model Author {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  title       String
+  bio         String?   @db.Text
+  avatar      String?
+  location    String?
+  website     String?
+  socialLinks Json?     // { twitter?: string, linkedin?: string, github?: string }
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user        User?
+  articles    Article[]
+
+  @@index([slug])
+}
+
+// ------------------------------------------------------------------------------
+// 3. CATEGORY MODEL (Editorial Pillars)
+// ------------------------------------------------------------------------------
+
+model Category {
+  id           String    @id @default(cuid())
+  name         String
+  slug         String    @unique
+  description  String?   @db.Text
+  accentColor  String?   // Hex code (e.g., #F4C542)
+  displayOrder Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  articles      Article[]
+  opportunities Opportunity[]
+  startups      Startup[]
+
+  @@index([slug])
+  @@index([displayOrder])
+}
+
+// ------------------------------------------------------------------------------
+// 4. ARTICLE MODEL (Editorial Reports, Teardowns & Investigations)
+// ------------------------------------------------------------------------------
+
+model Article {
+  id                 String                 @id @default(cuid())
+  title              String
+  slug               String                 @unique
+  excerpt            String                 @db.Text
+  content            String                 @db.Text
+  structuredContent  Json?                  // Structured sections, pull quotes, tables, and takeaways
+  coverImage         String
+  coverImageAlt      String?                @default("")
+  coverImageCaption  String?
+  imageCredit        String?
+  status             ArticleStatus          @default(DRAFT)
+  featured           Boolean                @default(false)
+  isEditorsPick      Boolean                @default(false)
+  isTrending         Boolean                @default(false)
+  publishedAt        DateTime?
+  scheduledFor       DateTime?
+  updatedAt          DateTime               @updatedAt
+  readingTime        Int                    @default(5)
+  seoTitle           String?
+  seoDescription     String?
+  sampleContent      Boolean                @default(true) // Explicit demonstration label
+  createdAt          DateTime               @default(now())
+
+  // Relationships
+  authorId           String
+  author             Author                 @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  categoryId         String
+  category           Category               @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  articleTags        ArticleTag[]
+  reviewHistory      ArticleReviewHistory[]
+
+  // Indexes for high-performance query execution
+  @@index([slug])
+  @@index([status, publishedAt(sort: Desc)])
+  @@index([status, scheduledFor])
+  @@index([categoryId, status])
+  @@index([authorId, status])
+  @@index([featured, status])
+  @@index([isEditorsPick, status])
+}
+
+// ------------------------------------------------------------------------------
+// 5. ARTICLE REVIEW HISTORY (Editorial Audit Log & Review Feedback)
+// ------------------------------------------------------------------------------
+
+model ArticleReviewHistory {
+  id             String        @id @default(cuid())
+  articleId      String
+  article        Article       @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  previousStatus ArticleStatus
+  newStatus      ArticleStatus
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userName       String?
+  userRole       UserRole?
+  feedback       String?       @db.Text
+  createdAt      DateTime      @default(now())
+
+  @@index([articleId])
+  @@index([createdAt])
+}
+
+// ------------------------------------------------------------------------------
+// 6. TAG MODEL (Taxonomy & Topics)
+// ------------------------------------------------------------------------------
+
+model Tag {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  createdAt   DateTime     @default(now())
+
+  articleTags ArticleTag[]
+
+  @@index([slug])
+}
+
+// ------------------------------------------------------------------------------
+// 7. ARTICLE-TAG JOIN MODEL (Many-to-Many Relationship)
+// ------------------------------------------------------------------------------
+
+model ArticleTag {
+  articleId String
+  tagId     String
+
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+  @@index([tagId])
+  @@index([articleId])
+}
+
+// ------------------------------------------------------------------------------
+// 8. NEWSLETTER SUBSCRIBER MODEL
+// ------------------------------------------------------------------------------
+
+model NewsletterSubscriber {
+  id               String           @id @default(cuid())
+  email            String           @unique
+  status           SubscriberStatus @default(ACTIVE)
+  consentGivenAt   DateTime         @default(now())
+  unsubscribeToken String           @unique @default(cuid())
+  unsubscribedAt   DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([unsubscribeToken])
+}
+
+// ------------------------------------------------------------------------------
+// 9. NEWSLETTER CAMPAIGN MODEL
+// ------------------------------------------------------------------------------
+
+model NewsletterCampaign {
+  id             String         @id @default(cuid())
+  title          String
+  subject        String
+  previewText    String?
+  content        String         @db.Text
+  status         CampaignStatus @default(DRAFT)
+  scheduledFor   DateTime?
+  sentAt         DateTime?
+  recipientCount Int            @default(0)
+  failureReason  String?        @db.Text
+  createdById    String?
+  createdBy      User?          @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ------------------------------------------------------------------------------
+// 10. LOGIN ATTEMPT MODEL (Brute-Force & Rate Limiting Tracking)
+// ------------------------------------------------------------------------------
+
+model LoginAttempt {
+  id             String    @id @default(cuid())
+  identifier     String    @unique // e.g., email or ip:email
+  failedAttempts Int       @default(0)
+  lockedUntil    DateTime?
+  lastAttemptAt  DateTime  @default(now())
+
+  @@index([identifier])
+}
+
+// ------------------------------------------------------------------------------
+// 11. OPPORTUNITY MODEL (Grants, Accelerators, Subsidies & Cohorts)
+// ------------------------------------------------------------------------------
+
+model Opportunity {
+  id                 String              @id @default(cuid())
+  title              String
+  slug               String              @unique
+  organization       String              // e.g. "NTDP", "The Garage", "Monsha'at", "KAUST Innovation"
+  category           OpportunityCategory @default(GRANT)
+  fundingAmount      String?             // e.g. "Up to SAR 150,000", "SAR 100,000 + Space"
+  equityTaken        String?             // e.g. "0% (Non-Dilutive)", "7% Equity"
+  location           String?             // e.g. "Riyadh, KSA", "Remote / Hybrid", "Thuwal, KSA"
+  description        String              @db.Text
+  eligibilitySummary String?             @db.Text
+  eligibilityCriteria Json?              // string[] checklist of requirements (Saudi CR, tech IP, etc.)
+  benefits           Json?               // string[] verified benefits package
+  requirements       Json?               // string[] submission prerequisites
+  status             OpportunityStatus   @default(OPEN)
+  isPublished        Boolean             @default(true)
+  deadline           DateTime?           // Nullable for rolling
+  applicationUrl     String              // Direct official link
+  sourceName         String              // Issuing official source
+  sourceUrl          String?             // Direct link to official announcement/source portal
+  verifiedAt         DateTime            @default(now())
+  verifiedBy         String?             // Staff editor name who verified
+  isFeatured         Boolean             @default(false)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  categoryId         String?
+  categoryRel        Category?           @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([slug])
+  @@index([status, deadline])
+  @@index([category, status])
+  @@index([isFeatured, status])
+  @@index([isPublished, status])
+  @@index([categoryId])
+}
+
+// ------------------------------------------------------------------------------
+// 12. STARTUP MODEL (Verified Saudi Tech Ventures Registry)
+// ------------------------------------------------------------------------------
+
+model Startup {
+  id                 String              @id @default(cuid())
+  name               String
+  slug               String              @unique
+  tagline            String
+  description        String              @db.Text
+  logoUrl            String?
+  websiteUrl         String
+  hqCity             String              @default("Riyadh")
+  foundingYear       Int                 @default(2024)
+  stage              StartupStage        @default(SEED)
+  businessModel      BusinessModel       @default(B2B)
+  verified           Boolean             @default(true)
+  verifiedAt         DateTime            @default(now())
+  verifiedBy         String?             // e.g. "SFT Editorial Board"
+  isFeatured         Boolean             @default(false)
+  isPublished        Boolean             @default(true)
+  crNumber           String?             // Commercial Registration Number (e.g. 1010XXXXXX)
+  crVerified         Boolean             @default(false) // Verified with Ministry of Commerce / Wathiq
+  sourceName         String?             // e.g. "Ministry of Commerce (Wathiq) / SAMA"
+  sourceUrl          String?             // Direct provenance URL
+  products           Json?               // string[] verified product offerings
+  fundingDisclosed   String?             // e.g. "Series B (Disclosed)" or null
+  investorsDisclosed Json?               // string[] e.g. ["Sanabil Investments", "STV"]
+  techStack          Json?               // string[] e.g. ["Next.js", "PostgreSQL", "Python", "AWS KSA"]
+  keyMetrics         String?             // e.g. "Tadawul Nomu Ticker: 9526"
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  categoryId         String?
+  category           Category?           @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([slug])
+  @@index([stage, verified])
+  @@index([businessModel])
+  @@index([categoryId])
+  @@index([isFeatured])
+  @@index([isPublished])
+  @@index([hqCity])
+}
+
+// ------------------------------------------------------------------------------
+// 13. INVESTOR MODEL (Active VCs, Angels & Funds in Saudi Arabia)
+// ------------------------------------------------------------------------------
+
+model Investor {
+  id                  String              @id @default(cuid())
+  name                String
+  slug                String              @unique
+  type                InvestorType        @default(VENTURE_CAPITAL)
+  hqLocation          String              @default("Riyadh, KSA")
+  logoUrl             String?
+  websiteUrl          String
+  pitchUrl            String?
+  // Strict Regulatory & Institutional Distinction
+  isCmaAuthorized     Boolean             @default(false) // Capital Market Authority licensed Capital Market Institution
+  cmaLicenseNumber    String?             // e.g. "License No. 17188-37"
+  isSvcPartner        Boolean             @default(false) // Saudi Venture Capital Company (SVC) portfolio/co-investment partner
+  svcProgramDetails   String?             // e.g. "SVC Investment in Funds Program & Direct Co-Investment"
+  regulatoryCategory  String?             // e.g. "CMA-Authorized Fund Manager", "Sovereign Fund-of-Funds", "Corporate VC"
+  saudiRegulated      Boolean             @default(true)  // Retained for backwards compatibility
+  licenseDetails      String?             // Retained for backwards compatibility
+  isActiveInvesting   Boolean             @default(true)  // Current mandate actively investing
+  isPublished         Boolean             @default(true)  // Editorial publishing toggle
+  targetStages        Json?               // string[] e.g. ["Pre-Seed", "Seed", "Series A"]
+  targetSectors       Json?               // string[] e.g. ["FinTech", "AI & Deep Tech", "B2B SaaS"]
+  checkSizeRange      String?             // e.g. "$500K – $3.5M (Disclosed Ticket)"
+  portfolioHighlights Json?               // string[] e.g. ["Jahez", "Tamara", "Sary"]
+  description         String              @db.Text
+  thesisSummary       String?             @db.Text        // Investment thesis and sovereign pillar mandate
+  sourceName          String?             // Provenance: e.g. "CMA Register / Official Disclosure"
+  sourceUrl           String?             // Source provenance URL
+  verifiedBy          String?             // e.g. "SFT Research Team"
+  verifiedAt          DateTime            @default(now())
+  isFeatured          Boolean             @default(false)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@index([slug])
+  @@index([type])
+  @@index([isPublished, type])
+  @@index([isCmaAuthorized])
+  @@index([isSvcPartner])
+  @@index([isActiveInvesting])
+  @@index([isFeatured])
+}
