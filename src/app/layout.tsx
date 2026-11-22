@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
-import { Newsreader } from 'next/font/google';
+import { Newsreader, IBM_Plex_Sans_Arabic } from 'next/font/google';
 import './globals.css';
 import { SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION } from '@/lib/constants';
 import { SmoothScrollProvider } from '@/components/providers/SmoothScrollProvider';
@@ -59,6 +59,14 @@ const newsreader = Newsreader({
   style: ['normal', 'italic'],
 });
 
+// Refined IBM Plex Sans Arabic for subtle bilingual accents
+const ibmPlexArabic = IBM_Plex_Sans_Arabic({
+  subsets: ['arabic'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-arabic',
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
   title: {
     default: 'Saudi Future Tech | Technology, AI & Innovation',
@@ -101,7 +109,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${codecPro.variable} ${lato.variable} ${newsreader.variable}`}>
+    <html lang="en" className={`${codecPro.variable} ${lato.variable} ${newsreader.variable} ${ibmPlexArabic.variable}`}>
       <body className="bg-editorial-paper text-ink-body font-sans antialiased min-h-screen flex flex-col selection:bg-brand-yellow selection:text-ink-high">
         <SmoothScrollProvider>
           {children}

@@ -63,7 +63,7 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ variant = 'standard' }) 
             : 'absolute top-0 left-0 right-0 bg-gradient-to-b from-[#070d17]/85 via-[#070d17]/40 to-transparent border-b border-white/10 py-3 sm:py-4 text-white'
         )}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 h-10 sm:h-11">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 py-1.5 sm:py-2">
           {/* Brand Identity / Logo */}
           <Link
             href="/"
@@ -72,8 +72,15 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ variant = 'standard' }) 
             <span className="font-serif font-black text-lg sm:text-2xl tracking-tight text-white group-hover:text-brand-yellow transition-colors leading-none">
               {SITE_NAME}
             </span>
-            <span className="font-sans text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#c4a265] pt-0.5">
+            <span className="font-sans text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#c4a265] pt-0.5 leading-tight">
               Founder Operating Intelligence
+            </span>
+            <span
+              lang="ar"
+              dir="rtl"
+              className="font-arabic text-[9px] sm:text-[10px] font-normal text-[#f3dfae]/85 tracking-normal leading-tight pt-0.5"
+            >
+              ذكاء تشغيلي للمؤسسين
             </span>
           </Link>
 
@@ -217,6 +224,13 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ variant = 'standard' }) 
           <p className="font-sans text-[10px] sm:text-[11px] uppercase tracking-wider text-[#0B6E4F] font-bold">
             Founder Operating Intelligence Platform • Kingdom of Saudi Arabia
           </p>
+          <span
+            lang="ar"
+            dir="rtl"
+            className="font-arabic text-[11px] text-[#C9A227] font-medium"
+          >
+            ذكاء تشغيلي للمؤسسين
+          </span>
         </div>
       </div>
 

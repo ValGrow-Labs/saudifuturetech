@@ -198,10 +198,22 @@ export const FounderCommandHero: React.FC<FounderCommandHeroProps> = ({
       <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 lg:pt-32 pb-8 sm:pb-12 flex-1 flex flex-col justify-between">
         {/* Middle Main Content Stack */}
         <div className="my-auto text-center space-y-4 sm:space-y-6 max-w-3xl mx-auto w-full">
-          {/* 1. Value Badge with Pulsing Live Dot */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/12 border border-white/20 backdrop-blur-md text-[11px] sm:text-xs font-bold tracking-wider uppercase text-white shadow-xs">
-            <span className="w-2 h-2 rounded-full bg-[#6fd39a] animate-hero-pulse shrink-0" />
-            <span className="font-heading">Founder Operating Intelligence Platform</span>
+          {/* 1. Value Badge with Pulsing Live Dot & Subtle Arabic Typography Accent */}
+          <div className="inline-flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-full bg-white/12 border border-white/20 backdrop-blur-md shadow-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#6fd39a] animate-hero-pulse shrink-0" />
+              <span className="font-heading text-[11px] sm:text-xs font-bold tracking-wider uppercase text-white">
+                Founder Operating Intelligence Platform
+              </span>
+            </div>
+            <span className="text-[#c4a265]/50 text-xs select-none" aria-hidden="true">·</span>
+            <span
+              lang="ar"
+              dir="rtl"
+              className="font-arabic text-[11px] sm:text-xs font-medium text-[#f3dfae] tracking-normal"
+            >
+              ذكاء موثوق لرواد الأعمال
+            </span>
           </div>
 
           {/* 2. Primary Headline & Slogan */}

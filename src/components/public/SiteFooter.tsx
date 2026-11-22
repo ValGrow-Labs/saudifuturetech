@@ -19,18 +19,34 @@ export const SiteFooter: React.FC = () => {
               </span>
             </Link>
 
-            <p className="font-serif italic text-xs text-[#C9A227]">
-              &ldquo;{SITE_TAGLINE}&rdquo;
-            </p>
+            <div className="space-y-0.5">
+              <p className="font-serif italic text-xs text-[#C9A227]">
+                &ldquo;{SITE_TAGLINE}&rdquo;
+              </p>
+              <p
+                lang="ar"
+                dir="rtl"
+                className="font-arabic text-xs text-[#C9A227]/80 font-normal"
+              >
+                ذكاء تشغيلي للمؤسسين
+              </p>
+            </div>
 
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-md">
               {SITE_DESCRIPTION}
             </p>
 
-            <div className="pt-1">
+            <div className="pt-1 flex flex-wrap items-center gap-2.5">
               <span className="inline-flex items-center gap-2 text-xs text-slate-300 bg-[#132B3C] px-3 py-1 rounded-md border border-[#1E3A4C]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#19B5A3]" aria-hidden="true" />
                 <span>Riyadh, Kingdom of Saudi Arabia</span>
+              </span>
+              <span
+                lang="ar"
+                dir="rtl"
+                className="font-arabic text-xs text-[#C9A227] font-medium"
+              >
+                نبني المستقبل في المملكة
               </span>
             </div>
           </div>
@@ -116,7 +132,17 @@ export const SiteFooter: React.FC = () => {
 
         {/* Bottom Bar: Copyright & Attribution */}
         <div className="pt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-slate-400 font-sans">
-          <p>© {new Date().getFullYear()} Saudi Future Tech. All rights reserved.</p>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <p>© {new Date().getFullYear()} Saudi Future Tech. All rights reserved.</p>
+            <span className="hidden sm:inline text-slate-600" aria-hidden="true">·</span>
+            <span
+              lang="ar"
+              dir="rtl"
+              className="font-arabic text-xs font-medium text-[#C9A227] tracking-normal"
+            >
+              نبني المستقبل في المملكة
+            </span>
+          </div>
           <p className="text-[11px] text-slate-400">
             Published in Riyadh, Kingdom of Saudi Arabia. Powered by verified intelligence.
           </p>

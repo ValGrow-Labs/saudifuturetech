@@ -96,6 +96,8 @@ const config: Config = {
         // Legacy serif mapping defaults to Codec Pro display font for unified Saudi Makes Future aesthetic
         serif: ['var(--font-codec)', 'Codec Pro', 'var(--font-serif)', 'Georgia', 'serif'],
         editorial: ['var(--font-serif)', 'Georgia', 'Palatino Linotype', 'serif'],
+        // Refined Arabic Typography for subtle brand accents
+        arabic: ['var(--font-arabic)', 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Geeza Pro', 'Traditional Arabic', 'Tahoma', 'sans-serif'],
       },
       borderRadius: {
         sm: '2px',

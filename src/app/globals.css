@@ -100,6 +100,11 @@ html.lenis body {
 }
 
 @layer utilities {
+  /* Refined Arabic typography utility */
+  .font-arabic {
+    font-family: var(--font-arabic), 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Geeza Pro', 'Traditional Arabic', Tahoma, sans-serif;
+  }
+
   /* Print-style hairline dividers */
   .border-sft {
     border-color: #E7E7E0;
