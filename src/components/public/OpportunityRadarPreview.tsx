@@ -3,15 +3,17 @@
 import React from 'react';
 import Link from 'next/link';
 import { 
-  Compass, 
   Clock, 
   Coins, 
   Building2, 
   ExternalLink, 
   ArrowRight,
-  ShieldCheck 
+  ShieldCheck,
+  MapPin,
+  Check
 } from 'lucide-react';
 import { OpportunityItem } from './OpportunityDirectory';
+import { formatDate } from '@/lib/utils';
 
 interface OpportunityRadarPreviewProps {
   opportunities: OpportunityItem[];
@@ -20,98 +22,169 @@ interface OpportunityRadarPreviewProps {
 export const OpportunityRadarPreview: React.FC<OpportunityRadarPreviewProps> = ({ opportunities }) => {
   const featuredItems = opportunities.slice(0, 4);
 
+  const renderStatusBadge = (opp: OpportunityItem) => {
+    const isClosingSoon = opp.status === 'CLOSING_SOON';
+    const isClosed = opp.status === 'CLOSED' || opp.isExpired;
+
+    if (isClosed) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#F1F5F2] text-[#4B5563] border border-[#E2E8E4]">
+          <Clock className="w-3.5 h-3.5 text-[#4B5563]" />
+          <span>Cohort Closed</span>
+        </span>
+      );
+    }
+
+    if (!opp.deadline) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/30">
+          <Clock className="w-3.5 h-3.5 text-[#0B6E4F]" />
+          <span>Rolling Admission</span>
+        </span>
+      );
+    }
+
+    if (isClosingSoon) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FDF8EC] text-[#9A7B1C] border border-[#C9A227]">
+          <Clock className="w-3.5 h-3.5 text-[#C9A227] animate-pulse" />
+          <span>Closing Soon</span>
+        </span>
+      );
+    }
+
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/30">
+        <Clock className="w-3.5 h-3.5 text-[#0B6E4F]" />
+        <span>Open Admission</span>
+      </span>
+    );
+  };
+
   return (
     <div className="w-full space-y-6">
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-editorial-hairline">
-        <div className="space-y-1">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-[#E2E8E4]">
+        <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-brand-oasis" />
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-oasis font-sans">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#0B6E4F]" />
+            <span className="text-xs font-bold uppercase tracking-wider text-[#0B6E4F] font-sans">
               Verified Opportunity Radar
             </span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-heading font-black text-ink-high tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-heading font-black text-[#111827] tracking-tight">
             Active Founder Grants &amp; Accelerators
           </h2>
-          <p className="text-xs sm:text-sm text-ink-muted">
-            Verified non-dilutive capital, state-backed labs, and regulatory testing cohorts closing soon.
+          <p className="text-sm text-[#4B5563]">
+            Verified non-dilutive government grants, sovereign accelerators, and regulatory sandboxes closing soon.
           </p>
         </div>
 
         <Link
           href="/opportunities"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-navy hover:text-brand-teal transition-colors font-sans uppercase tracking-wider shrink-0"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white border border-[#E2E8E4] hover:border-[#0B6E4F]/40 text-xs font-bold text-[#0B6E4F] hover:bg-[#E8F5EF] transition-all font-sans uppercase tracking-wider shrink-0 shadow-2xs"
         >
           <span>View All Opportunities ({opportunities.length})</span>
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
 
-      {/* Grid of 4 Spotlight Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+      {/* Grid of 4 Spotlight Cards in Clean, Readable 2-Column Architecture */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
         {featuredItems.map((opp) => {
-          const isClosingSoon = opp.status === 'CLOSING_SOON';
           return (
-            <div
+            <article
               key={opp.id}
-              className="bg-editorial-pure rounded-lg border border-editorial-hairline hover:border-brand-teal/50 hover:shadow-sm transition-all p-4 flex flex-col justify-between min-w-0 w-full overflow-hidden"
+              className="group bg-white rounded-xl border border-[#E2E8E4] hover:border-[#0B6E4F]/40 hover:shadow-lg transition-all duration-200 p-6 flex flex-col justify-between relative"
             >
-              <div className="space-y-2.5 min-w-0">
-                <div className="flex items-center justify-between text-[11px] gap-2">
-                  <span className="font-bold text-ink-muted tracking-tight truncate min-w-0">
-                    {opp.organization}
-                  </span>
-                  {opp.deadline ? (
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
-                        isClosingSoon
-                          ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                          : 'bg-brand-sand text-ink-high'
-                      }`}
-                    >
-                      {isClosingSoon ? 'Closing Soon' : 'Open'}
-                    </span>
-                  ) : (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-sand text-ink-high shrink-0">
-                      Rolling
-                    </span>
-                  )}
+              <div className="space-y-4">
+                {/* Zone 1: Organization & Status Ribbon */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#4B5563]">
+                      <Building2 className="w-3.5 h-3.5 text-[#0A1F2C]" />
+                      <span>{opp.organization}</span>
+                    </div>
+                    {opp.categoryRel && (
+                      <span
+                        className="text-[11px] uppercase font-bold tracking-wider inline-block px-2 py-0.5 rounded-md bg-[#F1F5F2] border border-[#E2E8E4]"
+                        style={{ color: opp.categoryRel.color }}
+                      >
+                        {opp.categoryRel.name}
+                      </span>
+                    )}
+                  </div>
+                  <div className="shrink-0">{renderStatusBadge(opp)}</div>
                 </div>
 
-                <Link href={`/opportunity/${opp.slug}`} className="block min-w-0">
-                  <h3 className="font-heading font-bold text-sm text-ink-high hover:text-brand-navy leading-snug line-clamp-2 transition-colors">
+                {/* Zone 2: Program Title */}
+                <Link href={`/opportunity/${opp.slug}`} className="block focus:outline-none focus:underline group/title">
+                  <h3 className="font-heading font-black text-xl text-[#111827] group-hover/title:text-[#0B6E4F] leading-snug transition-colors">
                     {opp.title}
                   </h3>
                 </Link>
 
-                {opp.fundingAmount && (
-                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-xs bg-brand-oasis/10 text-brand-oasis text-xs font-bold max-w-full min-w-0 overflow-hidden">
-                    <Coins className="w-3 h-3 shrink-0" />
-                    <span className="truncate min-w-0">{opp.fundingAmount}</span>
+                {/* Zone 3: Key Value Offer Box (Support Amount & Terms) */}
+                <div className="p-3.5 rounded-lg bg-[#F1F5F2] border border-[#E2E8E4] space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#111827]">
+                    <div className="w-6 h-6 rounded-md bg-[#E8F5EF] flex items-center justify-center shrink-0 text-[#0B6E4F]">
+                      <Coins className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="leading-tight">{opp.fundingAmount || 'Non-Cash Advisory & Sandbox Framework'}</span>
                   </div>
-                )}
 
-                <p className="text-[11px] text-ink-muted line-clamp-2 leading-relaxed">
+                  <div className="flex flex-wrap items-center gap-2 text-xs pt-0.5">
+                    {opp.equityTaken && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-bold bg-white text-[#0B6E4F] border border-[#0B6E4F]/30 shadow-2xs">
+                        <Check className="w-3 h-3 text-[#0B6E4F]" />
+                        <span>{opp.equityTaken}</span>
+                      </span>
+                    )}
+                    {opp.location && (
+                      <span className="inline-flex items-center gap-1 text-xs text-[#4B5563] bg-white px-2.5 py-0.5 rounded-md border border-[#E2E8E4]">
+                        <MapPin className="w-3 h-3 text-[#4B5563]" />
+                        <span>{opp.location}</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Zone 4: Program Summary Description */}
+                <p className="text-sm text-[#374151] leading-relaxed line-clamp-2">
                   {opp.description}
                 </p>
               </div>
 
-              <div className="pt-3 mt-3 border-t border-editorial-hairline flex items-center justify-between text-xs">
-                <span className="text-[10px] text-ink-faint">
-                  {opp.equityTaken || '0% Equity'}
-                </span>
-                <a
-                  href={opp.applicationUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 font-semibold text-brand-navy hover:text-brand-teal text-xs"
-                >
-                  <span>Apply</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
+              {/* Zone 5: Card Footer (Clear Provenance + Action Buttons) */}
+              <div className="pt-4 mt-5 border-t border-[#E2E8E4] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="text-xs text-[#4B5563]">
+                  <span className="block text-[11px] text-[#4B5563] font-semibold truncate max-w-[200px]">
+                    Source: {opp.sourceName}
+                  </span>
+                  <span className="block text-[10px] text-slate-400 pt-0.5">
+                    Audited {formatDate(opp.verifiedAt)}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <Link
+                    href={`/opportunity/${opp.slug}`}
+                    className="px-4 py-2 rounded-lg border border-[#E2E8E4] bg-[#F1F5F2] hover:bg-[#E8F5EF] text-[#111827] font-bold transition-colors text-xs"
+                  >
+                    Dossier
+                  </Link>
+                  <a
+                    href={opp.applicationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#0B6E4F] hover:bg-[#08533C] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-xs"
+                  >
+                    <span>Apply</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
               </div>
-            </div>
+            </article>
           );
         })}
       </div>

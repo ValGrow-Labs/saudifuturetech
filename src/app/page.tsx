@@ -125,7 +125,7 @@ export default async function HomePage() {
   }));
 
   return (
-    <div className="min-h-screen flex flex-col bg-editorial-paper text-ink-body">
+    <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-[#111827]">
       {/* Schema.org Structured Data */}
       <OrganizationJsonLd />
       <WebSiteJsonLd />
