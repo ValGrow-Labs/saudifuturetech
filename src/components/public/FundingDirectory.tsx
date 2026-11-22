@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { 
   Search, 
-  Coins, 
   MapPin, 
   ExternalLink, 
   ShieldCheck, 
@@ -14,12 +13,10 @@ import {
   Briefcase,
   Landmark,
   Building2,
-  Users2,
   TrendingUp,
   Sparkles,
   ArrowRight,
-  Filter,
-  Layers
+  Coins
 } from 'lucide-react';
 import { cn, formatDate } from '@/lib/utils';
 
@@ -66,7 +63,7 @@ interface FundingDirectoryProps {
 const TYPE_FILTERS = [
   { label: 'All Typologies', value: 'ALL' },
   { label: 'Venture Capital', value: 'VENTURE_CAPITAL' },
-  { label: 'Sovereign Wealth & Gov', value: 'GOVERNMENT_FUND' },
+  { label: 'Sovereign & Gov Funds', value: 'GOVERNMENT_FUND' },
   { label: 'Corporate VC', value: 'CORPORATE_VC' },
   { label: 'Angel Syndicates', value: 'ANGEL_NETWORK' },
   { label: 'Family Offices', value: 'FAMILY_OFFICE' },
@@ -74,12 +71,12 @@ const TYPE_FILTERS = [
 ];
 
 const STAGE_FILTERS = [
-  'ALL',
-  'Pre-Seed',
-  'Seed',
-  'Series A',
-  'Series B',
-  'Growth',
+  { label: 'All Stages', value: 'ALL' },
+  { label: 'Pre-Seed', value: 'Pre-Seed' },
+  { label: 'Seed', value: 'Seed' },
+  { label: 'Series A', value: 'Series A' },
+  { label: 'Series B', value: 'Series B' },
+  { label: 'Growth', value: 'Growth' },
 ];
 
 export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
@@ -212,7 +209,7 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
       case 'ACCELERATOR_FUND':
         return 'Accelerator Seed Fund';
       default:
-        return type;
+        return type.replace(/_/g, ' ');
     }
   };
 
@@ -232,26 +229,27 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
     selectedStage !== 'ALL' ||
     cmaOnly ||
     svcOnly ||
-    activeOnly;
+    activeOnly ||
+    sortOption !== 'FEATURED';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 font-sans">
       {/* 1. Filter and Search Controls Box */}
-      <div className="bg-[#F1F5F2] p-5 sm:p-6 rounded-lg border border-[#E2E8E4] shadow-xs space-y-4">
+      <div className="bg-[#F1F5F2] p-5 sm:p-6 rounded-xl border border-[#E2E8E4] shadow-xs space-y-5">
         {/* Search Input Bar */}
         <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
           <input
             type="text"
             placeholder="Search funds, sectors, portfolio champions, or CMA license (e.g. STV, Raed, FinTech, Tamara, 17188-37)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-[#E2E8E4] rounded-md text-[#111827] placeholder:text-[#4B5563] focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] focus:border-[#0B6E4F] transition-all"
+            className="w-full pl-11 pr-10 py-3 text-sm bg-white border border-[#E2E8E4] rounded-lg text-[#111827] placeholder:text-[#4B5563]/70 focus:outline-none focus:ring-2 focus:ring-[#0B6E4F]/30 focus:border-[#0B6E4F] transition-all shadow-2xs"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#111827] p-1"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#111827] p-1"
               aria-label="Clear search"
             >
               <X className="w-4 h-4" />
@@ -260,30 +258,29 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
         </div>
 
         {/* Typology Pills */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563]">
-              Capital Typology
-            </span>
+        <div className="space-y-2.5">
+          <div className="flex items-center justify-between text-xs font-bold text-[#4B5563] uppercase tracking-wider">
+            <span>Capital Typology</span>
             {hasActiveFilters && (
               <button
                 onClick={handleResetFilters}
-                className="text-xs text-[#0B6E4F] hover:underline font-semibold"
+                className="text-[#0B6E4F] hover:underline font-bold text-xs capitalize flex items-center gap-1 cursor-pointer"
               >
-                Reset All Filters
+                <span>Reset All Filters</span>
+                <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-2">
             {TYPE_FILTERS.map((type) => (
               <button
                 key={type.value}
                 onClick={() => setSelectedType(type.value)}
                 className={cn(
-                  'px-3 py-1 text-xs rounded-full transition-all cursor-pointer',
+                  'px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer',
                   selectedType === type.value
                     ? 'bg-[#0B6E4F] text-white shadow-xs font-bold'
-                    : 'bg-white text-[#4B5563] hover:text-[#111827] hover:bg-[#E8F5EF] border border-[#E2E8E4] font-medium'
+                    : 'bg-white text-[#4B5563] hover:text-[#111827] hover:bg-white/80 border border-[#E2E8E4]'
                 )}
               >
                 {type.label}
@@ -293,25 +290,25 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
         </div>
 
         {/* Secondary Filters: Stage & Regulatory Flags */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#E2E8E4]">
+        <div className="pt-4 border-t border-[#E2E8E4] flex flex-wrap items-center justify-between gap-4">
           {/* Target Stage selector */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#4B5563] whitespace-nowrap">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#4B5563]">
               Target Stage:
             </span>
-            <div className="flex flex-wrap items-center gap-1">
+            <div className="flex flex-wrap items-center gap-1.5">
               {STAGE_FILTERS.map((st) => (
                 <button
-                  key={st}
-                  onClick={() => setSelectedStage(st)}
+                  key={st.value}
+                  onClick={() => setSelectedStage(st.value)}
                   className={cn(
-                    'px-2.5 py-0.5 text-xs rounded-md transition-all cursor-pointer',
-                    selectedStage === st
-                      ? 'bg-[#FDF8EC] text-[#9A7B1C] border border-[#C9A227] font-bold'
+                    'px-3 py-1 text-xs rounded-md transition-all cursor-pointer font-medium',
+                    selectedStage === st.value
+                      ? 'bg-[#FDF8EC] text-[#9A7B1C] border border-[#C9A227] font-bold shadow-2xs'
                       : 'bg-white text-[#4B5563] hover:text-[#111827] border border-[#E2E8E4]'
                   )}
                 >
-                  {st}
+                  {st.label}
                 </button>
               ))}
             </div>
@@ -323,10 +320,10 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
             <button
               onClick={() => setCmaOnly(!cmaOnly)}
               className={cn(
-                'inline-flex items-center gap-1.5 px-3 py-1 text-xs rounded-full border transition-all cursor-pointer',
+                'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-all cursor-pointer',
                 cmaOnly
                   ? 'bg-[#0B6E4F] text-white border-[#0B6E4F] font-bold shadow-xs'
-                  : 'bg-white text-[#0B6E4F] border-[#0B6E4F]/30 hover:bg-[#E8F5EF] font-medium'
+                  : 'bg-white text-[#0B6E4F] border-[#0B6E4F]/30 hover:bg-[#E8F5EF] font-semibold'
               )}
             >
               <ShieldCheck className="w-3.5 h-3.5" />
@@ -337,10 +334,10 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
             <button
               onClick={() => setSvcOnly(!svcOnly)}
               className={cn(
-                'inline-flex items-center gap-1.5 px-3 py-1 text-xs rounded-full border transition-all cursor-pointer',
+                'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-all cursor-pointer',
                 svcOnly
                   ? 'bg-[#C9A227] text-white border-[#C9A227] font-bold shadow-xs'
-                  : 'bg-white text-[#9A7B1C] border-[#C9A227]/40 hover:bg-[#FDF8EC] font-medium'
+                  : 'bg-white text-[#9A7B1C] border-[#C9A227]/40 hover:bg-[#FDF8EC] font-semibold'
               )}
             >
               <Landmark className="w-3.5 h-3.5" />
@@ -351,10 +348,10 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
             <button
               onClick={() => setActiveOnly(!activeOnly)}
               className={cn(
-                'inline-flex items-center gap-1.5 px-3 py-1 text-xs rounded-full border transition-all cursor-pointer',
+                'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-all cursor-pointer',
                 activeOnly
-                  ? 'bg-[#19B5A3] text-white border-[#19B5A3] font-bold shadow-xs'
-                  : 'bg-white text-[#0E7A6E] border-[#19B5A3]/40 hover:bg-[#E6FAF7] font-medium'
+                  ? 'bg-[#0B6E4F] text-white border-[#0B6E4F] font-bold shadow-xs'
+                  : 'bg-white text-[#0B6E4F] border-[#0B6E4F]/30 hover:bg-[#E8F5EF] font-semibold'
               )}
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
@@ -371,12 +368,12 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
           {filteredItems.length === 1 ? 'institutional investor' : 'institutional investors'}
         </p>
 
-        <div className="flex items-center gap-3">
-          <span className="text-[11px] font-medium text-[#4B5563]">Sort by:</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-[#4B5563]">Sort by:</span>
           <select
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value as any)}
-            className="text-xs bg-white border border-[#E2E8E4] rounded-md px-2.5 py-1 text-[#111827] focus:outline-none focus:ring-1 focus:ring-[#0B6E4F]"
+            className="text-xs font-semibold bg-white border border-[#E2E8E4] rounded-lg px-3 py-1.5 text-[#111827] focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] cursor-pointer"
           >
             <option value="FEATURED">Featured &amp; Pillar Champions</option>
             <option value="NAME">Name (A–Z)</option>
@@ -385,67 +382,67 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
         </div>
       </div>
 
-      {/* 3. Investors Grid */}
+      {/* 3. Investors Grid (Clean 2-Column Structure for Optimal Readability) */}
       {filteredItems.length === 0 ? (
-        <div className="bg-white p-12 text-center rounded-lg border border-[#E2E8E4] space-y-3">
+        <div className="bg-white p-12 text-center rounded-xl border border-[#E2E8E4] space-y-3">
           <Briefcase className="w-10 h-10 text-[#4B5563] mx-auto" />
           <h3 className="font-heading font-bold text-lg text-[#111827]">
             No institutional investors match your selected criteria
           </h3>
-          <p className="text-xs sm:text-sm text-[#4B5563] max-w-md mx-auto">
+          <p className="text-sm text-[#4B5563] max-w-md mx-auto">
             Try resetting your regulatory, stage, or typology filters to browse active venture funds and sovereign vehicles in Saudi Arabia.
           </p>
           <button
             onClick={handleResetFilters}
-            className="mt-2 text-xs font-semibold px-4 py-2 rounded-md bg-[#0B6E4F] text-white hover:bg-[#08533C] transition-all cursor-pointer shadow-xs"
+            className="mt-2 text-xs font-bold px-4 py-2 rounded-lg bg-[#0B6E4F] text-white hover:bg-[#08533C] transition-all cursor-pointer shadow-xs"
           >
             Reset All Filters
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredItems.map((item) => {
             const stages = Array.isArray(item.targetStages) ? item.targetStages : [];
             const sectors = Array.isArray(item.targetSectors) ? item.targetSectors : [];
             const portfolio = Array.isArray(item.portfolioHighlights) ? item.portfolioHighlights : [];
 
             return (
-              <div
+              <article
                 key={item.id}
-                className="group bg-white rounded-lg border border-[#E2E8E4] hover:border-[#0B6E4F]/50 hover:shadow-md transition-all p-5 sm:p-6 flex flex-col justify-between"
+                className="group bg-white rounded-xl border border-[#E2E8E4] hover:border-[#0B6E4F]/40 hover:shadow-lg transition-all duration-200 p-6 flex flex-col justify-between"
               >
-                <div className="space-y-3.5">
-                  {/* Top Bar: Name, Typology, and Clear Regulatory Badges */}
+                <div className="space-y-4">
+                  {/* Zone 1: Investor Name, Typology & Regulatory Status */}
                   <div className="flex items-start justify-between gap-3">
-                    <div>
+                    <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/investor/${item.slug}`}
-                          className="font-heading font-bold text-lg text-[#111827] group-hover:text-[#0B6E4F] hover:underline transition-colors"
+                          className="font-heading font-black text-xl text-[#111827] group-hover:text-[#0B6E4F] transition-colors"
                         >
                           {item.name}
                         </Link>
                         {item.isFeatured && (
-                          <span className="px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-[#FDF8EC] text-[#9A7B1C] border border-[#C9A227]/40">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#FDF8EC] text-[#9A7B1C] border border-[#C9A227]/40">
                             Pillar Lead
                           </span>
                         )}
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-[#4B5563]">
-                        <span className="font-semibold text-[#0B6E4F]">
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-[#4B5563]">
+                        <span className="font-bold text-[#0B6E4F]">
                           {formatType(item.type)}
                         </span>
                         <span>•</span>
-                        <span className="inline-flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-[#4B5563]" />
+                        <span className="inline-flex items-center gap-1 font-medium">
+                          <MapPin className="w-3.5 h-3.5 text-[#4B5563]" />
                           {item.hqLocation}
                         </span>
                         {item.isActiveInvesting && (
                           <>
                             <span>•</span>
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0B6E4F]">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#0B6E4F] animate-pulse" />
+                            <span className="inline-flex items-center gap-1 text-xs font-bold text-[#0B6E4F]">
+                              <span className="w-2 h-2 rounded-full bg-[#0B6E4F] animate-pulse" />
                               Actively Deploying
                             </span>
                           </>
@@ -454,43 +451,30 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
                     </div>
 
                     {/* Strict Regulatory Badges (CMA vs SVC separated) */}
-                    <div className="flex flex-col items-end gap-1 shrink-0">
+                    <div className="flex flex-col items-end gap-1.5 shrink-0">
                       {item.isCmaAuthorized && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/30">
-                          <ShieldCheck className="w-3 h-3 text-[#0B6E4F]" />
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/30">
+                          <ShieldCheck className="w-3.5 h-3.5 text-[#0B6E4F]" />
                           CMA Authorized
                         </span>
                       )}
 
                       {item.isSvcPartner && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#FDF8EC] text-[#9A7B1C] border border-[#C9A227]/40">
-                          <Landmark className="w-3 h-3 text-[#C9A227]" />
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-[#FDF8EC] text-[#9A7B1C] border border-[#C9A227]/40">
+                          <Landmark className="w-3.5 h-3.5 text-[#C9A227]" />
                           SVC Partner
-                        </span>
-                      )}
-
-                      {!item.isCmaAuthorized && !item.isSvcPartner && item.regulatoryCategory && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-[#F1F5F2] text-[#4B5563] border border-[#E2E8E4]">
-                          {item.regulatoryCategory}
                         </span>
                       )}
                     </div>
                   </div>
 
-                  {/* CMA License details if verified */}
-                  {item.cmaLicenseNumber && (
-                    <div className="text-[11px] text-[#0B6E4F] bg-[#E8F5EF] px-2.5 py-1 rounded-md border border-[#0B6E4F]/20 font-mono">
-                      CMA: {item.cmaLicenseNumber}
-                    </div>
-                  )}
-
-                  {/* Check Size & Target Stages Box */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-[#F1F5F2] rounded-md border border-[#E2E8E4] text-xs">
+                  {/* Zone 2: Check Size & Target Stages (Clean Box Architecture) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-[#F1F5F2] rounded-lg border border-[#E2E8E4] text-xs">
                     <div>
                       <span className="text-[10px] uppercase font-bold text-[#4B5563] block">
-                        Disclosed Check Size
+                        Typical Ticket Size
                       </span>
-                      <span className="font-bold text-[#111827]">
+                      <span className="font-black text-sm text-[#111827] pt-0.5 block">
                         {item.checkSizeRange || 'Unspecified (Confidential)'}
                       </span>
                     </div>
@@ -498,74 +482,84 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
                       <span className="text-[10px] uppercase font-bold text-[#4B5563] block">
                         Target Stages
                       </span>
-                      <span className="font-medium text-[#111827]">
-                        {stages.length > 0 ? stages.join(', ') : 'Early to Growth'}
-                      </span>
+                      <div className="flex flex-wrap gap-1 pt-1">
+                        {stages.length > 0 ? (
+                          stages.map((st: string, idx: number) => (
+                            <span
+                              key={idx}
+                              className="px-2 py-0.5 rounded bg-white text-[11px] font-bold text-[#111827] border border-[#E2E8E4]"
+                            >
+                              {st}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-xs text-[#4B5563] font-medium">Early to Growth</span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Description */}
-                  <p className="text-xs text-[#4B5563] leading-relaxed line-clamp-3">
-                    {item.description}
+                  {/* Zone 3: Investment Focus & Thesis Description */}
+                  <p className="text-sm text-[#374151] leading-relaxed line-clamp-2">
+                    {item.thesisSummary || item.description}
                   </p>
 
-                  {/* Target Sectors Chips */}
-                  {sectors.length > 0 && (
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                        Sovereign Pillar &amp; Sector Focus:
-                      </span>
-                      <div className="flex flex-wrap items-center gap-1">
-                        {sectors.map((sec: string, idx: number) => (
-                          <span
-                            key={idx}
-                            className="px-2 py-0.5 rounded-md bg-[#F1F5F2] text-[10px] font-semibold text-[#111827] border border-[#E2E8E4]"
-                          >
-                            {sec}
+                  {/* Zone 4: Target Sectors & Portfolio Highlights */}
+                  {(sectors.length > 0 || portfolio.length > 0) && (
+                    <div className="space-y-2 pt-1 border-t border-[#E2E8E4]">
+                      {sectors.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] mr-1">
+                            Sectors:
                           </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                          {sectors.map((sec: string, idx: number) => (
+                            <span
+                              key={idx}
+                              className="px-2 py-0.5 rounded-md bg-[#F1F5F2] text-[11px] font-bold text-[#111827] border border-[#E2E8E4]"
+                            >
+                              {sec}
+                            </span>
+                          ))}
+                        </div>
+                      )}
 
-                  {/* Portfolio Highlights */}
-                  {portfolio.length > 0 && (
-                    <div className="text-xs pt-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1.5">
-                        Verified Portfolio:
-                      </span>
-                      <span className="text-[#111827] font-medium text-[11px]">
-                        {portfolio.join(' • ')}
-                      </span>
+                      {portfolio.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1 text-xs">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] mr-1">
+                            Backed:
+                          </span>
+                          <span className="text-[#111827] font-semibold text-xs">
+                            {portfolio.join(' • ')}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
 
-                {/* Bottom Bar: Provenance + Actions */}
-                <div className="pt-4 mt-4 border-t border-[#E2E8E4] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                  <div className="text-[10px] text-slate-400">
-                    <span>Verified {formatDate(item.verifiedAt)}</span>
-                    {item.sourceName && (
-                      <span className="block text-slate-400 truncate max-w-[220px]">
+                {/* Zone 5: Card Footer (Clear Action Buttons & Verification) */}
+                <div className="pt-4 mt-5 border-t border-[#E2E8E4] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="text-xs text-[#4B5563] space-y-0.5">
+                    <span className="text-[11px] text-slate-400 block">
+                      Audited {formatDate(item.verifiedAt)}
+                    </span>
+                    {item.cmaLicenseNumber ? (
+                      <span className="text-[10px] text-[#0B6E4F] font-mono font-bold block">
+                        CMA: {item.cmaLicenseNumber}
+                      </span>
+                    ) : item.sourceName ? (
+                      <span className="text-[11px] text-[#4B5563] font-medium block truncate max-w-[200px]">
                         via {item.sourceName}
                       </span>
-                    )}
+                    ) : null}
                   </div>
 
-                  <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                    <Link
-                      href={`/investor/${item.slug}`}
-                      className="px-3 py-1.5 rounded-md text-xs font-semibold bg-[#0B6E4F] hover:bg-[#08533C] text-white transition-all shadow-xs flex items-center gap-1"
-                    >
-                      <span>View Dossier</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </Link>
-
+                  <div className="flex items-center gap-2 shrink-0">
                     <a
                       href={item.websiteUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3 py-1.5 rounded-md border border-[#E2E8E4] text-[#111827] hover:bg-[#F1F5F2] font-medium transition-colors"
+                      className="px-3.5 py-2 rounded-lg border border-[#E2E8E4] text-[#111827] bg-[#F1F5F2] hover:bg-[#E8F5EF] text-xs font-bold transition-colors"
                     >
                       Website
                     </a>
@@ -575,15 +569,23 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
                         href={item.pitchUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-[#F1F5F2] border border-[#E2E8E4] hover:bg-[#E8F5EF] text-[#0B6E4F] font-semibold transition-all shadow-xs"
+                        className="inline-flex items-center gap-1 px-3.5 py-2 rounded-lg bg-[#F1F5F2] border border-[#E2E8E4] hover:bg-[#E8F5EF] text-[#0B6E4F] text-xs font-bold transition-all shadow-xs"
                       >
                         <span>Pitch</span>
                         <ExternalLink className="w-3 h-3" />
                       </a>
                     )}
+
+                    <Link
+                      href={`/investor/${item.slug}`}
+                      className="px-4 py-2 rounded-lg text-xs font-bold bg-[#0B6E4F] hover:bg-[#08533C] text-white transition-all shadow-xs flex items-center gap-1.5"
+                    >
+                      <span>View Dossier</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
                   </div>
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>

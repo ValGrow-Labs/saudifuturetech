@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { 
   Search, 
-  Filter, 
   ExternalLink, 
   Calendar, 
   Clock, 
@@ -14,13 +13,11 @@ import {
   Coins, 
   Building2, 
   X,
-  ChevronRight,
   Info,
-  SlidersHorizontal,
-  ArrowUpDown,
   Sparkles,
-  Layers,
-  ArrowRight
+  ArrowRight,
+  MapPin,
+  Check
 } from 'lucide-react';
 import { cn, formatDate } from '@/lib/utils';
 
@@ -85,7 +82,7 @@ const CATEGORY_TABS = [
 ];
 
 const ELIGIBILITY_OPTIONS = [
-  { label: 'All Eligibility Stages', value: 'ALL' },
+  { label: 'All Founder Terms', value: 'ALL' },
   { label: '100% Non-Dilutive (0% Equity)', value: 'NON_DILUTIVE' },
   { label: 'Saudi Commercial Registration (CR)', value: 'SAUDI_CR' },
   { label: 'Pre-Revenue / Working MVP', value: 'PRE_REVENUE_MVP' },
@@ -105,6 +102,27 @@ const SORT_OPTIONS = [
   { label: 'Recently Verified', value: 'verified-desc' },
   { label: 'Program Name (A to Z)', value: 'title-asc' },
 ];
+
+const formatCategoryBadge = (category: string) => {
+  switch (category) {
+    case 'GRANT':
+      return 'Non-Dilutive Grant';
+    case 'ACCELERATOR':
+      return 'Accelerator Cohort';
+    case 'SUBSIDY':
+      return 'Government Subsidy';
+    case 'GOVERNMENT_PROGRAM':
+      return 'Regulatory Sandbox';
+    case 'INCUBATOR':
+      return 'Incubation Cohort';
+    case 'SUBSIDIZED_PERK':
+      return 'Compute Credits & Perks';
+    case 'HACKATHON':
+      return 'National Hackathon';
+    default:
+      return category.replace(/_/g, ' ');
+  }
+};
 
 export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
   initialOpportunities,
@@ -287,8 +305,8 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
   const renderDeadlineBadge = (deadlineStr: string | null, status: string, isExpired?: boolean) => {
     if (isExpired || status === 'CLOSED') {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F1F5F2] text-[#4B5563] border border-[#E2E8E4]">
-          <Clock className="w-3 h-3 text-[#4B5563]" />
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#F1F5F2] text-[#4B5563] border border-[#E2E8E4]">
+          <Clock className="w-3.5 h-3.5 text-[#4B5563]" />
           <span>Cohort Closed</span>
         </span>
       );
@@ -296,8 +314,8 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
 
     if (!deadlineStr) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F1F5F2] text-[#111827] border border-[#E2E8E4]">
-          <Clock className="w-3 h-3 text-[#0B6E4F]" />
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/30">
+          <Clock className="w-3.5 h-3.5 text-[#0B6E4F]" />
           <span>Rolling Admission</span>
         </span>
       );
@@ -309,52 +327,26 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
 
     if (diffDays <= 0) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F1F5F2] text-[#4B5563] border border-[#E2E8E4]">
-          <Clock className="w-3 h-3 text-[#4B5563]" />
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#F1F5F2] text-[#4B5563] border border-[#E2E8E4]">
+          <Clock className="w-3.5 h-3.5 text-[#4B5563]" />
           <span>Cohort Closed</span>
         </span>
       );
     } else if (diffDays <= 14) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#FDF8EC] text-[#9A7B1C] border border-[#C9A227]">
-          <Clock className="w-3 h-3 text-[#C9A227] animate-pulse" />
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FDF8EC] text-[#9A7B1C] border border-[#C9A227]">
+          <Clock className="w-3.5 h-3.5 text-[#C9A227] animate-pulse" />
           <span>Closes in {diffDays} {diffDays === 1 ? 'day' : 'days'}</span>
         </span>
       );
     } else {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/30">
-          <Calendar className="w-3 h-3 text-[#0B6E4F]" />
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/30">
+          <Calendar className="w-3.5 h-3.5 text-[#0B6E4F]" />
           <span>Closes {formatDate(deadline)}</span>
         </span>
       );
     }
-  };
-
-  // Helper to distinguish cash vs non-cash support
-  const renderSupportBadge = (fundingAmount: string | null, category: string) => {
-    if (!fundingAmount) return null;
-
-    const isNonCash =
-      fundingAmount.toLowerCase().includes('non-cash') ||
-      fundingAmount.toLowerCase().includes('credits') ||
-      fundingAmount.toLowerCase().includes('exemption') ||
-      category === 'GOVERNMENT_PROGRAM' ||
-      category === 'SUBSIDIZED_PERK';
-
-    return (
-      <span
-        className={cn(
-          'inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold shrink-0',
-          isNonCash
-            ? 'bg-[#E6FAF7] text-[#0A1F2C] border border-[#19B5A3]/40'
-            : 'bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/30'
-        )}
-      >
-        <Coins className={cn('w-3.5 h-3.5', isNonCash ? 'text-[#19B5A3]' : 'text-[#0B6E4F]')} />
-        <span>{fundingAmount}</span>
-      </span>
-    );
   };
 
   return (
@@ -362,21 +354,21 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
       {/* ==================================================================== */}
       {/* 1. FILTER & SEARCH CONTROL MATRIX                                    */}
       {/* ==================================================================== */}
-      <div className="bg-[#F1F5F2] p-5 sm:p-6 rounded-lg border border-[#E2E8E4] shadow-xs space-y-5">
+      <div className="bg-[#F1F5F2] p-5 sm:p-6 rounded-xl border border-[#E2E8E4] shadow-xs space-y-5">
         {/* Top Search Input */}
         <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
           <input
             type="text"
             placeholder="Search verified grants, accelerator cohorts, or government entities (e.g. NTDP, The Garage, SAMA)..."
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-[#E2E8E4] rounded-md text-[#111827] placeholder:text-[#4B5563]/70 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] focus:border-[#0B6E4F] transition-all"
+            className="w-full pl-11 pr-10 py-3 text-sm bg-white border border-[#E2E8E4] rounded-lg text-[#111827] placeholder:text-[#4B5563]/70 focus:outline-none focus:ring-2 focus:ring-[#0B6E4F]/30 focus:border-[#0B6E4F] transition-all shadow-2xs"
           />
           {searchQuery && (
             <button
               onClick={() => handleSearchChange('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#111827] p-1"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#111827] p-1"
               aria-label="Clear search query"
             >
               <X className="w-4 h-4" />
@@ -384,21 +376,21 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
           )}
         </div>
 
-        {/* Opportunity Category Pills (Grants, Accelerators, Sandboxes...) */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs font-semibold text-[#4B5563] uppercase tracking-wider">
+        {/* Opportunity Category Navigation Pills */}
+        <div className="space-y-2.5">
+          <div className="flex items-center justify-between text-xs font-bold text-[#4B5563] uppercase tracking-wider">
             <span>Opportunity Classification</span>
             {isFilteringActive && (
               <button
                 onClick={handleResetFilters}
-                className="text-[#0B6E4F] hover:underline font-bold text-xs capitalize flex items-center gap-1"
+                className="text-[#0B6E4F] hover:underline font-bold text-xs capitalize flex items-center gap-1 cursor-pointer"
               >
                 <span>Reset All Filters</span>
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-2">
             {CATEGORY_TABS.map((tab) => (
               <button
                 key={tab.value}
@@ -407,7 +399,7 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
                   'px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer',
                   selectedCategory === tab.value
                     ? 'bg-[#0B6E4F] text-white shadow-xs font-bold'
-                    : 'bg-white text-[#4B5563] hover:text-[#111827] hover:bg-[#E8F5EF] border border-[#E2E8E4]'
+                    : 'bg-white text-[#4B5563] hover:text-[#111827] hover:bg-white/80 border border-[#E2E8E4]'
                 )}
               >
                 {tab.label}
@@ -417,18 +409,18 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
         </div>
 
         {/* Secondary Detailed Filter Bar (Pillar, Eligibility, Status, Sort) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-[#E2E8E4]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-4 border-t border-[#E2E8E4]">
           {/* 1. Technology Pillar */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] block">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
               Sovereign Pillar
             </label>
             <select
               value={selectedPillar}
               onChange={(e) => handlePillarChange(e.target.value)}
-              className="w-full text-xs bg-white border border-[#E2E8E4] text-[#111827] rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F]"
+              className="w-full text-xs font-medium bg-white border border-[#E2E8E4] text-[#111827] rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] cursor-pointer"
             >
-              <option value="ALL">All Tech Pillars (6 Desks)</option>
+              <option value="ALL">All Sovereign Pillars (6 Desks)</option>
               {availablePillars.map((p) => (
                 <option key={p.slug} value={p.slug}>
                   {p.name}
@@ -438,14 +430,14 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
           </div>
 
           {/* 2. Eligibility Stage */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] block">
-              Founder Eligibility
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
+              Founder Terms &amp; Equity
             </label>
             <select
               value={selectedEligibility}
               onChange={(e) => handleEligibilityChange(e.target.value)}
-              className="w-full text-xs bg-white border border-[#E2E8E4] text-[#111827] rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F]"
+              className="w-full text-xs font-medium bg-white border border-[#E2E8E4] text-[#111827] rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] cursor-pointer"
             >
               {ELIGIBILITY_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -456,14 +448,14 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
           </div>
 
           {/* 3. Cohort Status */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] block">
-              Application Status
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
+              Admission Status
             </label>
             <select
               value={selectedStatus}
               onChange={(e) => handleStatusChange(e.target.value)}
-              className="w-full text-xs bg-white border border-[#E2E8E4] text-[#111827] rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F]"
+              className="w-full text-xs font-medium bg-white border border-[#E2E8E4] text-[#111827] rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] cursor-pointer"
             >
               {STATUS_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -474,14 +466,14 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
           </div>
 
           {/* 4. Sorting */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] block">
-              Order By
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
+              Sort Order
             </label>
             <select
               value={selectedSort}
               onChange={(e) => handleSortChange(e.target.value)}
-              className="w-full text-xs bg-white border border-[#E2E8E4] text-[#111827] rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F]"
+              className="w-full text-xs font-medium bg-white border border-[#E2E8E4] text-[#111827] rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] cursor-pointer"
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -502,137 +494,145 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
           {filteredItems.length === 1 ? 'opportunity' : 'opportunities'}
           {selectedCategory !== 'ALL' && <span> in this category</span>}
         </p>
-        <div className="flex items-center gap-2 text-[11px] text-[#0B6E4F] font-medium">
+        <div className="flex items-center gap-2 text-xs text-[#0B6E4F] font-semibold">
           <ShieldCheck className="w-4 h-4 shrink-0 text-[#0B6E4F]" />
-          <span>Every opportunity backed by official source portal and last verification date</span>
+          <span>Every program verified directly with official ministerial &amp; accelerator portals</span>
         </div>
       </div>
 
       {/* ==================================================================== */}
-      {/* 3. OPPORTUNITIES GRID                                                */}
+      {/* 3. OPPORTUNITIES GRID (Clean 2-Column Readable Architecture)           */}
       {/* ==================================================================== */}
       {filteredItems.length === 0 ? (
-        <div className="bg-editorial-pure p-12 sm:p-16 text-center rounded-lg border border-editorial-hairline space-y-4 shadow-xs">
-          <div className="w-12 h-12 rounded-full bg-editorial-sand flex items-center justify-center mx-auto text-ink-muted">
+        <div className="bg-white p-12 sm:p-16 text-center rounded-xl border border-[#E2E8E4] space-y-4 shadow-xs">
+          <div className="w-12 h-12 rounded-full bg-[#F1F5F2] flex items-center justify-center mx-auto text-[#4B5563]">
             <Info className="w-6 h-6" />
           </div>
           <div className="space-y-1.5 max-w-md mx-auto">
-            <h3 className="font-heading font-bold text-lg text-ink-high">
+            <h3 className="font-heading font-bold text-lg text-[#111827]">
               No matching verified opportunities found
             </h3>
-            <p className="text-xs sm:text-sm text-ink-muted leading-relaxed">
+            <p className="text-sm text-[#4B5563] leading-relaxed">
               We did not find any opportunities matching your active combination of filters. Try broadening your criteria or reset the search filters.
             </p>
           </div>
           <button
             onClick={handleResetFilters}
-            className="inline-flex items-center gap-2 text-xs font-bold px-5 py-2.5 rounded-md bg-[#0B6E4F] text-white hover:bg-[#08533C] transition-all shadow-xs cursor-pointer"
+            className="inline-flex items-center gap-2 text-xs font-bold px-5 py-2.5 rounded-lg bg-[#0B6E4F] text-white hover:bg-[#08533C] transition-all shadow-xs cursor-pointer"
           >
             <span>Reset All Filters</span>
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredItems.map((item) => {
             const criteriaList = Array.isArray(item.eligibilityCriteria)
               ? (item.eligibilityCriteria as string[])
-              : [];
-            const benefitsList = Array.isArray(item.benefits)
-              ? (item.benefits as string[])
               : [];
 
             return (
               <article
                 key={item.id}
-                className="group bg-white rounded-lg border border-[#E2E8E4] hover:border-[#0B6E4F]/50 hover:shadow-md transition-all duration-200 p-5 sm:p-6 flex flex-col justify-between relative overflow-hidden"
+                className="group bg-white rounded-xl border border-[#E2E8E4] hover:border-[#0B6E4F]/40 hover:shadow-lg transition-all duration-200 p-6 flex flex-col justify-between relative"
               >
-                <div className="space-y-3.5">
-                  {/* Card Header: Organization, Pillar, & Status Badge */}
+                <div className="space-y-4">
+                  {/* Zone 1: Organization, Type & Status Ribbon */}
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-md bg-[#F1F5F2] flex items-center justify-center text-[#0A1F2C] shrink-0 border border-[#E2E8E4]">
-                        <Building2 className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <span className="text-xs font-bold text-[#111827] tracking-tight block">
-                          {item.organization}
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/20">
+                          {formatCategoryBadge(item.category)}
                         </span>
                         {item.categoryRel && (
                           <span
-                            className="text-[10px] uppercase font-bold tracking-wider inline-block"
+                            className="text-[11px] uppercase font-bold tracking-wider inline-block px-2 py-0.5 rounded-md bg-[#F1F5F2] border border-[#E2E8E4]"
                             style={{ color: item.categoryRel.color }}
                           >
                             {item.categoryRel.name}
                           </span>
                         )}
                       </div>
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-[#4B5563] pt-0.5">
+                        <Building2 className="w-3.5 h-3.5 text-[#0A1F2C]" />
+                        <span>{item.organization}</span>
+                      </div>
                     </div>
-                    <div>{renderDeadlineBadge(item.deadline, item.status, item.isExpired)}</div>
+                    <div className="shrink-0">{renderDeadlineBadge(item.deadline, item.status, item.isExpired)}</div>
                   </div>
 
-                  {/* Program Title */}
-                  <Link href={`/opportunity/${item.slug}`} className="block focus:outline-none focus:underline">
-                    <h3 className="font-heading font-black text-lg text-[#111827] group-hover:text-[#0B6E4F] leading-snug transition-colors">
+                  {/* Zone 2: Program Title */}
+                  <Link href={`/opportunity/${item.slug}`} className="block focus:outline-none focus:underline group/title">
+                    <h3 className="font-heading font-black text-xl text-[#111827] group-hover/title:text-[#0B6E4F] leading-snug transition-colors">
                       {item.title}
                     </h3>
                   </Link>
 
-                  {/* Capital Support & Terms Strip */}
-                  <div className="flex flex-wrap items-center gap-2 pt-0.5">
-                    {renderSupportBadge(item.fundingAmount, item.category)}
-                    {item.equityTaken && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-semibold bg-[#F1F5F2] text-[#111827] border border-[#E2E8E4]">
-                        {item.equityTaken}
-                      </span>
-                    )}
-                    {item.location && (
-                      <span className="text-[11px] text-[#4B5563]">
-                        • {item.location}
-                      </span>
-                    )}
+                  {/* Zone 3: Key Offer Strip (Capital / Support & Equity Terms) */}
+                  <div className="p-3.5 rounded-lg bg-[#F1F5F2] border border-[#E2E8E4] space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-bold text-[#111827]">
+                      <div className="w-6 h-6 rounded-md bg-[#E8F5EF] flex items-center justify-center shrink-0 text-[#0B6E4F]">
+                        <Coins className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="leading-tight">{item.fundingAmount || 'Non-Cash Advisory & Sandbox Framework'}</span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 text-xs pt-0.5">
+                      {item.equityTaken && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-bold bg-white text-[#0B6E4F] border border-[#0B6E4F]/30 shadow-2xs">
+                          <Check className="w-3 h-3 text-[#0B6E4F]" />
+                          <span>{item.equityTaken}</span>
+                        </span>
+                      )}
+                      {item.location && (
+                        <span className="inline-flex items-center gap-1 text-xs text-[#4B5563] bg-white px-2.5 py-0.5 rounded-md border border-[#E2E8E4]">
+                          <MapPin className="w-3 h-3 text-[#4B5563]" />
+                          <span>{item.location}</span>
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Description */}
-                  <p className="text-xs text-[#4B5563] leading-relaxed line-clamp-3">
+                  {/* Zone 4: Program Description */}
+                  <p className="text-sm text-[#374151] leading-relaxed line-clamp-2">
                     {item.description}
                   </p>
 
-                  {/* Eligibility / Benefits Preview Pills */}
+                  {/* Zone 5: Quick Checklist Pill */}
                   {criteriaList.length > 0 && (
-                    <div className="pt-1">
+                    <div className="pt-0.5">
                       <button
                         type="button"
                         onClick={() => setActiveModalItem(item)}
-                        className="text-xs text-[#0B6E4F] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#E8F5EF] hover:bg-[#D5EFE3] text-[#0B6E4F] text-xs font-bold transition-colors cursor-pointer border border-[#0B6E4F]/20"
                       >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>View eligibility &amp; benefits checklist ({criteriaList.length} criteria)</span>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#0B6E4F]" />
+                        <span>{criteriaList.length} Verified Prerequisites • View Checklist →</span>
                       </button>
                     </div>
                   )}
                 </div>
 
-                {/* Card Footer: Official Provenance & Actions */}
+                {/* Zone 6: Card Footer (Clear Provenance + Distinct Action Buttons) */}
                 <div className="pt-4 mt-5 border-t border-[#E2E8E4] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                  <div className="text-[11px] text-[#4B5563]">
-                    <div className="flex items-center gap-1">
-                      <span className="font-medium">Source:</span>
+                  <div className="text-xs text-[#4B5563] space-y-0.5">
+                    <div className="flex items-center gap-1 text-[11px]">
+                      <span className="font-medium text-[#4B5563]">Source:</span>
                       {item.sourceUrl ? (
                         <a
                           href={item.sourceUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#111827] hover:text-[#0B6E4F] hover:underline font-semibold inline-flex items-center gap-0.5"
+                          className="text-[#111827] hover:text-[#0B6E4F] hover:underline font-bold inline-flex items-center gap-0.5"
                         >
-                          <span>{item.sourceName}</span>
-                          <ExternalLink className="w-2.5 h-2.5" />
+                          <span className="truncate max-w-[200px]">{item.sourceName}</span>
+                          <ExternalLink className="w-2.5 h-2.5 shrink-0" />
                         </a>
                       ) : (
-                        <span className="font-semibold text-[#111827]">{item.sourceName}</span>
+                        <span className="font-bold text-[#111827] truncate max-w-[200px]">{item.sourceName}</span>
                       )}
                     </div>
-                    <span className="block text-[10px] text-slate-400 pt-0.5">
-                      Verified {formatDate(item.verifiedAt)}
+                    <span className="block text-[10px] text-slate-400">
+                      Audited {formatDate(item.verifiedAt)}
                       {item.verifiedBy && ` • ${item.verifiedBy}`}
                     </span>
                   </div>
@@ -640,7 +640,7 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
                   <div className="flex items-center gap-2 shrink-0">
                     <Link
                       href={`/opportunity/${item.slug}`}
-                      className="px-3.5 py-1.5 rounded-md border border-[#E2E8E4] bg-[#F1F5F2] hover:bg-[#E8F5EF] text-[#111827] font-semibold transition-colors text-xs"
+                      className="px-4 py-2 rounded-lg border border-[#E2E8E4] bg-[#F1F5F2] hover:bg-[#E8F5EF] text-[#111827] font-bold transition-colors text-xs"
                     >
                       Dossier
                     </Link>
@@ -648,7 +648,7 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
                       href={item.applicationUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-[#0B6E4F] hover:bg-[#08533C] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-xs"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#0B6E4F] hover:bg-[#08533C] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-xs"
                     >
                       <span>Apply</span>
                       <ExternalLink className="w-3 h-3" />
@@ -666,20 +666,20 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
       {/* ==================================================================== */}
       {activeModalItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1F2C]/70 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-lg border border-[#E2E8E4] shadow-2xl max-w-xl w-full p-6 space-y-5 animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-[#E2E8E4] shadow-2xl max-w-xl w-full p-6 sm:p-7 space-y-5 animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="flex items-start justify-between gap-4 pb-3 border-b border-[#E2E8E4]">
+            <div className="flex items-start justify-between gap-4 pb-4 border-b border-[#E2E8E4]">
               <div>
                 <span className="text-xs font-bold text-[#0B6E4F] uppercase tracking-wider block">
                   {activeModalItem.organization}
                 </span>
-                <h3 className="font-heading font-black text-xl text-[#111827]">
+                <h3 className="font-heading font-black text-xl text-[#111827] pt-1">
                   {activeModalItem.title}
                 </h3>
               </div>
               <button
                 onClick={() => setActiveModalItem(null)}
-                className="p-1.5 rounded-md text-[#4B5563] hover:text-[#111827] hover:bg-[#F1F5F2] transition-colors"
+                className="p-1.5 rounded-lg text-[#4B5563] hover:text-[#111827] hover:bg-[#F1F5F2] transition-colors cursor-pointer"
                 aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
@@ -687,29 +687,29 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
             </div>
 
             {/* Quick Metrics */}
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="p-3 rounded-md bg-[#F1F5F2] border border-[#E2E8E4]">
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3.5 rounded-lg bg-[#F1F5F2] border border-[#E2E8E4]">
                 <span className="text-[10px] uppercase font-bold text-[#4B5563] block">Support Value</span>
-                <span className="font-bold text-[#111827] pt-0.5 block">{activeModalItem.fundingAmount || 'Non-Cash Program'}</span>
+                <span className="font-bold text-sm text-[#111827] pt-0.5 block">{activeModalItem.fundingAmount || 'Non-Cash Program'}</span>
               </div>
-              <div className="p-3 rounded-md bg-[#F1F5F2] border border-[#E2E8E4]">
-                <span className="text-[10px] uppercase font-bold text-[#4B5563] block">Equity Taken</span>
-                <span className="font-bold text-[#111827] pt-0.5 block">{activeModalItem.equityTaken || '0%'}</span>
+              <div className="p-3.5 rounded-lg bg-[#F1F5F2] border border-[#E2E8E4]">
+                <span className="text-[10px] uppercase font-bold text-[#4B5563] block">Equity Terms</span>
+                <span className="font-bold text-sm text-[#0B6E4F] pt-0.5 block">{activeModalItem.equityTaken || '0% Equity'}</span>
               </div>
             </div>
 
             {/* Verified Benefits Package */}
             {Array.isArray(activeModalItem.benefits) && activeModalItem.benefits.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-[#111827] flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-[#C9A227]" />
+                  <Sparkles className="w-4 h-4 text-[#C9A227]" />
                   <span>Verified Founder Benefits Package</span>
                 </h4>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   {activeModalItem.benefits.map((b: string, idx: number) => (
-                    <div key={idx} className="flex items-start gap-2 text-xs text-[#111827] bg-[#F1F5F2] p-2.5 rounded-md border border-[#E2E8E4]">
-                      <span className="text-[#0B6E4F] font-bold mt-0.5">✦</span>
-                      <span>{b}</span>
+                    <div key={idx} className="flex items-start gap-2.5 text-xs text-[#111827] bg-[#F1F5F2] p-3 rounded-lg border border-[#E2E8E4]">
+                      <span className="text-[#0B6E4F] font-black mt-0.5">✦</span>
+                      <span className="leading-relaxed font-medium">{b}</span>
                     </div>
                   ))}
                 </div>
@@ -717,17 +717,17 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
             )}
 
             {/* Eligibility Criteria Checklist */}
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <h4 className="text-xs font-bold uppercase tracking-wider text-[#111827] flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#0B6E4F]" />
+                <CheckCircle2 className="w-4 h-4 text-[#0B6E4F]" />
                 <span>Eligibility Prerequisites</span>
               </h4>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {Array.isArray(activeModalItem.eligibilityCriteria) &&
                   activeModalItem.eligibilityCriteria.map((c: string, idx: number) => (
-                    <div key={idx} className="flex items-start gap-2 text-xs text-[#111827] bg-[#F1F5F2] p-2.5 rounded-md border border-[#E2E8E4]">
-                      <span className="text-[#0B6E4F] font-bold mt-0.5">✓</span>
-                      <span>{c}</span>
+                    <div key={idx} className="flex items-start gap-2.5 text-xs text-[#111827] bg-[#F1F5F2] p-3 rounded-lg border border-[#E2E8E4]">
+                      <span className="text-[#0B6E4F] font-black mt-0.5">✓</span>
+                      <span className="leading-relaxed font-medium">{c}</span>
                     </div>
                   ))}
               </div>
@@ -747,7 +747,7 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
                 href={activeModalItem.applicationUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md bg-[#0B6E4F] hover:bg-[#08533C] text-white font-bold text-xs uppercase tracking-wider transition-colors shadow-xs"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-[#0B6E4F] hover:bg-[#08533C] text-white font-bold text-xs uppercase tracking-wider transition-colors shadow-xs"
               >
                 <span>Apply on Official Portal</span>
                 <ExternalLink className="w-3.5 h-3.5" />
