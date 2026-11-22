@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Search, Menu, X, ArrowUpRight } from 'lucide-react';
+import { Menu, X, ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { NAV_LINKS, SITE_NAME, POPULAR_SEARCH_TAGS } from '@/lib/constants';
+import { NAV_LINKS, SITE_NAME } from '@/lib/constants';
 
 interface SiteHeaderProps {
   variant?: 'standard' | 'transparent-hero';
@@ -13,56 +13,23 @@ interface SiteHeaderProps {
 
 export const SiteHeader: React.FC<SiteHeaderProps> = ({ variant = 'standard' }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [livePreview, setLivePreview] = useState<{
-    startups: any[];
-    investors: any[];
-    opportunities: any[];
-  } | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const pathname = usePathname();
 
   const isTransparent = variant === 'transparent-hero';
 
-  // Global Keyboard Shortcuts (Cmd+K to search, Esc to close)
+  // Global Keyboard Shortcuts (Cmd+K navigates to Unified Search)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setSearchOpen((prev) => !prev);
-      } else if (e.key === 'Escape') {
-        setSearchOpen(false);
+        window.location.href = '/search';
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
-
-  // Live Instant Preview Suggestions
-  useEffect(() => {
-    if (!searchOpen || searchQuery.trim().length < 2) {
-      setLivePreview(null);
-      return;
-    }
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery.trim())}&limit=3`);
-        if (res.ok) {
-          const json = await res.json();
-          setLivePreview({
-            startups: json.startups?.slice(0, 2) || [],
-            investors: json.investors?.slice(0, 2) || [],
-            opportunities: json.opportunities?.slice(0, 2) || [],
-          });
-        }
-      } catch {
-        // silent fallback
-      }
-    }, 200);
-    return () => clearTimeout(timer);
-  }, [searchQuery, searchOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -81,13 +48,6 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ variant = 'standard' }) 
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isTransparent]);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}`;
-    }
-  };
 
   // ============================================================================
   // VARIANT A: TRANSPARENT OVER-HERO HEADER (Vision 2030 Style)
@@ -148,19 +108,8 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ variant = 'standard' }) 
             })}
           </nav>
 
-          {/* Right Utilities: Search & Subscribe CTA */}
+          {/* Right Utilities: Subscribe CTA */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 ml-auto pl-2">
-            {/* Integrated Search Button */}
-            <button
-              onClick={() => setSearchOpen(!searchOpen)}
-              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-sans text-white/85 hover:text-white bg-white/10 hover:bg-white/15 border border-white/20 rounded-xs transition-colors backdrop-blur-xs"
-              aria-label="Toggle search (Cmd+K)"
-            >
-              <Search className="w-3.5 h-3.5 text-white/85" />
-              <span className="hidden sm:inline text-[11px] font-medium">Search</span>
-              <kbd className="hidden md:inline-flex items-center text-[9px] px-1 py-0.2 rounded bg-white/15 text-white/70 font-mono">⌘K</kbd>
-            </button>
-
             {/* Subscribe Action Button */}
             <Link
               href="/newsletter"
@@ -179,108 +128,6 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ variant = 'standard' }) 
             </button>
           </div>
         </div>
-
-        {/* Collapsible Search Drawer — Sleek Dark Frosted Palette */}
-        {searchOpen && (
-          <div className="py-4 px-4 border-t border-white/10 bg-[#0e1828]/98 backdrop-blur-md animate-in fade-in duration-150">
-            <form onSubmit={handleSearchSubmit} className="relative max-w-2xl mx-auto space-y-2.5">
-              <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search Saudi startups, VCs, grants, ticket sizes, or tech (e.g. Tamara, NTDP, Mozn)..."
-                  className="w-full bg-white/10 border border-white/20 rounded-xs pl-10 pr-28 py-2 text-xs sm:text-sm text-white placeholder-white/50 focus:outline-none focus:border-brand-yellow transition-colors font-sans"
-                  autoFocus
-                />
-                <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                  <button
-                    type="submit"
-                    className="px-2.5 py-1 bg-brand-yellow text-xs font-bold text-ink-high rounded-xs hover:bg-brand-yellow-hover transition-colors font-sans uppercase tracking-wider"
-                  >
-                    Search
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSearchOpen(false)}
-                    className="p-1 text-white/70 hover:text-white rounded-xs"
-                    aria-label="Close search"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Instant Live Results Preview */}
-              {livePreview && (livePreview.startups.length > 0 || livePreview.investors.length > 0 || livePreview.opportunities.length > 0) && (
-                <div className="bg-white/10 rounded border border-white/15 p-2.5 space-y-1.5 text-xs animate-in fade-in">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-white/60">
-                    Instant Suggestions
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {livePreview.startups.map((s) => (
-                      <Link
-                        key={s.id}
-                        href={`/startup/${s.slug}`}
-                        onClick={() => setSearchOpen(false)}
-                        className="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-white flex items-center gap-1 transition-colors text-[11px]"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-brand-teal" />
-                        <span className="font-semibold">{s.name}</span>
-                        <span className="text-[10px] text-white/60">({s.stage})</span>
-                      </Link>
-                    ))}
-                    {livePreview.investors.map((inv) => (
-                      <Link
-                        key={inv.id}
-                        href={`/investor/${inv.slug}`}
-                        onClick={() => setSearchOpen(false)}
-                        className="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-white flex items-center gap-1 transition-colors text-[11px]"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-brand-yellow" />
-                        <span className="font-semibold">{inv.name}</span>
-                        <span className="text-[10px] text-white/60">(Investor)</span>
-                      </Link>
-                    ))}
-                    {livePreview.opportunities.map((opp) => (
-                      <Link
-                        key={opp.id}
-                        href={`/opportunity/${opp.slug}`}
-                        onClick={() => setSearchOpen(false)}
-                        className="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-white flex items-center gap-1 transition-colors text-[11px]"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#39765B]" />
-                        <span className="font-semibold truncate max-w-[140px]">{opp.title}</span>
-                        <span className="text-[10px] text-white/60">(Grant)</span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Popular Search Tags */}
-              <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-white/60 font-sans mr-1">
-                  Topics:
-                </span>
-                {POPULAR_SEARCH_TAGS.map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => {
-                      setSearchQuery(tag);
-                      window.location.href = `/search?q=${encodeURIComponent(tag)}`;
-                    }}
-                    className="text-[11px] font-sans px-2 py-0.5 rounded-xs bg-white/10 text-white/80 hover:text-white hover:bg-white/15 border border-white/15 transition-colors"
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            </form>
-          </div>
-        )}
 
         {/* Mobile Drawer Navigation — Sleek Dark Glass Panel */}
         {mobileMenuOpen && (
@@ -430,19 +277,8 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ variant = 'standard' }) 
             })}
           </nav>
 
-          {/* Right Utilities: Search & Subscribe */}
+          {/* Right Utilities: Subscribe */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 ml-auto pl-2">
-            {/* Integrated Search Button */}
-            <button
-              onClick={() => setSearchOpen(!searchOpen)}
-              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-sans text-[#4B5563] hover:text-[#111827] bg-[#F1F5F2] hover:bg-[#E7EFE9] border border-[#E2E8E4] rounded-md transition-editorial"
-              aria-label="Toggle search (Cmd+K)"
-            >
-              <Search className="w-3.5 h-3.5 text-[#4B5563]" />
-              <span className="hidden sm:inline text-[11px] font-medium">Search</span>
-              <kbd className="hidden md:inline-flex items-center text-[9px] px-1 py-0.2 rounded bg-white text-[#4B5563] border border-[#E2E8E4] font-mono">⌘K</kbd>
-            </button>
-
             {/* Subscribe Action Button */}
             <Link
               href="/newsletter"
@@ -461,108 +297,6 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ variant = 'standard' }) 
             </button>
           </div>
         </div>
-
-        {/* Collapsible Search Drawer */}
-        {searchOpen && (
-          <div className="py-4 px-4 border-t border-[#E2E8E4] bg-[#F1F5F2]/95 backdrop-blur-md animate-in fade-in duration-150">
-            <form onSubmit={handleSearchSubmit} className="relative max-w-2xl mx-auto space-y-2.5">
-              <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search Saudi startups, VCs, grants, ticket sizes, or tech (e.g. Tamara, NTDP, Mozn)..."
-                  className="w-full bg-white border border-[#E2E8E4] rounded-md pl-10 pr-28 py-2 text-xs sm:text-sm text-[#111827] placeholder-[#4B5563]/70 focus:outline-none focus:border-[#0B6E4F] focus:ring-1 focus:ring-[#0B6E4F] transition-editorial font-sans"
-                  autoFocus
-                />
-                <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                  <button
-                    type="submit"
-                    className="px-2.5 py-1 bg-[#0B6E4F] text-xs font-bold text-white rounded-md hover:bg-[#08533C] transition-editorial font-sans uppercase tracking-wider"
-                  >
-                    Search
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSearchOpen(false)}
-                    className="p-1 text-[#4B5563] hover:text-[#111827] rounded-md"
-                    aria-label="Close search"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Instant Live Results Preview */}
-              {livePreview && (livePreview.startups.length > 0 || livePreview.investors.length > 0 || livePreview.opportunities.length > 0) && (
-                <div className="bg-white rounded-md border border-[#E2E8E4] p-2.5 space-y-1.5 text-xs shadow-xs animate-in fade-in">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
-                    Instant Suggestions
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {livePreview.startups.map((s) => (
-                      <Link
-                        key={s.id}
-                        href={`/startup/${s.slug}`}
-                        onClick={() => setSearchOpen(false)}
-                        className="px-2 py-0.5 rounded bg-[#F1F5F2] hover:bg-[#E8F5EF] text-[#111827] flex items-center gap-1 transition-colors text-[11px]"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#19B5A3]" />
-                        <span className="font-semibold">{s.name}</span>
-                        <span className="text-[10px] text-[#4B5563]">({s.stage})</span>
-                      </Link>
-                    ))}
-                    {livePreview.investors.map((inv) => (
-                      <Link
-                        key={inv.id}
-                        href={`/investor/${inv.slug}`}
-                        onClick={() => setSearchOpen(false)}
-                        className="px-2 py-0.5 rounded bg-[#F1F5F2] hover:bg-[#FDF8EC] text-[#111827] flex items-center gap-1 transition-colors text-[11px]"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#C9A227]" />
-                        <span className="font-semibold">{inv.name}</span>
-                        <span className="text-[10px] text-[#4B5563]">(Investor)</span>
-                      </Link>
-                    ))}
-                    {livePreview.opportunities.map((opp) => (
-                      <Link
-                        key={opp.id}
-                        href={`/opportunity/${opp.slug}`}
-                        onClick={() => setSearchOpen(false)}
-                        className="px-2 py-0.5 rounded bg-[#F1F5F2] hover:bg-[#E8F5EF] text-[#111827] flex items-center gap-1 transition-colors text-[11px]"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#0B6E4F]" />
-                        <span className="font-semibold truncate max-w-[140px]">{opp.title}</span>
-                        <span className="text-[10px] text-[#4B5563]">(Grant)</span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Popular Search Tags */}
-              <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563] font-sans mr-1">
-                  Topics:
-                </span>
-                {POPULAR_SEARCH_TAGS.map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => {
-                      setSearchQuery(tag);
-                      window.location.href = `/search?q=${encodeURIComponent(tag)}`;
-                    }}
-                    className="text-[11px] font-sans px-2 py-0.5 rounded-xs bg-white text-[#4B5563] hover:text-[#0B6E4F] border border-[#E2E8E4] transition-editorial"
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            </form>
-          </div>
-        )}
 
         {/* Mobile Drawer Navigation */}
         {mobileMenuOpen && (

@@ -66,6 +66,11 @@ export const SiteFooter: React.FC = () => {
             </h3>
             <ul className="space-y-2.5 text-xs sm:text-sm font-sans">
               <li>
+                <Link href="/search" className="text-slate-300 hover:text-white transition-colors">
+                  Unified Search
+                </Link>
+              </li>
+              <li>
                 <Link href="/about" className="text-slate-300 hover:text-white transition-colors">
                   About the Journal
                 </Link>

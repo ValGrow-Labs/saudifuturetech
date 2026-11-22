@@ -2,15 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { 
-  Search, 
-  Sparkles, 
-  Coins, 
-  Building2, 
-  ArrowRight,
-  TrendingUp,
-} from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import {
   SceneS1,
   SceneS2,
@@ -59,15 +51,6 @@ const SLIDES: SlideItem[] = [
   },
 ];
 
-const TYPEWRITER_TERMS = [
-  'NTDP MVPLab',
-  'SAMA Sandbox',
-  'Mozn AI',
-  'The Garage Seed Cohort',
-  'Saudi fintech startups',
-  'Active KSA VCs',
-];
-
 const SLIDE_DURATION_MS = 7000;
 
 export const FounderCommandHero: React.FC<FounderCommandHeroProps> = ({
@@ -75,10 +58,7 @@ export const FounderCommandHero: React.FC<FounderCommandHeroProps> = ({
   startupsCount = 8,
   pillarsCount = 6,
 }) => {
-  const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [typewriterText, setTypewriterText] = useState('');
 
   // Animated count-up states
   const [activeCount, setActiveCount] = useState(0);
@@ -106,41 +86,7 @@ export const FounderCommandHero: React.FC<FounderCommandHeroProps> = ({
     };
   }, [goToSlide]);
 
-  // 2. Typewriter Search Placeholder Effect
-  useEffect(() => {
-    let termIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    let timeoutId: NodeJS.Timeout;
-
-    const tick = () => {
-      const currentTerm = TYPEWRITER_TERMS[termIndex];
-
-      if (!isDeleting && charIndex <= currentTerm.length) {
-        setTypewriterText(currentTerm.slice(0, charIndex));
-        charIndex++;
-        if (charIndex > currentTerm.length) {
-          isDeleting = true;
-          timeoutId = setTimeout(tick, 1400); // pause on full term
-          return;
-        }
-      } else if (isDeleting && charIndex > 0) {
-        setTypewriterText(currentTerm.slice(0, charIndex));
-        charIndex--;
-      } else {
-        isDeleting = false;
-        termIndex = (termIndex + 1) % TYPEWRITER_TERMS.length;
-        charIndex = 0;
-      }
-
-      timeoutId = setTimeout(tick, isDeleting ? 40 : 80);
-    };
-
-    timeoutId = setTimeout(tick, 500);
-    return () => clearTimeout(timeoutId);
-  }, []);
-
-  // 3. Count-up Animation Effect for Verified Metrics
+  // 2. Count-up Animation Effect for Verified Metrics
   useEffect(() => {
     const duration = 1200; // 1.2s
     const steps = 24;
@@ -163,13 +109,6 @@ export const FounderCommandHero: React.FC<FounderCommandHeroProps> = ({
 
     return () => clearInterval(timer);
   }, [opportunitiesCount, startupsCount, pillarsCount]);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
 
   const renderSceneFallback = (scene: SlideItem['scene']) => {
     switch (scene) {
@@ -278,66 +217,15 @@ export const FounderCommandHero: React.FC<FounderCommandHeroProps> = ({
             </p>
           </div>
 
-          {/* 3. Global Command Search Bar with Typewriter Placeholder */}
-          <div className="max-w-2xl mx-auto w-full pt-1">
-            <form
-              onSubmit={handleSearchSubmit}
-              className="flex flex-col sm:flex-row items-center gap-2 p-1.5 bg-white/95 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-2xl border border-white/40 focus-within:ring-2 focus-within:ring-[#c4a265] transition-all"
+          {/* 3. Centered Explore Button — Redirects to Unified Search */}
+          <div className="pt-2 sm:pt-4 flex items-center justify-center">
+            <Link
+              href="/search"
+              className="inline-flex items-center justify-center gap-3 px-8 sm:px-10 py-3.5 sm:py-4 rounded-xl bg-brand-navy hover:bg-[#0B6E4F] text-white font-heading font-bold text-xs sm:text-sm uppercase tracking-widest border border-white/20 hover:border-[#C9A227]/70 shadow-2xl hover:shadow-[0_0_25px_rgba(11,110,79,0.4)] transition-all duration-200 group hover:scale-[1.02] active:scale-[0.98]"
             >
-              <div className="relative flex-1 w-full flex items-center pl-3">
-                <Search className="w-4 h-4 sm:w-5 sm:h-5 text-brand-navy shrink-0 mr-2" />
-                <input
-                  type="text"
-                  placeholder={`Search grants, startups, or VCs (e.g. ${typewriterText}|)`}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full py-2.5 sm:py-3 text-xs sm:text-sm bg-transparent text-brand-navy placeholder:text-slate-500 font-sans focus:outline-none"
-                  aria-label="Search verified intelligence"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full sm:w-auto px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl bg-brand-navy hover:bg-brand-oasis text-white font-heading font-bold text-xs uppercase tracking-wider transition-all shadow-md shrink-0 flex items-center justify-center gap-2 group"
-              >
-                <span>Explore</span>
-                <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-              </button>
-            </form>
-
-            {/* Quick Filter Shortcuts */}
-            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 pt-3 text-xs">
-              <span className="text-[10px] sm:text-[11px] font-bold text-white/70 uppercase tracking-widest mr-1">
-                Quick Shortcuts:
-              </span>
-              <Link
-                href="/opportunities"
-                className="px-2.5 py-1 rounded-full bg-white/15 hover:bg-[#c4a265] hover:text-brand-navy text-white text-[11px] sm:text-xs font-medium border border-white/20 backdrop-blur-md transition-all flex items-center gap-1.5 shadow-xs"
-              >
-                <Coins className="w-3 h-3 text-[#f3dfae]" />
-                <span>NTDP MVPLab</span>
-              </Link>
-              <Link
-                href="/opportunities"
-                className="px-2.5 py-1 rounded-full bg-white/15 hover:bg-[#c4a265] hover:text-brand-navy text-white text-[11px] sm:text-xs font-medium border border-white/20 backdrop-blur-md transition-all flex items-center gap-1.5 shadow-xs"
-              >
-                <Sparkles className="w-3 h-3 text-[#8fd3a6]" />
-                <span>The Garage Seed Cohort</span>
-              </Link>
-              <Link
-                href="/startups"
-                className="px-2.5 py-1 rounded-full bg-white/15 hover:bg-[#c4a265] hover:text-brand-navy text-white text-[11px] sm:text-xs font-medium border border-white/20 backdrop-blur-md transition-all flex items-center gap-1.5 shadow-xs"
-              >
-                <Building2 className="w-3 h-3 text-[#8fe2db]" />
-                <span>Verified Saudi Startups</span>
-              </Link>
-              <Link
-                href="/funding"
-                className="px-2.5 py-1 rounded-full bg-white/15 hover:bg-[#c4a265] hover:text-brand-navy text-white text-[11px] sm:text-xs font-medium border border-white/20 backdrop-blur-md transition-all flex items-center gap-1.5 shadow-xs"
-              >
-                <TrendingUp className="w-3 h-3 text-white" />
-                <span>Active KSA VCs</span>
-              </Link>
-            </div>
+              <span>Explore</span>
+              <ArrowRight className="w-4 h-4 text-[#C9A227] transition-transform duration-200 group-hover:translate-x-1" />
+            </Link>
           </div>
         </div>
 
