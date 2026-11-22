@@ -19,18 +19,9 @@ export const SiteFooter: React.FC = () => {
               </span>
             </Link>
 
-            <div className="space-y-0.5">
-              <p className="font-serif italic text-xs text-[#C9A227]">
-                &ldquo;{SITE_TAGLINE}&rdquo;
-              </p>
-              <p
-                lang="ar"
-                dir="rtl"
-                className="font-arabic text-xs text-[#C9A227]/80 font-normal"
-              >
-                ذكاء تشغيلي للمؤسسين
-              </p>
-            </div>
+            <p className="font-serif italic text-xs text-[#C9A227]">
+              &ldquo;{SITE_TAGLINE}&rdquo;
+            </p>
 
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-md">
               {SITE_DESCRIPTION}
