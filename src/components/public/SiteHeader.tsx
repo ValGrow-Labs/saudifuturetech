@@ -11,6 +11,16 @@ interface SiteHeaderProps {
   variant?: 'standard' | 'transparent-hero';
 }
 
+const isRouteActive = (pathname: string, href: string) => {
+  if (href === '/') return pathname === '/';
+  if (href === '/opportunities') return pathname === '/opportunities' || pathname.startsWith('/opportunity');
+  if (href === '/startups') return pathname === '/startups' || pathname.startsWith('/startup');
+  if (href === '/funding') return pathname === '/funding' || pathname.startsWith('/investor');
+  if (href === '/insights') return pathname === '/insights';
+  if (href === '/latest') return pathname === '/latest' || pathname === '/news' || pathname.startsWith('/article');
+  return pathname === href;
+};
+
 export const SiteHeader: React.FC<SiteHeaderProps> = ({ variant = 'standard' }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -192,77 +202,78 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ variant = 'standard' }) 
   }
 
   // ============================================================================
-  // VARIANT B: REFINED COMPACT HEADER FOR FOUNDER DIRECTORIES & WIRE
+  // VARIANT B: REFINED COMPACT FIXED HEADER FOR FOUNDER DIRECTORIES & WIRE
   // Warm white background, Deep Saudi green active states, Desert gold accents
-  // Single compact bar (~56px) so directory content is immediately visible
+  // Fixed permanently to the top of viewport with smooth backdrop blur
   // ============================================================================
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#FAF9F6]/95 backdrop-blur-md border-b border-[#E2E8E4] shadow-xs transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 h-14 sm:h-16">
-        {/* Brand Identity / Logo */}
-        <Link
-          href="/"
-          className="flex flex-col group focus:outline-none shrink-0"
-        >
-          <span className="font-serif font-black text-lg sm:text-xl tracking-tight text-[#111827] group-hover:text-[#0B6E4F] transition-editorial leading-none">
-            {SITE_NAME}
-          </span>
-          <span className="font-sans text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#C9A227] pt-0.5 leading-tight">
-            Founder Operating Intelligence
-          </span>
-        </Link>
-
-        {/* Desktop Categories Navigation */}
-        <nav
-          className="hidden lg:flex items-center gap-1 sm:gap-2 xl:gap-3 justify-center flex-1 overflow-x-auto min-w-0"
-          aria-label="Main Navigation"
-        >
-          {NAV_LINKS.map((link) => {
-            const isActive = pathname === link.href;
-            const hasBadge = 'badge' in link && Boolean(link.badge);
-
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold font-sans uppercase tracking-wider transition-editorial whitespace-nowrap border-b-2 shrink-0',
-                  isActive
-                    ? 'text-[#0B6E4F] font-bold border-[#0B6E4F]'
-                    : 'text-[#4B5563] hover:text-[#111827] border-transparent hover:border-[#C9A227]/40'
-                )}
-              >
-                <span>{link.label}</span>
-                {hasBadge && (
-                  <span className="inline-flex items-center px-1.5 py-0.5 text-[9px] font-bold font-sans tracking-wide uppercase rounded-full bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/20">
-                    {link.badge}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Right Utilities: Subscribe */}
-        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 ml-auto pl-2">
-          {/* Subscribe Action Button */}
+    <>
+      <header className="fixed top-0 left-0 right-0 z-50 w-full bg-[#FAF9F6]/95 backdrop-blur-md border-b border-[#E2E8E4] shadow-xs transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 h-14 sm:h-16">
+          {/* Brand Identity / Logo */}
           <Link
-            href="/newsletter"
-            className="text-xs font-bold font-sans px-3.5 py-1.5 rounded-md bg-[#0B6E4F] text-white hover:bg-[#08533C] transition-editorial shadow-xs uppercase tracking-wider"
+            href="/"
+            className="flex flex-col group focus:outline-none shrink-0"
           >
-            Subscribe
+            <span className="font-serif font-black text-lg sm:text-xl tracking-tight text-[#111827] group-hover:text-[#0B6E4F] transition-editorial leading-none">
+              {SITE_NAME}
+            </span>
+            <span className="font-sans text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#C9A227] pt-0.5 leading-tight">
+              Founder Operating Intelligence
+            </span>
           </Link>
 
-          {/* Mobile Menu Toggle Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-1.5 text-[#4B5563] hover:text-[#111827] transition-editorial ml-1"
-            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+          {/* Desktop Categories Navigation */}
+          <nav
+            className="hidden lg:flex items-center gap-1 sm:gap-2 xl:gap-3 justify-center flex-1 overflow-x-auto min-w-0"
+            aria-label="Main Navigation"
           >
-            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-          </button>
+            {NAV_LINKS.map((link) => {
+              const isActive = isRouteActive(pathname, link.href);
+              const hasBadge = 'badge' in link && Boolean(link.badge);
+
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold font-sans uppercase tracking-wider transition-editorial whitespace-nowrap border-b-2 shrink-0',
+                    isActive
+                      ? 'text-[#0B6E4F] font-bold border-[#0B6E4F]'
+                      : 'text-[#4B5563] hover:text-[#111827] border-transparent hover:border-[#C9A227]/40'
+                  )}
+                >
+                  <span>{link.label}</span>
+                  {hasBadge && (
+                    <span className="inline-flex items-center px-1.5 py-0.5 text-[9px] font-bold font-sans tracking-wide uppercase rounded-full bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/20">
+                      {link.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Right Utilities: Subscribe */}
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 ml-auto pl-2">
+            {/* Subscribe Action Button */}
+            <Link
+              href="/newsletter"
+              className="text-xs font-bold font-sans px-3.5 py-1.5 rounded-md bg-[#0B6E4F] text-white hover:bg-[#08533C] transition-editorial shadow-xs uppercase tracking-wider"
+            >
+              Subscribe
+            </Link>
+
+            {/* Mobile Menu Toggle Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-1.5 text-[#4B5563] hover:text-[#111827] transition-editorial ml-1"
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            >
+              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
-      </div>
 
         {/* Mobile Drawer Navigation */}
         {mobileMenuOpen && (
@@ -273,7 +284,7 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ variant = 'standard' }) 
               </span>
               {NAV_LINKS.map((link) => {
                 const hasBadge = 'badge' in link && Boolean(link.badge);
-                const isActive = pathname === link.href;
+                const isActive = isRouteActive(pathname, link.href);
                 return (
                   <Link
                     key={link.href}
@@ -332,6 +343,9 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ variant = 'standard' }) 
             aria-hidden="true"
           />
         )}
-    </header>
+      </header>
+      {/* Spacer to prevent fixed header from overlapping top content */}
+      <div className="h-14 sm:h-16 w-full shrink-0" aria-hidden="true" />
+    </>
   );
 };
