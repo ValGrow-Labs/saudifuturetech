@@ -224,8 +224,12 @@ export const FounderCommandHero: React.FC<FounderCommandHeroProps> = ({
                 Powered by verified intelligence.
               </span>
             </h1>
-            <p className="text-xs sm:text-sm lg:text-base text-white/85 leading-relaxed max-w-2xl mx-auto font-sans pt-0.5">
-              The verified intelligence platform helping founders discover non-dilutive grants, navigate venture capital, explore emerging technology, and make high-conviction decisions in Saudi Arabia.
+            <p
+              lang="ar"
+              dir="rtl"
+              className="text-xs sm:text-sm lg:text-base text-white/90 leading-relaxed max-w-2xl mx-auto font-arabic pt-1 tracking-normal"
+            >
+              منصة استخباراتية موثوقة تدعم رواد الأعمال في اكتشاف المنح والتمويل غير القائم على التنازل عن حصص الملكية، والتواصل مع مستثمري رأس المال الجريء، واستكشاف التقنيات الناشئة، واتخاذ قرارات استراتيجية مدروسة لتعزيز نمو أعمالهم في المملكة العربية السعودية.
             </p>
           </div>
 
