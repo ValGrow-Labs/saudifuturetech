@@ -2,31 +2,14 @@
 
 import React, { useState, useTransition, useMemo } from 'react';
 import Link from 'next/link';
-import { 
-  Building2, 
-  ShieldCheck, 
-  ShieldAlert, 
-  ExternalLink, 
-  Trash2, 
-  Loader2, 
-  Check, 
-  X,
-  Code2,
-  Search,
-  Filter,
-  Plus,
-  Edit2,
-  Eye,
-  Calendar,
-  MapPin,
-  Sparkles,
-  CheckCircle2,
-  Coins,
-  Package
-} from 'lucide-react';
 import { formatDate, cn } from '@/lib/utils';
-import { 
-  toggleStartupVerifiedAction, 
+import { stageLabel, businessModelLabel } from '@/lib/labels';
+import { PageHeading } from '@/components/ui/PageHeading';
+import { StatCard } from '@/components/ui/StatCard';
+import { Button } from '@/components/ui/Button';
+import { StatusDot, Note, type Tone } from '@/components/ui/StatusDot';
+import {
+  toggleStartupVerifiedAction,
   toggleStartupPublishAction,
   verifyStartupCRAction,
   saveStartupAction,
@@ -194,11 +177,11 @@ export const StartupManager: React.FC<StartupManagerProps> = ({ startups, catego
 
       const res = await saveStartupAction(payload, editingStartup?.id);
       if (res.success) {
-        setActiveMessage(editingStartup ? `Successfully updated "${formData.name}".` : `Successfully created "${formData.name}".`);
+        setActiveMessage(editingStartup ? `Saved "${formData.name}".` : `Created "${formData.name}".`);
         setErrorMessage(null);
         setIsModalOpen(false);
       } else {
-        setErrorMessage(res.error || 'Failed to save startup dossier.');
+        setErrorMessage(res.error || "We couldn't save this startup. Try again.");
       }
     });
   };
@@ -207,10 +190,10 @@ export const StartupManager: React.FC<StartupManagerProps> = ({ startups, catego
     startTransition(async () => {
       const res = await verifyStartupCRAction(id, undefined, currentUrl);
       if (res.success) {
-        setActiveMessage(`CR audit verified for "${name}". Timestamp and auditor credentials recorded.`);
+        setActiveMessage(`Marked the CR for "${name}" as confirmed.`);
         setErrorMessage(null);
       } else {
-        setErrorMessage(res.error || 'Failed to verify CR.');
+        setErrorMessage(res.error || "We couldn't update the registration. Try again.");
       }
     });
   };
@@ -219,695 +202,581 @@ export const StartupManager: React.FC<StartupManagerProps> = ({ startups, catego
     startTransition(async () => {
       const res = await toggleStartupPublishAction(id);
       if (res.success) {
-        setActiveMessage(`Toggled publication status for "${name}".`);
+        setActiveMessage(`Changed visibility of "${name}".`);
         setErrorMessage(null);
       } else {
-        setErrorMessage(res.error || 'Failed to update publication status.');
+        setErrorMessage(res.error || "We couldn't change visibility. Try again.");
       }
     });
   };
 
   const handleDelete = (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to permanently delete "${name}" from the Saudi Tech Directory?`)) return;
+    if (!confirm(`Delete "${name}" from the directory? This cannot be undone.`)) return;
     startTransition(async () => {
       const res = await deleteStartupAction(id);
       if (res.success) {
-        setActiveMessage(`Permanently removed "${name}".`);
+        setActiveMessage(`Deleted "${name}".`);
         setErrorMessage(null);
       } else {
-        setErrorMessage(res.error || 'Failed to delete startup.');
+        setErrorMessage(res.error || "We couldn't delete this startup. Try again.");
       }
     });
   };
 
-  const formatStage = (st: string) => {
-    switch (st) {
-      case 'PRE_SEED':
-        return 'Pre-Seed';
-      case 'SEED':
-        return 'Seed';
-      case 'SERIES_A':
-        return 'Series A';
-      case 'SERIES_B':
-        return 'Series B';
-      case 'SERIES_C':
-        return 'Series C+';
-      case 'GROWTH':
-        return 'Growth / Scale';
-      case 'BOOTSTRAPPED':
-        return 'Bootstrapped';
-      default:
-        return st;
-    }
-  };
+  const stageOptions = ['BOOTSTRAPPED', 'PRE_SEED', 'SEED', 'SERIES_A', 'SERIES_B', 'SERIES_C', 'GROWTH'];
 
   return (
-    <div className="space-y-6 font-sans">
-      {/* 1. Header Metrics Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-editorial-pure p-4 rounded-lg border border-editorial-hairline shadow-2xs">
-          <span className="text-[10px] uppercase font-bold text-ink-muted block tracking-wider">
-            Total Ventures
-          </span>
-          <span className="text-xl font-heading font-black text-ink-high block pt-1">
-            {totalCount}
-          </span>
-          <span className="text-[11px] text-ink-faint block">
-            Saudi Tech Registry
-          </span>
-        </div>
+    <div className="space-y-6">
+      <PageHeading
+        title="Startups"
+        description="Saudi companies listed in the startup directory, with their registration and source details."
+      >
+        <Button type="button" onClick={handleOpenCreateModal}>
+          Add startup
+        </Button>
+      </PageHeading>
 
-        <div className="bg-editorial-pure p-4 rounded-lg border border-editorial-hairline shadow-2xs">
-          <span className="text-[10px] uppercase font-bold text-ink-muted block tracking-wider">
-            CR Audited (MoC)
-          </span>
-          <span className="text-xl font-heading font-black text-brand-oasis block pt-1">
-            {crVerifiedCount} / {totalCount}
-          </span>
-          <span className="text-[11px] text-ink-faint block">
-            Verified Wathiq Records
-          </span>
-        </div>
-
-        <div className="bg-editorial-pure p-4 rounded-lg border border-editorial-hairline shadow-2xs">
-          <span className="text-[10px] uppercase font-bold text-ink-muted block tracking-wider">
-            Publicly Live
-          </span>
-          <span className="text-xl font-heading font-black text-brand-navy block pt-1">
-            {publishedCount}
-          </span>
-          <span className="text-[11px] text-ink-faint block">
-            Active Directory Index
-          </span>
-        </div>
-
-        <div className="bg-editorial-pure p-4 rounded-lg border border-editorial-hairline shadow-2xs">
-          <span className="text-[10px] uppercase font-bold text-ink-muted block tracking-wider">
-            Sovereign Pillars
-          </span>
-          <span className="text-xl font-heading font-black text-brand-desertGold block pt-1">
-            6 Desks
-          </span>
-          <span className="text-[11px] text-ink-faint block">
-            Vision 2030 Aligned
-          </span>
-        </div>
+      <div className="grid grid-cols-3 gap-x-8 gap-y-6 max-w-2xl">
+        <StatCard label="Listed" value={String(totalCount)} change="" trend="neutral" description="" />
+        <StatCard label="CR confirmed" value={`${crVerifiedCount}/${totalCount}`} change="" trend="neutral" description="" />
+        <StatCard label="Published" value={String(publishedCount)} change="" trend="neutral" description="" />
       </div>
 
-      {/* 2. Feedback Toasts */}
       {activeMessage && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-md flex items-center justify-between shadow-2xs">
-          <span className="flex items-center gap-1.5 font-medium">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span>{activeMessage}</span>
-          </span>
-          <button onClick={() => setActiveMessage(null)} className="text-emerald-700 font-bold ml-2">✕</button>
-        </div>
+        <Note tone="success" onDismiss={() => setActiveMessage(null)}>
+          {activeMessage}
+        </Note>
       )}
-      {errorMessage && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-800 text-xs rounded-md flex items-center justify-between shadow-2xs">
-          <span className="flex items-center gap-1.5 font-medium">
-            <X className="w-4 h-4 text-red-600" />
-            <span>{errorMessage}</span>
-          </span>
-          <button onClick={() => setErrorMessage(null)} className="text-red-700 font-bold ml-2">✕</button>
-        </div>
+      {errorMessage && !isModalOpen && (
+        <Note tone="error" onDismiss={() => setErrorMessage(null)}>
+          {errorMessage}
+        </Note>
       )}
 
-      {/* 3. Search and Action Strip */}
-      <div className="bg-editorial-pure p-4 rounded-lg border border-editorial-hairline shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
-            <input
-              type="text"
-              placeholder="Search by venture name, tagline, or headquarters city..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 text-xs bg-editorial-sand/40 border border-editorial-hairline rounded-md text-ink-high placeholder:text-ink-muted focus:outline-none focus:ring-1 focus:ring-brand-oasis"
-            />
-          </div>
-
-          <button
-            onClick={handleOpenCreateModal}
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-md bg-brand-navy hover:bg-brand-navy/90 text-white font-heading font-bold text-xs uppercase tracking-wider transition-all shrink-0 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add New Startup</span>
-          </button>
+      {/* Filters */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_repeat(4,minmax(0,1fr))] gap-3">
+        <div>
+          <label htmlFor="su-search" className="field-label">
+            Search
+          </label>
+          <input
+            id="su-search"
+            type="search"
+            placeholder="Name, tagline or city"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="field"
+          />
         </div>
-
-        {/* Dropdown Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2 border-t border-editorial-hairline text-xs">
-          <div>
-            <label className="text-[10px] uppercase font-bold text-ink-muted block mb-1">
-              Sector / Pillar
-            </label>
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full bg-editorial-sand/60 border border-editorial-hairline rounded-md px-2.5 py-1.5 text-xs text-ink-high focus:outline-none"
-            >
-              <option value="ALL">All Sectors</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="text-[10px] uppercase font-bold text-ink-muted block mb-1">
-              Funding Stage
-            </label>
-            <select
-              value={stageFilter}
-              onChange={(e) => setStageFilter(e.target.value)}
-              className="w-full bg-editorial-sand/60 border border-editorial-hairline rounded-md px-2.5 py-1.5 text-xs text-ink-high focus:outline-none"
-            >
-              <option value="ALL">All Stages</option>
-              <option value="BOOTSTRAPPED">Bootstrapped</option>
-              <option value="PRE_SEED">Pre-Seed</option>
-              <option value="SEED">Seed</option>
-              <option value="SERIES_A">Series A</option>
-              <option value="SERIES_B">Series B</option>
-              <option value="SERIES_C">Series C+</option>
-              <option value="GROWTH">Growth</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="text-[10px] uppercase font-bold text-ink-muted block mb-1">
-              CR Verification State
-            </label>
-            <select
-              value={crFilter}
-              onChange={(e) => setCrFilter(e.target.value)}
-              className="w-full bg-editorial-sand/60 border border-editorial-hairline rounded-md px-2.5 py-1.5 text-xs text-ink-high focus:outline-none"
-            >
-              <option value="ALL">All Records</option>
-              <option value="VERIFIED">CR Audited (MoC Wathiq)</option>
-              <option value="UNVERIFIED">Awaiting Audit</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="text-[10px] uppercase font-bold text-ink-muted block mb-1">
-              Publication State
-            </label>
-            <select
-              value={publishFilter}
-              onChange={(e) => setPublishFilter(e.target.value)}
-              className="w-full bg-editorial-sand/60 border border-editorial-hairline rounded-md px-2.5 py-1.5 text-xs text-ink-high focus:outline-none"
-            >
-              <option value="ALL">All States</option>
-              <option value="PUBLISHED">Published Only</option>
-              <option value="DRAFT">Draft / Unpublished</option>
-            </select>
-          </div>
+        <div>
+          <label htmlFor="su-section" className="field-label">
+            Section
+          </label>
+          <select id="su-section" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="field">
+            <option value="ALL">All sections</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="su-stage" className="field-label">
+            Stage
+          </label>
+          <select id="su-stage" value={stageFilter} onChange={(e) => setStageFilter(e.target.value)} className="field">
+            <option value="ALL">All stages</option>
+            {stageOptions.map((st) => (
+              <option key={st} value={st}>
+                {stageLabel(st)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="su-cr" className="field-label">
+            Registration
+          </label>
+          <select id="su-cr" value={crFilter} onChange={(e) => setCrFilter(e.target.value)} className="field">
+            <option value="ALL">All</option>
+            <option value="VERIFIED">CR confirmed</option>
+            <option value="UNVERIFIED">Not confirmed</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor="su-published" className="field-label">
+            Visibility
+          </label>
+          <select id="su-published" value={publishFilter} onChange={(e) => setPublishFilter(e.target.value)} className="field">
+            <option value="ALL">Published and drafts</option>
+            <option value="PUBLISHED">Published</option>
+            <option value="DRAFT">Drafts</option>
+          </select>
         </div>
       </div>
 
-      {/* 4. Startups Table */}
-      <div className="bg-editorial-pure rounded-lg border border-editorial-hairline overflow-hidden shadow-xs">
-        <div className="p-4 border-b border-editorial-hairline flex items-center justify-between bg-editorial-sand/30">
-          <span className="text-xs font-bold uppercase tracking-wider text-ink-high">
-            Verified Saudi Startups Registry ({filteredStartups.length} of {totalCount})
-          </span>
-          {isPending && (
-            <span className="flex items-center gap-1.5 text-xs text-brand-navy font-medium">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              <span>Saving updates...</span>
-            </span>
-          )}
-        </div>
+      <div className="flex items-center justify-between gap-4">
+        <p className="meta">
+          {filteredStartups.length} of {totalCount} startups
+        </p>
+        {isPending && <p className="meta">Saving…</p>}
+      </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-ink-body">
-            <thead className="bg-editorial-sand/60 text-ink-muted uppercase font-bold tracking-wider text-[10px] border-b border-editorial-hairline">
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="data-table min-w-[960px]">
+          <thead>
+            <tr>
+              <th>Startup</th>
+              <th>Section</th>
+              <th>Stage</th>
+              <th>Registration</th>
+              <th>Last checked</th>
+              <th>Status</th>
+              <th className="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredStartups.length === 0 ? (
               <tr>
-                <th className="py-3 px-4">Startup Venture</th>
-                <th className="py-3 px-4">Sector &amp; Pillar</th>
-                <th className="py-3 px-4">Stage &amp; Model</th>
-                <th className="py-3 px-4">CR Audit Status</th>
-                <th className="py-3 px-4">Verification Audit</th>
-                <th className="py-3 px-4">Publication</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <td colSpan={7} className="py-10">
+                  <p className="font-serif text-lg text-ink">No startups match these filters.</p>
+                  <p className="mt-1 text-sm text-ink-3">Clear the search or add a startup.</p>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-editorial-hairline">
-              {filteredStartups.map((s) => (
-                <tr key={s.id} className="hover:bg-editorial-sand/30 transition-colors">
-                  {/* Name and Tagline */}
-                  <td className="py-3.5 px-4">
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-1.5 font-bold text-ink-high">
-                        <Link
-                          href={`/startup/${s.slug}`}
-                          className="hover:text-brand-navy hover:underline transition-colors"
-                        >
-                          {s.name}
-                        </Link>
-                        {s.isFeatured && (
-                          <span className="px-1.5 py-0.2 rounded-xs bg-brand-desertGold/15 text-brand-desertGold text-[9px] font-bold">
-                            FEATURED
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[11px] text-ink-muted line-clamp-1">
-                        {s.tagline}
-                      </p>
-                      <span className="text-[10px] text-ink-faint">
-                        {s.hqCity}, KSA • Est. {s.foundingYear}
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* Sector & Pillar */}
-                  <td className="py-3.5 px-4">
-                    <span className="px-2 py-0.5 rounded-xs bg-brand-sand font-bold text-[10px] text-ink-high border border-editorial-hairline">
-                      {s.category?.name || 'General Tech'}
-                    </span>
-                  </td>
-
-                  {/* Stage & Model */}
-                  <td className="py-3.5 px-4">
-                    <div className="space-y-0.5">
-                      <span className="font-bold text-brand-navy block">
-                        {formatStage(s.stage)}
-                      </span>
-                      <span className="text-[10px] text-ink-muted block">
-                        {s.businessModel}
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* CR Verification Badge */}
-                  <td className="py-3.5 px-4">
-                    {s.crVerified ? (
-                      <div className="space-y-1">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-200">
-                          <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                          <span>CR Audited</span>
-                        </span>
-                        {s.crNumber && (
-                          <span className="text-[10px] text-ink-muted font-mono block">
-                            #{s.crNumber}
-                          </span>
-                        )}
-                      </div>
-                    ) : (
+            ) : (
+              filteredStartups.map((s) => (
+                <tr key={s.id}>
+                  <td className="min-w-[220px] max-w-xs">
+                    <div>
                       <button
-                        onClick={() => handleQuickVerifyCR(s.id, s.name, s.sourceUrl)}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 text-[10px] font-semibold border border-amber-200 hover:bg-amber-100 transition-colors cursor-pointer"
-                        title="Click to audit CR status"
+                        type="button"
+                        onClick={() => handleOpenEditModal(s)}
+                        className="font-serif text-[1.0625rem] leading-snug text-ink text-left hover:text-clay transition-colors"
                       >
-                        <ShieldAlert className="w-3 h-3 text-amber-600" />
-                        <span>Audit CR Now</span>
+                        {s.name}
                       </button>
+                      {s.isFeatured && <span className="ml-2 font-sans text-[0.6875rem] text-clay whitespace-nowrap">Featured</span>}
+                    </div>
+                    <p className="mt-0.5 text-[0.8125rem] text-ink-3 line-clamp-1">{s.tagline}</p>
+                    <p className="mt-0.5 whitespace-nowrap font-sans tabular text-[0.71875rem] text-ink-4">
+                      {s.hqCity} · Founded {s.foundingYear}
+                    </p>
+                  </td>
+
+                  <td className="whitespace-nowrap text-ink-2">{s.category?.name || '—'}</td>
+
+                  <td className="whitespace-nowrap">
+                    <p className="text-ink-2">{stageLabel(s.stage)}</p>
+                    <p className="mt-0.5 font-sans text-[0.75rem] text-ink-3">{businessModelLabel(s.businessModel)}</p>
+                  </td>
+
+                  <td className="whitespace-nowrap">
+                    {s.crVerified ? (
+                      <>
+                        <StatusDot tone="moss">CR confirmed</StatusDot>
+                        {s.crNumber && (
+                          <p className="mt-1 whitespace-nowrap font-sans tabular text-[0.75rem] text-ink-3">{s.crNumber}</p>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <StatusDot tone="clay">Not confirmed</StatusDot>
+                        <button
+                          type="button"
+                          onClick={() => handleQuickVerifyCR(s.id, s.name, s.sourceUrl)}
+                          disabled={isPending}
+                          className="row-action block mt-1 disabled:opacity-50"
+                        >
+                          Mark confirmed
+                        </button>
+                      </>
                     )}
                   </td>
 
-                  {/* Verification Audit */}
-                  <td className="py-3.5 px-4">
-                    <div className="space-y-0.5 text-[11px]">
-                      <span className="text-ink-high font-medium block">
-                        {formatDate(s.verifiedAt)}
-                      </span>
-                      <span className="text-[10px] text-ink-faint block line-clamp-1">
-                        {s.verifiedBy || 'SFT Editorial Staff'}
-                      </span>
-                      {s.sourceUrl && (
-                        <a
-                          href={s.sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[10px] text-brand-teal hover:underline inline-flex items-center gap-0.5 pt-0.5"
-                        >
-                          <span>Official Registry</span>
-                          <ExternalLink className="w-2.5 h-2.5" />
-                        </a>
-                      )}
-                    </div>
+                  <td className="whitespace-nowrap">
+                    <p className="whitespace-nowrap font-sans tabular text-[0.8125rem] text-ink-2">
+                      {s.verifiedAt ? formatDate(s.verifiedAt) : '—'}
+                    </p>
+                    {s.verifiedBy && (
+                      <p className="mt-0.5 text-[0.75rem] text-ink-3 truncate max-w-[150px]">by {s.verifiedBy}</p>
+                    )}
+                    {s.sourceUrl && (
+                      <a href={s.sourceUrl} target="_blank" rel="noopener noreferrer" className="row-action block mt-1">
+                        Source ↗
+                      </a>
+                    )}
                   </td>
 
-                  {/* Publication Toggle */}
-                  <td className="py-3.5 px-4">
+                  <td className="whitespace-nowrap">
                     <button
+                      type="button"
                       onClick={() => handleTogglePublish(s.id, s.name)}
-                      className={cn(
-                        'px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase transition-colors cursor-pointer',
-                        s.isPublished
-                          ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      )}
+                      disabled={isPending}
+                      title={s.isPublished ? 'Click to unpublish' : 'Click to publish'}
+                      className="disabled:opacity-50 hover:opacity-70 transition-opacity"
                     >
-                      {s.isPublished ? '● Published' : '○ Draft'}
+                      <StatusDot tone={s.isPublished ? 'moss' : 'ink'}>{s.isPublished ? 'Published' : 'Draft'}</StatusDot>
                     </button>
                   </td>
 
-                  {/* Actions */}
-                  <td className="py-3.5 px-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Link
-                        href={`/startup/${s.slug}`}
-                        target="_blank"
-                        className="p-1 text-ink-muted hover:text-brand-navy transition-colors"
-                        title="View Public Profile"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Link>
-
-                      <button
-                        onClick={() => handleOpenEditModal(s)}
-                        className="p-1 text-ink-muted hover:text-brand-teal transition-colors cursor-pointer"
-                        title="Edit Startup Profile"
-                      >
-                        <Edit2 className="w-4 h-4" />
+                  <td className="text-right whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-4">
+                      <button type="button" onClick={() => handleOpenEditModal(s)} className="row-action">
+                        Edit
                       </button>
-
+                      <Link href={`/startup/${s.slug}`} target="_blank" className="row-action">
+                        View ↗
+                      </Link>
                       <button
+                        type="button"
                         onClick={() => handleDelete(s.id, s.name)}
-                        className="p-1 text-ink-muted hover:text-red-600 transition-colors cursor-pointer"
-                        title="Delete Startup"
+                        disabled={isPending}
+                        className="row-action-danger disabled:opacity-50"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        Delete
                       </button>
                     </div>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {/* 5. Create / Edit Startup Modal */}
+      {/* Create / edit modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-brand-navy/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-editorial-pure rounded-lg border border-editorial-hairline shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col">
-            <div className="p-5 border-b border-editorial-hairline flex items-center justify-between bg-editorial-sand/30">
-              <div className="space-y-0.5">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-brand-teal block">
-                  Saudi Tech Registry
-                </span>
-                <h3 className="font-heading font-black text-lg text-ink-high">
-                  {editingStartup ? `Edit Venture: ${editingStartup.name}` : 'Register New Saudi Startup'}
-                </h3>
-              </div>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 text-ink-muted hover:text-ink-high rounded-md cursor-pointer"
-              >
-                <X className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-ink/40">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="su-modal-title"
+            className="bg-paper-sheet border border-rule shadow-lift rounded-sm max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-rule">
+              <h2 id="su-modal-title" className="font-serif text-[1.5rem] leading-tight text-ink">
+                {editingStartup ? `Edit ${editingStartup.name}` : 'Add startup'}
+              </h2>
+              <button type="button" onClick={() => setIsModalOpen(false)} className="row-action">
+                Close
               </button>
             </div>
 
-            <form onSubmit={handleFormSubmit} className="p-6 space-y-5 overflow-y-auto flex-1 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="font-bold text-ink-high block">Company Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded-md text-xs"
-                    placeholder="e.g. Tamara"
-                  />
-                </div>
+            <form onSubmit={handleFormSubmit} className="p-6 space-y-5">
+              {errorMessage && (
+                <Note tone="error" onDismiss={() => setErrorMessage(null)}>
+                  {errorMessage}
+                </Note>
+              )}
 
-                <div className="space-y-1">
-                  <label className="font-bold text-ink-high block">URL Slug (leave blank to auto-generate)</label>
-                  <input
-                    type="text"
-                    value={formData.slug}
-                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded-md text-xs font-mono"
-                    placeholder="tamara-fintech"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-bold text-ink-high block">Tagline / Mission *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.tagline}
-                  onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
-                  className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded-md text-xs"
-                  placeholder="e.g. The First Saudi FinTech Unicorn & Shopping Platform"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-bold text-ink-high block">Executive Overview &amp; Description *</label>
-                <textarea
-                  rows={4}
-                  required
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded-md text-xs"
-                  placeholder="Detailed description of technology, market focus, and regulatory standing..."
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <label className="font-bold text-ink-high block">Sovereign Pillar *</label>
-                  <select
-                    value={formData.categoryId || ''}
-                    onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded-md text-xs"
-                  >
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-ink-high block">Funding Stage *</label>
-                  <select
-                    value={formData.stage}
-                    onChange={(e) => setFormData({ ...formData, stage: e.target.value as any })}
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded-md text-xs"
-                  >
-                    <option value="BOOTSTRAPPED">Bootstrapped</option>
-                    <option value="PRE_SEED">Pre-Seed</option>
-                    <option value="SEED">Seed</option>
-                    <option value="SERIES_A">Series A</option>
-                    <option value="SERIES_B">Series B</option>
-                    <option value="SERIES_C">Series C+</option>
-                    <option value="GROWTH">Growth / Scale</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-ink-high block">Business Model *</label>
-                  <select
-                    value={formData.businessModel}
-                    onChange={(e) => setFormData({ ...formData, businessModel: e.target.value as any })}
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded-md text-xs"
-                  >
-                    <option value="B2B">B2B (Enterprise)</option>
-                    <option value="B2C">B2C (Consumer)</option>
-                    <option value="B2B2C">B2B2C (Hybrid)</option>
-                    <option value="B2G">B2G (Government)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <label className="font-bold text-ink-high block">HQ City *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.hqCity}
-                    onChange={(e) => setFormData({ ...formData, hqCity: e.target.value })}
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded-md text-xs"
-                    placeholder="Riyadh"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-ink-high block">Founding Year *</label>
-                  <input
-                    type="number"
-                    required
-                    value={formData.foundingYear}
-                    onChange={(e) => setFormData({ ...formData, foundingYear: Number(e.target.value) })}
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded-md text-xs"
-                    placeholder="2020"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-ink-high block">Official Website URL *</label>
-                  <input
-                    type="url"
-                    required
-                    value={formData.websiteUrl}
-                    onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded-md text-xs"
-                    placeholder="https://company.sa"
-                  />
-                </div>
-              </div>
-
-              {/* CR Verification Section */}
-              <div className="p-4 rounded-md bg-brand-sand/50 border border-editorial-hairline space-y-3">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-brand-navy block flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-brand-oasis" />
-                  <span>Commercial Registration (CR) Verification</span>
-                </span>
+              <section className="panel p-5 space-y-4">
+                <h3 className="panel-title">Company</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="font-medium text-ink-high block">CR Number</label>
+                  <div>
+                    <label htmlFor="su-name" className="field-label">
+                      Name
+                    </label>
                     <input
+                      id="su-name"
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="field"
+                      placeholder="Tamara"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="su-slug" className="field-label">
+                      Slug
+                    </label>
+                    <input
+                      id="su-slug"
+                      type="text"
+                      value={formData.slug}
+                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                      className="field font-sans"
+                      placeholder="tamara"
+                    />
+                    <p className="field-hint">Leave blank to generate from the name.</p>
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="su-tagline" className="field-label">
+                    Tagline
+                  </label>
+                  <input
+                    id="su-tagline"
+                    type="text"
+                    required
+                    value={formData.tagline}
+                    onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
+                    className="field"
+                    placeholder="Buy now, pay later for Saudi shoppers"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="su-description" className="field-label">
+                    Description
+                  </label>
+                  <textarea
+                    id="su-description"
+                    rows={4}
+                    required
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="field"
+                    placeholder="What the company builds, who it sells to, and where it operates."
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label htmlFor="su-cat" className="field-label">
+                      Section
+                    </label>
+                    <select
+                      id="su-cat"
+                      value={formData.categoryId || ''}
+                      onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                      className="field"
+                    >
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="su-stage-f" className="field-label">
+                      Stage
+                    </label>
+                    <select
+                      id="su-stage-f"
+                      value={formData.stage}
+                      onChange={(e) => setFormData({ ...formData, stage: e.target.value as any })}
+                      className="field"
+                    >
+                      {stageOptions.map((st) => (
+                        <option key={st} value={st}>
+                          {stageLabel(st)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="su-model" className="field-label">
+                      Business model
+                    </label>
+                    <select
+                      id="su-model"
+                      value={formData.businessModel}
+                      onChange={(e) => setFormData({ ...formData, businessModel: e.target.value as any })}
+                      className="field"
+                    >
+                      <option value="B2B">B2B</option>
+                      <option value="B2C">B2C</option>
+                      <option value="B2B2C">B2B2C</option>
+                      <option value="B2G">B2G</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="su-city" className="field-label">
+                      HQ city
+                    </label>
+                    <input
+                      id="su-city"
+                      type="text"
+                      required
+                      value={formData.hqCity}
+                      onChange={(e) => setFormData({ ...formData, hqCity: e.target.value })}
+                      className="field"
+                      placeholder="Riyadh"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="su-year" className="field-label">
+                      Founded
+                    </label>
+                    <input
+                      id="su-year"
+                      type="number"
+                      required
+                      value={formData.foundingYear}
+                      onChange={(e) => setFormData({ ...formData, foundingYear: Number(e.target.value) })}
+                      className="field font-sans tabular"
+                      placeholder="2020"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="su-website" className="field-label">
+                      Website
+                    </label>
+                    <input
+                      id="su-website"
+                      type="url"
+                      required
+                      value={formData.websiteUrl}
+                      onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
+                      className="field"
+                      placeholder="https://company.sa"
+                    />
+                  </div>
+                </div>
+              </section>
+
+              <section className="panel p-5 space-y-4">
+                <h3 className="panel-title">Commercial registration</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:items-end">
+                  <div>
+                    <label htmlFor="su-cr-number" className="field-label">
+                      CR number
+                    </label>
+                    <input
+                      id="su-cr-number"
                       type="text"
                       value={formData.crNumber || ''}
                       onChange={(e) => setFormData({ ...formData, crNumber: e.target.value })}
-                      className="w-full p-2 bg-editorial-pure border border-editorial-hairline rounded-md text-xs font-mono"
+                      className="field font-sans tabular"
                       placeholder="1010XXXXXX"
                     />
                   </div>
-                  <div className="flex items-center pt-5">
-                    <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-ink-high">
-                      <input
-                        type="checkbox"
-                        checked={formData.crVerified || false}
-                        onChange={(e) => setFormData({ ...formData, crVerified: e.target.checked })}
-                        className="w-4 h-4 rounded text-brand-oasis"
-                      />
-                      <span>CR Verified with Ministry of Commerce / Wathiq</span>
+                  <label className="inline-flex items-center gap-2 text-sm text-ink-2 cursor-pointer pb-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.crVerified || false}
+                      onChange={(e) => setFormData({ ...formData, crVerified: e.target.checked })}
+                      className="accent-[#A63D24]"
+                    />
+                    CR confirmed with the Ministry of Commerce
+                  </label>
+                </div>
+              </section>
+
+              <section className="panel p-5 space-y-4">
+                <h3 className="panel-title">Products and funding</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="su-products" className="field-label">
+                      Products
                     </label>
+                    <textarea
+                      id="su-products"
+                      rows={3}
+                      value={productsText}
+                      onChange={(e) => setProductsText(e.target.value)}
+                      className="field"
+                      placeholder={'FOCAL AML Suite\nFOCAL Fraud Engine'}
+                    />
+                    <p className="field-hint">One per line.</p>
+                  </div>
+                  <div>
+                    <label htmlFor="su-stack" className="field-label">
+                      Tech stack
+                    </label>
+                    <textarea
+                      id="su-stack"
+                      rows={3}
+                      value={techStackText}
+                      onChange={(e) => setTechStackText(e.target.value)}
+                      className="field font-sans text-[0.8125rem]"
+                      placeholder={'Python\nPyTorch\nPostgreSQL'}
+                    />
+                    <p className="field-hint">One per line.</p>
+                  </div>
+                  <div>
+                    <label htmlFor="su-funding" className="field-label">
+                      Disclosed funding
+                    </label>
+                    <input
+                      id="su-funding"
+                      type="text"
+                      value={formData.fundingDisclosed || ''}
+                      onChange={(e) => setFormData({ ...formData, fundingDisclosed: e.target.value })}
+                      className="field"
+                      placeholder="Series B, SAR 200M"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="su-investors" className="field-label">
+                      Disclosed investors
+                    </label>
+                    <input
+                      id="su-investors"
+                      type="text"
+                      value={investorsText}
+                      onChange={(e) => setInvestorsText(e.target.value)}
+                      className="field"
+                      placeholder="Sanabil Investments, STV"
+                    />
+                    <p className="field-hint">Separate with commas.</p>
                   </div>
                 </div>
-              </div>
+              </section>
 
-              {/* Products & Tech Stack */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="font-bold text-ink-high block">Verified Products (one per line)</label>
-                  <textarea
-                    rows={3}
-                    value={productsText}
-                    onChange={(e) => setProductsText(e.target.value)}
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded-md text-xs"
-                    placeholder="FOCAL AML Suite&#10;FOCAL Fraud Engine&#10;OSOS Arabic NLP"
-                  />
+              <section className="panel p-5 space-y-4">
+                <h3 className="panel-title">Source and visibility</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="su-source-name" className="field-label">
+                      Source
+                    </label>
+                    <input
+                      id="su-source-name"
+                      type="text"
+                      required
+                      value={formData.sourceName || ''}
+                      onChange={(e) => setFormData({ ...formData, sourceName: e.target.value })}
+                      className="field"
+                      placeholder="Ministry of Commerce register"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="su-source-url" className="field-label">
+                      Source URL
+                    </label>
+                    <input
+                      id="su-source-url"
+                      type="url"
+                      required
+                      value={formData.sourceUrl || ''}
+                      onChange={(e) => setFormData({ ...formData, sourceUrl: e.target.value })}
+                      className="field"
+                      placeholder="https://mozn.sa"
+                    />
+                  </div>
                 </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-ink-high block">Architectural Tech Stack (one per line)</label>
-                  <textarea
-                    rows={3}
-                    value={techStackText}
-                    onChange={(e) => setTechStackText(e.target.value)}
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded-md text-xs font-mono"
-                    placeholder="Python&#10;PyTorch&#10;PostgreSQL&#10;KSA Sovereign Cloud"
-                  />
+                <div className="flex flex-wrap gap-x-6 gap-y-2 pt-1">
+                  <label className="inline-flex items-center gap-2 text-sm text-ink-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.isPublished}
+                      onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
+                      className="accent-[#A63D24]"
+                    />
+                    Published
+                  </label>
+                  <label className="inline-flex items-center gap-2 text-sm text-ink-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.isFeatured}
+                      onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
+                      className="accent-[#A63D24]"
+                    />
+                    Feature on homepage
+                  </label>
                 </div>
-              </div>
+              </section>
 
-              {/* Disclosed Funding & Investors */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="font-bold text-ink-high block">Disclosed Funding Round</label>
-                  <input
-                    type="text"
-                    value={formData.fundingDisclosed || ''}
-                    onChange={(e) => setFormData({ ...formData, fundingDisclosed: e.target.value })}
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded-md text-xs"
-                    placeholder="e.g. Series B (Disclosed)"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-ink-high block">Disclosed Investors (comma-separated)</label>
-                  <input
-                    type="text"
-                    value={investorsText}
-                    onChange={(e) => setInvestorsText(e.target.value)}
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded-md text-xs"
-                    placeholder="Sanabil Investments, STV, Goldman Sachs"
-                  />
-                </div>
-              </div>
-
-              {/* Data Provenance Fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="font-bold text-ink-high block">Official Source Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.sourceName || ''}
-                    onChange={(e) => setFormData({ ...formData, sourceName: e.target.value })}
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded-md text-xs"
-                    placeholder="Ministry of Commerce Wathiq / SAMA Register"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-ink-high block">Official Source URL *</label>
-                  <input
-                    type="url"
-                    required
-                    value={formData.sourceUrl || ''}
-                    onChange={(e) => setFormData({ ...formData, sourceUrl: e.target.value })}
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded-md text-xs"
-                    placeholder="https://mozn.sa"
-                  />
-                </div>
-              </div>
-
-              {/* Toggles */}
-              <div className="flex flex-wrap items-center gap-6 pt-2">
-                <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-ink-high">
-                  <input
-                    type="checkbox"
-                    checked={formData.isPublished}
-                    onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                    className="w-4 h-4 rounded text-brand-navy"
-                  />
-                  <span>Published Live on Public Directory</span>
-                </label>
-
-                <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-ink-high">
-                  <input
-                    type="checkbox"
-                    checked={formData.isFeatured}
-                    onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
-                    className="w-4 h-4 rounded text-brand-desertGold"
-                  />
-                  <span>Featured on Homepage</span>
-                </label>
-              </div>
-
-              {/* Footer Actions */}
-              <div className="pt-4 border-t border-editorial-hairline flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-md border border-editorial-hairline text-xs font-semibold text-ink-muted hover:text-ink-high cursor-pointer"
-                >
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-md bg-brand-navy hover:bg-brand-navy/90 text-white font-heading font-bold text-xs uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50"
-                >
-                  {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  <span>{editingStartup ? 'Update Dossier' : 'Create Startup'}</span>
-                </button>
+                </Button>
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? 'Saving…' : editingStartup ? 'Save changes' : 'Create startup'}
+                </Button>
               </div>
             </form>
           </div>

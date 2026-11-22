@@ -1,61 +1,35 @@
 import React from 'react';
-import { ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { StatItem } from '@/types';
 
-interface StatCardProps extends StatItem {
+interface StatCardProps extends Partial<Omit<StatItem, 'value' | 'label'>> {
+  label: string;
+  value: string | number;
+  /** Ignored — kept for API compatibility. */
   icon?: React.ReactNode;
   className?: string;
 }
 
-export const StatCard: React.FC<StatCardProps> = ({
-  label,
-  value,
-  change,
-  trend,
-  description,
-  icon,
-  className,
-}) => {
-  return (
-    <div
-      className={cn(
-        'p-5 rounded-none bg-editorial-pure border border-editorial-hairline transition-editorial hover:border-ink-high/30 shadow-xs',
-        className
-      )}
-    >
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-[11px] font-bold uppercase tracking-widest text-ink-muted font-sans">
-          {label}
-        </span>
-        {icon && (
-          <div className="w-8 h-8 rounded-none bg-editorial-sand flex items-center justify-center text-ink-high border border-editorial-hairline">
-            {icon}
-          </div>
-        )}
-      </div>
-
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="text-2xl sm:text-3xl font-black text-ink-high tracking-tight font-serif">
-          {value}
-        </span>
-
-        <div
+/** A figure with a label: big serif number, mono label, quiet change note. No box. */
+export const StatCard: React.FC<StatCardProps> = ({ label, value, change, trend, description, className }) => (
+  <div className={cn('border-t border-ink pt-3', className)}>
+    <p className="meta">{label}</p>
+    <div className="mt-2 flex items-baseline gap-3">
+      <span className="font-serif text-[2.25rem] leading-none text-ink tabular">{value}</span>
+      {change && (
+        <span
           className={cn(
-            'inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-none font-sans',
-            trend === 'up' && 'text-emerald-800 bg-emerald-50 border border-emerald-200',
-            trend === 'down' && 'text-rose-800 bg-rose-50 border border-rose-200',
-            trend === 'neutral' && 'text-ink-body bg-editorial-sand border border-editorial-hairline'
+            'font-sans text-[0.71875rem] tabular',
+            trend === 'up' ? 'text-moss' : trend === 'down' ? 'text-clay' : 'text-ink-3'
           )}
         >
-          {trend === 'up' && <ArrowUpRight className="w-3.5 h-3.5 mr-0.5" />}
-          {trend === 'down' && <ArrowDownRight className="w-3.5 h-3.5 mr-0.5" />}
-          {trend === 'neutral' && <Minus className="w-3.5 h-3.5 mr-0.5" />}
+          {trend === 'up' ? '↑ ' : trend === 'down' ? '↓ ' : ''}
           {change}
-        </div>
-      </div>
-
-      <p className="text-xs text-ink-muted mt-2.5 truncate font-sans">{description}</p>
+        </span>
+      )}
     </div>
-  );
-};
+    {description && <p className="mt-2 text-[0.8125rem] text-ink-3 leading-snug">{description}</p>}
+  </div>
+);
+
+export default StatCard;

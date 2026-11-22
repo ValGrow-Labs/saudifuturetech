@@ -33,7 +33,7 @@ export default async function CampaignPreviewPage({ params }: CampaignPreviewPag
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://saudifuturetech.com';
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="space-y-6">
       <CampaignPreviewClient
         campaign={campaign}
         activeSubscribersCount={activeSubscribersCount}

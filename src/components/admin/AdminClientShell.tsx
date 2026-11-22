@@ -6,43 +6,24 @@ import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { AuthenticatedUser } from '@/lib/auth/guard';
 
-export function AdminClientShell({
-  user,
-  children,
-}: {
-  user: AuthenticatedUser | null;
-  children: React.ReactNode;
-}) {
+export function AdminClientShell({ user, children }: { user: AuthenticatedUser | null; children: React.ReactNode }) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const pathname = usePathname();
-  const isLoginPage = pathname === '/admin/login';
 
-  if (isLoginPage) {
-    return <main className="min-h-screen bg-editorial-paper text-ink-body font-sans selection:bg-brand-yellow/30">{children}</main>;
+  if (pathname === '/admin/login') {
+    return <main className="min-h-[100dvh] bg-paper text-ink-2 font-sans">{children}</main>;
   }
 
   return (
-    <div className="min-h-screen bg-editorial-paper text-ink-body flex flex-col font-sans selection:bg-brand-yellow/30">
-      <div className="flex-1 flex overflow-hidden">
-        {/* Responsive Sidebar */}
-        <AdminSidebar
-          user={user}
-          mobileOpen={mobileSidebarOpen}
-          onCloseMobile={() => setMobileSidebarOpen(false)}
-        />
-
-        {/* Content Area */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-          <AdminHeader
-            user={user}
-            onToggleMobileSidebar={() => setMobileSidebarOpen(true)}
-          />
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-            {children}
-          </main>
-        </div>
+    <div className="min-h-[100dvh] bg-paper text-ink-2 font-sans flex">
+      <AdminSidebar user={user} mobileOpen={mobileSidebarOpen} onCloseMobile={() => setMobileSidebarOpen(false)} />
+      {/* overflow-x-clip: wide tables scroll inside their own wrappers; the page never scrolls sideways. */}
+      <div className="flex-1 min-w-0 flex flex-col overflow-x-clip">
+        <AdminHeader user={user} onToggleMobileSidebar={() => setMobileSidebarOpen(true)} />
+        <main id="main" className="flex-1 w-full max-w-[80rem] mx-auto px-4 sm:px-6 lg:px-10 py-6 lg:py-8">
+          {children}
+        </main>
       </div>
     </div>
   );
 }
-

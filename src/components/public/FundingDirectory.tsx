@@ -2,26 +2,9 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { 
-  Search, 
-  Coins, 
-  MapPin, 
-  ExternalLink, 
-  ShieldCheck, 
-  CheckCircle2, 
-  X,
-  Briefcase,
-  Landmark,
-  Building2,
-  Users2,
-  TrendingUp,
-  Sparkles,
-  ArrowRight,
-  Filter,
-  Layers
-} from 'lucide-react';
-import { cn, formatDate } from '@/lib/utils';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { investorTypeLabel } from '@/lib/labels';
 
 export interface InvestorItem {
   id: string;
@@ -64,35 +47,34 @@ interface FundingDirectoryProps {
 }
 
 const TYPE_FILTERS = [
-  { label: 'All Typologies', value: 'ALL' },
-  { label: 'Venture Capital', value: 'VENTURE_CAPITAL' },
-  { label: 'Sovereign Wealth & Gov', value: 'GOVERNMENT_FUND' },
+  { label: 'All', value: 'ALL' },
+  { label: 'Venture capital', value: 'VENTURE_CAPITAL' },
+  { label: 'Government funds', value: 'GOVERNMENT_FUND' },
   { label: 'Corporate VC', value: 'CORPORATE_VC' },
-  { label: 'Angel Syndicates', value: 'ANGEL_NETWORK' },
-  { label: 'Family Offices', value: 'FAMILY_OFFICE' },
-  { label: 'Accelerator Funds', value: 'ACCELERATOR_FUND' },
+  { label: 'Angel networks', value: 'ANGEL_NETWORK' },
+  { label: 'Family offices', value: 'FAMILY_OFFICE' },
+  { label: 'Accelerator funds', value: 'ACCELERATOR_FUND' },
 ];
 
-const STAGE_FILTERS = [
-  'ALL',
-  'Pre-Seed',
-  'Seed',
-  'Series A',
-  'Series B',
-  'Growth',
-];
+const STAGE_FILTERS = ['ALL', 'Pre-Seed', 'Seed', 'Series A', 'Series B', 'Growth'];
+
+const SORT_OPTIONS = [
+  { label: 'Featured first', value: 'FEATURED' },
+  { label: 'Name, A–Z', value: 'NAME' },
+  { label: 'Recently checked', value: 'RECENT' },
+] as const;
+
+const COLS = 'md:grid-cols-[minmax(0,1fr)_13rem_10rem_7rem_6.5rem_2rem]';
 
 export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
   initialInvestors,
   initialQuery = '',
   initialType = 'ALL',
   initialStage = 'ALL',
-  initialSector = 'ALL',
   initialCmaOnly = false,
   initialSvcOnly = false,
   initialActiveOnly = false,
 }) => {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -103,11 +85,12 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
   const [svcOnly, setSvcOnly] = useState(initialSvcOnly);
   const [activeOnly, setActiveOnly] = useState(initialActiveOnly);
   const [sortOption, setSortOption] = useState<'FEATURED' | 'NAME' | 'RECENT'>('FEATURED');
+  const [openId, setOpenId] = useState<string | null>(null);
 
   // Synchronize URL parameters
   useEffect(() => {
     const params = new URLSearchParams(searchParams ? searchParams.toString() : '');
-    
+
     if (searchQuery) params.set('q', searchQuery);
     else params.delete('q');
 
@@ -131,9 +114,17 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
     window.history.replaceState(null, '', currentUrl);
   }, [searchQuery, selectedType, selectedStage, cmaOnly, svcOnly, activeOnly, pathname, searchParams]);
 
+  const typeCounts = useMemo(() => {
+    const counts: Record<string, number> = { ALL: initialInvestors.length };
+    initialInvestors.forEach((i) => {
+      counts[i.type] = (counts[i.type] ?? 0) + 1;
+    });
+    return counts;
+  }, [initialInvestors]);
+
   const filteredItems = useMemo(() => {
-    let list = initialInvestors.filter((item) => {
-      // 1. Text Search
+    const list = initialInvestors.filter((item) => {
+      // 1. Text search
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
         const matchesName = item.name.toLowerCase().includes(query);
@@ -141,9 +132,10 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
         const matchesHq = item.hqLocation.toLowerCase().includes(query);
         const matchesRegCat = Boolean(item.regulatoryCategory && item.regulatoryCategory.toLowerCase().includes(query));
         const matchesCma = Boolean(item.cmaLicenseNumber && item.cmaLicenseNumber.toLowerCase().includes(query));
-        const matchesSectors = Array.isArray(item.targetSectors) &&
-          item.targetSectors.some((s: string) => s.toLowerCase().includes(query));
-        const matchesPortfolio = Array.isArray(item.portfolioHighlights) &&
+        const matchesSectors =
+          Array.isArray(item.targetSectors) && item.targetSectors.some((s: string) => s.toLowerCase().includes(query));
+        const matchesPortfolio =
+          Array.isArray(item.portfolioHighlights) &&
           item.portfolioHighlights.some((p: string) => p.toLowerCase().includes(query));
 
         if (!matchesName && !matchesDesc && !matchesHq && !matchesRegCat && !matchesCma && !matchesSectors && !matchesPortfolio) {
@@ -151,70 +143,31 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
         }
       }
 
-      // 2. Typology Filter
-      if (selectedType !== 'ALL' && item.type !== selectedType) {
-        return false;
-      }
+      // 2. Type
+      if (selectedType !== 'ALL' && item.type !== selectedType) return false;
 
-      // 3. Stage Filter
+      // 3. Stage
       if (selectedStage !== 'ALL') {
         const stages = Array.isArray(item.targetStages) ? (item.targetStages as string[]) : [];
         const matchesStage = stages.some((st) => st.toLowerCase().includes(selectedStage.toLowerCase()));
         if (!matchesStage) return false;
       }
 
-      // 4. Regulatory: CMA-Authorized Only
-      if (cmaOnly && !item.isCmaAuthorized) {
-        return false;
-      }
-
-      // 5. Regulatory: SVC Partner Only
-      if (svcOnly && !item.isSvcPartner) {
-        return false;
-      }
-
-      // 6. Active Investing Only
-      if (activeOnly && !item.isActiveInvesting) {
-        return false;
-      }
+      // 4–6. Licensing and activity
+      if (cmaOnly && !item.isCmaAuthorized) return false;
+      if (svcOnly && !item.isSvcPartner) return false;
+      if (activeOnly && !item.isActiveInvesting) return false;
 
       return true;
     });
 
-    // Sorting
     return list.sort((a, b) => {
-      if (sortOption === 'NAME') {
-        return a.name.localeCompare(b.name);
-      }
-      if (sortOption === 'RECENT') {
-        return new Date(b.verifiedAt).getTime() - new Date(a.verifiedAt).getTime();
-      }
-      // FEATURED
-      if (a.isFeatured !== b.isFeatured) {
-        return a.isFeatured ? -1 : 1;
-      }
+      if (sortOption === 'NAME') return a.name.localeCompare(b.name);
+      if (sortOption === 'RECENT') return new Date(b.verifiedAt).getTime() - new Date(a.verifiedAt).getTime();
+      if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1;
       return a.name.localeCompare(b.name);
     });
   }, [initialInvestors, searchQuery, selectedType, selectedStage, cmaOnly, svcOnly, activeOnly, sortOption]);
-
-  const formatType = (type: string) => {
-    switch (type) {
-      case 'VENTURE_CAPITAL':
-        return 'Venture Capital';
-      case 'GOVERNMENT_FUND':
-        return 'Sovereign / Gov Fund';
-      case 'CORPORATE_VC':
-        return 'Corporate VC (CVC)';
-      case 'ANGEL_NETWORK':
-        return 'Angel Syndicate';
-      case 'FAMILY_OFFICE':
-        return 'Family Office';
-      case 'ACCELERATOR_FUND':
-        return 'Accelerator Seed Fund';
-      default:
-        return type;
-    }
-  };
 
   const handleResetFilters = () => {
     setSearchQuery('');
@@ -227,367 +180,327 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
   };
 
   const hasActiveFilters =
-    Boolean(searchQuery) ||
-    selectedType !== 'ALL' ||
-    selectedStage !== 'ALL' ||
-    cmaOnly ||
-    svcOnly ||
-    activeOnly;
+    Boolean(searchQuery) || selectedType !== 'ALL' || selectedStage !== 'ALL' || cmaOnly || svcOnly || activeOnly;
+
+  const sortLabel = SORT_OPTIONS.find((s) => s.value === sortOption)?.label.toLowerCase() ?? '';
 
   return (
-    <div className="space-y-6">
-      {/* 1. Filter and Search Controls Box */}
-      <div className="bg-[#F1F5F2] p-5 sm:p-6 rounded-lg border border-[#E2E8E4] shadow-xs space-y-4">
-        {/* Search Input Bar */}
-        <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
+    <div>
+      {/* Filter bar */}
+      <div className="space-y-6">
+        <label className="flex items-center gap-3 border-b-2 border-ink pb-2 focus-within:border-clay transition-colors">
+          <span className="sr-only">Search investors</span>
+          <SearchGlyph />
           <input
-            type="text"
-            placeholder="Search funds, sectors, portfolio champions, or CMA license (e.g. STV, Raed, FinTech, Tamara, 17188-37)..."
+            type="search"
+            placeholder="Search funds, sectors or portfolio"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-[#E2E8E4] rounded-md text-[#111827] placeholder:text-[#4B5563] focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] focus:border-[#0B6E4F] transition-all"
+            className="min-w-0 flex-1 bg-transparent py-1.5 text-base text-ink placeholder:text-ink-4 focus:outline-none [&::-webkit-search-cancel-button]:hidden"
           />
           {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#111827] p-1"
-              aria-label="Clear search"
-            >
-              <X className="w-4 h-4" />
+            <button type="button" onClick={() => setSearchQuery('')} className="meta hover:text-ink transition-colors">
+              Clear
             </button>
           )}
-        </div>
+        </label>
 
-        {/* Typology Pills */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563]">
-              Capital Typology
-            </span>
-            {hasActiveFilters && (
-              <button
-                onClick={handleResetFilters}
-                className="text-xs text-[#0B6E4F] hover:underline font-semibold"
-              >
-                Reset All Filters
-              </button>
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-1.5">
-            {TYPE_FILTERS.map((type) => (
+        <div role="tablist" aria-label="Investor type" className="flex flex-wrap gap-x-6 gap-y-1 border-b border-rule">
+          {TYPE_FILTERS.filter((t) => (typeCounts[t.value] ?? 0) > 0 || t.value === selectedType).map((type) => {
+            const active = selectedType === type.value;
+            return (
               <button
                 key={type.value}
+                role="tab"
+                aria-selected={active}
                 onClick={() => setSelectedType(type.value)}
                 className={cn(
-                  'px-3 py-1 text-xs rounded-full transition-all cursor-pointer',
-                  selectedType === type.value
-                    ? 'bg-[#0B6E4F] text-white shadow-xs font-bold'
-                    : 'bg-white text-[#4B5563] hover:text-[#111827] hover:bg-[#E8F5EF] border border-[#E2E8E4] font-medium'
+                  '-mb-px border-b-2 py-2.5 text-sm transition-colors',
+                  active ? 'border-clay text-ink' : 'border-transparent text-ink-3 hover:text-ink'
                 )}
               >
                 {type.label}
+                <span className="ml-1.5 font-sans text-[0.6875rem] tabular text-ink-4">{typeCounts[type.value] ?? 0}</span>
               </button>
+            );
+          })}
+        </div>
+
+        <div className="grid grid-cols-2 gap-x-6 gap-y-5 md:grid-cols-12 md:items-end">
+          <FilterSelect label="Stage" value={selectedStage} onChange={setSelectedStage} className="md:col-span-3">
+            {STAGE_FILTERS.map((st) => (
+              <option key={st} value={st}>
+                {st === 'ALL' ? 'Any stage' : st}
+              </option>
             ))}
-          </div>
-        </div>
-
-        {/* Secondary Filters: Stage & Regulatory Flags */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#E2E8E4]">
-          {/* Target Stage selector */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#4B5563] whitespace-nowrap">
-              Target Stage:
-            </span>
-            <div className="flex flex-wrap items-center gap-1">
-              {STAGE_FILTERS.map((st) => (
-                <button
-                  key={st}
-                  onClick={() => setSelectedStage(st)}
-                  className={cn(
-                    'px-2.5 py-0.5 text-xs rounded-md transition-all cursor-pointer',
-                    selectedStage === st
-                      ? 'bg-[#FDF8EC] text-[#9A7B1C] border border-[#C9A227] font-bold'
-                      : 'bg-white text-[#4B5563] hover:text-[#111827] border border-[#E2E8E4]'
-                  )}
-                >
-                  {st}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Strict Regulatory Toggles: CMA vs SVC vs Active */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* CMA Authorized Toggle */}
-            <button
-              onClick={() => setCmaOnly(!cmaOnly)}
-              className={cn(
-                'inline-flex items-center gap-1.5 px-3 py-1 text-xs rounded-full border transition-all cursor-pointer',
-                cmaOnly
-                  ? 'bg-[#0B6E4F] text-white border-[#0B6E4F] font-bold shadow-xs'
-                  : 'bg-white text-[#0B6E4F] border-[#0B6E4F]/30 hover:bg-[#E8F5EF] font-medium'
-              )}
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>CMA Authorized Only</span>
-            </button>
-
-            {/* SVC Partner Toggle */}
-            <button
-              onClick={() => setSvcOnly(!svcOnly)}
-              className={cn(
-                'inline-flex items-center gap-1.5 px-3 py-1 text-xs rounded-full border transition-all cursor-pointer',
-                svcOnly
-                  ? 'bg-[#C9A227] text-white border-[#C9A227] font-bold shadow-xs'
-                  : 'bg-white text-[#9A7B1C] border-[#C9A227]/40 hover:bg-[#FDF8EC] font-medium'
-              )}
-            >
-              <Landmark className="w-3.5 h-3.5" />
-              <span>SVC Partner Funds</span>
-            </button>
-
-            {/* Active Investing Toggle */}
-            <button
-              onClick={() => setActiveOnly(!activeOnly)}
-              className={cn(
-                'inline-flex items-center gap-1.5 px-3 py-1 text-xs rounded-full border transition-all cursor-pointer',
-                activeOnly
-                  ? 'bg-[#19B5A3] text-white border-[#19B5A3] font-bold shadow-xs'
-                  : 'bg-white text-[#0E7A6E] border-[#19B5A3]/40 hover:bg-[#E6FAF7] font-medium'
-              )}
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Actively Deploying</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Results Count & Sort Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#4B5563] px-1">
-        <p>
-          Showing <span className="font-bold text-[#111827]">{filteredItems.length}</span> verified{' '}
-          {filteredItems.length === 1 ? 'institutional investor' : 'institutional investors'}
-        </p>
-
-        <div className="flex items-center gap-3">
-          <span className="text-[11px] font-medium text-[#4B5563]">Sort by:</span>
-          <select
+          </FilterSelect>
+          <FilterSelect
+            label="Order"
             value={sortOption}
-            onChange={(e) => setSortOption(e.target.value as any)}
-            className="text-xs bg-white border border-[#E2E8E4] rounded-md px-2.5 py-1 text-[#111827] focus:outline-none focus:ring-1 focus:ring-[#0B6E4F]"
+            onChange={(v) => setSortOption(v as 'FEATURED' | 'NAME' | 'RECENT')}
+            className="md:col-span-3"
           >
-            <option value="FEATURED">Featured &amp; Pillar Champions</option>
-            <option value="NAME">Name (A–Z)</option>
-            <option value="RECENT">Recently Verified</option>
-          </select>
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </FilterSelect>
+          <fieldset className="col-span-2 md:col-span-6">
+            <legend className="meta mb-2">Show only</legend>
+            <div className="flex flex-wrap gap-x-6 gap-y-2 border-b border-rule pb-2 text-sm text-ink-2">
+              <Check checked={cmaOnly} onChange={setCmaOnly} label="CMA-licensed" />
+              <Check checked={svcOnly} onChange={setSvcOnly} label="SVC partners" />
+              <Check checked={activeOnly} onChange={setActiveOnly} label="Investing now" />
+            </div>
+          </fieldset>
         </div>
       </div>
 
-      {/* 3. Investors Grid */}
+      {/* Result line */}
+      <div className="mt-10 flex flex-wrap items-baseline justify-between gap-3">
+        <p className="meta" aria-live="polite">
+          {filteredItems.length} of {initialInvestors.length} {initialInvestors.length === 1 ? 'investor' : 'investors'} ·{' '}
+          {sortLabel}
+        </p>
+        {hasActiveFilters && (
+          <button type="button" onClick={handleResetFilters} className="group meta text-ink hover:text-clay transition-colors">
+            <span className="link-rule">Clear filters</span> →
+          </button>
+        )}
+      </div>
+
       {filteredItems.length === 0 ? (
-        <div className="bg-white p-12 text-center rounded-lg border border-[#E2E8E4] space-y-3">
-          <Briefcase className="w-10 h-10 text-[#4B5563] mx-auto" />
-          <h3 className="font-heading font-bold text-lg text-[#111827]">
-            No institutional investors match your selected criteria
-          </h3>
-          <p className="text-xs sm:text-sm text-[#4B5563] max-w-md mx-auto">
-            Try resetting your regulatory, stage, or typology filters to browse active venture funds and sovereign vehicles in Saudi Arabia.
-          </p>
-          <button
-            onClick={handleResetFilters}
-            className="mt-2 text-xs font-semibold px-4 py-2 rounded-md bg-[#0B6E4F] text-white hover:bg-[#08533C] transition-all cursor-pointer shadow-xs"
-          >
-            Reset All Filters
+        <div className="mt-3 border-t-2 border-ink py-14">
+          <p className="font-serif text-[1.5rem] leading-snug text-ink">No investors match these filters.</p>
+          <button type="button" onClick={handleResetFilters} className="group mt-3 inline-flex items-center gap-2 text-sm text-ink">
+            <span className="link-rule">Clear filters</span>
+            <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {filteredItems.map((item) => {
-            const stages = Array.isArray(item.targetStages) ? item.targetStages : [];
-            const sectors = Array.isArray(item.targetSectors) ? item.targetSectors : [];
-            const portfolio = Array.isArray(item.portfolioHighlights) ? item.portfolioHighlights : [];
+        <div className="mt-3">
+          <div className={cn('hidden md:grid gap-6 border-t-2 border-ink border-b border-rule py-3 meta', COLS)}>
+            <span>Investor</span>
+            <span>Ticket size</span>
+            <span>Stages</span>
+            <span>Licensing</span>
+            <span>Status</span>
+            <span className="sr-only">Details</span>
+          </div>
 
-            return (
-              <div
-                key={item.id}
-                className="group bg-white rounded-lg border border-[#E2E8E4] hover:border-[#0B6E4F]/50 hover:shadow-md transition-all p-5 sm:p-6 flex flex-col justify-between"
-              >
-                <div className="space-y-3.5">
-                  {/* Top Bar: Name, Typology, and Clear Regulatory Badges */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <Link
-                          href={`/investor/${item.slug}`}
-                          className="font-heading font-bold text-lg text-[#111827] group-hover:text-[#0B6E4F] hover:underline transition-colors"
-                        >
-                          {item.name}
-                        </Link>
-                        {item.isFeatured && (
-                          <span className="px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-[#FDF8EC] text-[#9A7B1C] border border-[#C9A227]/40">
-                            Pillar Lead
-                          </span>
+          <ul className="border-t-2 border-ink md:border-t-0">
+            {filteredItems.map((item) => {
+              const stages = Array.isArray(item.targetStages) ? (item.targetStages as string[]) : [];
+              const sectors = Array.isArray(item.targetSectors) ? (item.targetSectors as string[]) : [];
+              const portfolio = Array.isArray(item.portfolioHighlights) ? (item.portfolioHighlights as string[]) : [];
+              const licences = [item.isCmaAuthorized && 'CMA', item.isSvcPartner && 'SVC'].filter(Boolean) as string[];
+              const open = openId === item.id;
+              const panelId = `inv-${item.id}`;
+
+              return (
+                <li key={item.id} className={cn('border-b border-rule', open && 'bg-paper-sheet/60')}>
+                  <div
+                    className={cn(
+                      'grid grid-cols-[minmax(0,1fr)_auto] gap-x-6 gap-y-2 py-5 md:items-baseline -mx-3 px-3 transition-colors hover:bg-paper-sheet/60',
+                      COLS
+                    )}
+                  >
+                    {/* Investor */}
+                    <div className="min-w-0">
+                      <Link href={`/investor/${item.slug}`} className="font-serif text-[1.25rem] leading-snug text-ink headline-link">
+                        {item.name}
+                      </Link>
+                      <p className="mt-1 text-sm text-ink-3">
+                        {investorTypeLabel(item.type)} · {item.hqLocation}
+                      </p>
+                    </div>
+
+                    {/* Mobile status */}
+                    <div className="md:hidden pt-1.5">
+                      <ActiveWord active={item.isActiveInvesting} />
+                    </div>
+
+                    {/* Ticket */}
+                    <p className="col-span-2 md:col-span-1 text-sm text-ink-2 leading-snug">
+                      <span className="meta mr-2 md:hidden">Ticket</span>
+                      {item.checkSizeRange ?? 'Not disclosed'}
+                    </p>
+
+                    {/* Stages */}
+                    <p className="col-span-2 md:col-span-1 text-sm text-ink-2 leading-snug">
+                      <span className="meta mr-2 md:hidden">Stages</span>
+                      {stages.length ? stages.join(', ') : '—'}
+                    </p>
+
+                    {/* Licensing */}
+                    <p className={cn('font-sans text-[0.8125rem] text-ink-2', !licences.length && 'hidden md:block')}>
+                      <span className="meta mr-2 md:hidden">Licensing</span>
+                      {licences.length ? licences.join(' · ') : <span className="text-ink-4">—</span>}
+                    </p>
+
+                    {/* Desktop status */}
+                    <div className="hidden md:block">
+                      <ActiveWord active={item.isActiveInvesting} />
+                    </div>
+
+                    <button
+                      type="button"
+                      aria-expanded={open}
+                      aria-controls={panelId}
+                      onClick={() => setOpenId(open ? null : item.id)}
+                      className="justify-self-end font-sans text-sm text-ink-3 hover:text-clay transition-colors md:w-8 md:text-right"
+                    >
+                      <span className="md:hidden mr-1.5 text-[0.71875rem]">{open ? 'Less' : 'Details'}</span>
+                      <span aria-hidden>{open ? '−' : '+'}</span>
+                      <span className="sr-only">{open ? 'Hide details' : `Show details for ${item.name}`}</span>
+                    </button>
+                  </div>
+
+                  {open && (
+                    <div id={panelId} className="grid gap-8 pb-8 pt-1 md:grid-cols-12">
+                      <div className="md:col-span-7 space-y-5">
+                        <p className="text-[0.9375rem] leading-relaxed text-ink-2">{item.description}</p>
+                        {sectors.length > 0 && (
+                          <div>
+                            <p className="meta mb-2">Sectors</p>
+                            <p className="text-sm text-ink-2 leading-relaxed">{sectors.join(' · ')}</p>
+                          </div>
+                        )}
+                        {portfolio.length > 0 && (
+                          <div>
+                            <p className="meta mb-2">Portfolio includes</p>
+                            <p className="text-sm text-ink-2 leading-relaxed">{portfolio.join(' · ')}</p>
+                          </div>
                         )}
                       </div>
-
-                      <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-[#4B5563]">
-                        <span className="font-semibold text-[#0B6E4F]">
-                          {formatType(item.type)}
-                        </span>
-                        <span>•</span>
-                        <span className="inline-flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-[#4B5563]" />
-                          {item.hqLocation}
-                        </span>
-                        {item.isActiveInvesting && (
-                          <>
-                            <span>•</span>
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0B6E4F]">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#0B6E4F] animate-pulse" />
-                              Actively Deploying
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Strict Regulatory Badges (CMA vs SVC separated) */}
-                    <div className="flex flex-col items-end gap-1 shrink-0">
-                      {item.isCmaAuthorized && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/30">
-                          <ShieldCheck className="w-3 h-3 text-[#0B6E4F]" />
-                          CMA Authorized
-                        </span>
-                      )}
-
-                      {item.isSvcPartner && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#FDF8EC] text-[#9A7B1C] border border-[#C9A227]/40">
-                          <Landmark className="w-3 h-3 text-[#C9A227]" />
-                          SVC Partner
-                        </span>
-                      )}
-
-                      {!item.isCmaAuthorized && !item.isSvcPartner && item.regulatoryCategory && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-[#F1F5F2] text-[#4B5563] border border-[#E2E8E4]">
-                          {item.regulatoryCategory}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* CMA License details if verified */}
-                  {item.cmaLicenseNumber && (
-                    <div className="text-[11px] text-[#0B6E4F] bg-[#E8F5EF] px-2.5 py-1 rounded-md border border-[#0B6E4F]/20 font-mono">
-                      CMA: {item.cmaLicenseNumber}
-                    </div>
-                  )}
-
-                  {/* Check Size & Target Stages Box */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-[#F1F5F2] rounded-md border border-[#E2E8E4] text-xs">
-                    <div>
-                      <span className="text-[10px] uppercase font-bold text-[#4B5563] block">
-                        Disclosed Check Size
-                      </span>
-                      <span className="font-bold text-[#111827]">
-                        {item.checkSizeRange || 'Unspecified (Confidential)'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] uppercase font-bold text-[#4B5563] block">
-                        Target Stages
-                      </span>
-                      <span className="font-medium text-[#111827]">
-                        {stages.length > 0 ? stages.join(', ') : 'Early to Growth'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-xs text-[#4B5563] leading-relaxed line-clamp-3">
-                    {item.description}
-                  </p>
-
-                  {/* Target Sectors Chips */}
-                  {sectors.length > 0 && (
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                        Sovereign Pillar &amp; Sector Focus:
-                      </span>
-                      <div className="flex flex-wrap items-center gap-1">
-                        {sectors.map((sec: string, idx: number) => (
-                          <span
-                            key={idx}
-                            className="px-2 py-0.5 rounded-md bg-[#F1F5F2] text-[10px] font-semibold text-[#111827] border border-[#E2E8E4]"
-                          >
-                            {sec}
-                          </span>
-                        ))}
+                      <div className="md:col-span-5 md:border-l md:border-rule md:pl-8">
+                        <dl className="text-sm">
+                          {item.cmaLicenseNumber && (
+                            <FactRow label="CMA licence">
+                              <span className="font-sans tabular">{item.cmaLicenseNumber}</span>
+                            </FactRow>
+                          )}
+                          {item.regulatoryCategory && <FactRow label="Category">{item.regulatoryCategory}</FactRow>}
+                          {item.sourceName && (
+                            <FactRow label="Source">
+                              {item.sourceUrl ? (
+                                <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer" className="link-rule text-ink">
+                                  {item.sourceName} ↗
+                                </a>
+                              ) : (
+                                item.sourceName
+                              )}
+                            </FactRow>
+                          )}
+                          <FactRow label="Last checked">
+                            <span className="font-sans tabular">{shortDate(item.verifiedAt)}</span>
+                          </FactRow>
+                        </dl>
+                        <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
+                          {item.pitchUrl && (
+                            <a href={item.pitchUrl} target="_blank" rel="noopener noreferrer" className="btn-quiet">
+                              Pitch <span aria-hidden>↗</span>
+                            </a>
+                          )}
+                          <a href={item.websiteUrl} target="_blank" rel="noopener noreferrer" className="link-rule text-ink">
+                            Website ↗
+                          </a>
+                          <Link href={`/investor/${item.slug}`} className="group inline-flex items-center gap-2 text-ink">
+                            <span className="link-rule">Full profile</span>
+                            <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   )}
-
-                  {/* Portfolio Highlights */}
-                  {portfolio.length > 0 && (
-                    <div className="text-xs pt-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1.5">
-                        Verified Portfolio:
-                      </span>
-                      <span className="text-[#111827] font-medium text-[11px]">
-                        {portfolio.join(' • ')}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Bottom Bar: Provenance + Actions */}
-                <div className="pt-4 mt-4 border-t border-[#E2E8E4] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                  <div className="text-[10px] text-slate-400">
-                    <span>Verified {formatDate(item.verifiedAt)}</span>
-                    {item.sourceName && (
-                      <span className="block text-slate-400 truncate max-w-[220px]">
-                        via {item.sourceName}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                    <Link
-                      href={`/investor/${item.slug}`}
-                      className="px-3 py-1.5 rounded-md text-xs font-semibold bg-[#0B6E4F] hover:bg-[#08533C] text-white transition-all shadow-xs flex items-center gap-1"
-                    >
-                      <span>View Dossier</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </Link>
-
-                    <a
-                      href={item.websiteUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-1.5 rounded-md border border-[#E2E8E4] text-[#111827] hover:bg-[#F1F5F2] font-medium transition-colors"
-                    >
-                      Website
-                    </a>
-
-                    {item.pitchUrl && (
-                      <a
-                        href={item.pitchUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-[#F1F5F2] border border-[#E2E8E4] hover:bg-[#E8F5EF] text-[#0B6E4F] font-semibold transition-all shadow-xs"
-                      >
-                        <span>Pitch</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                </li>
+              );
+            })}
+          </ul>
         </div>
       )}
     </div>
   );
 };
+
+/* ------------------------------------------------------------------ */
+
+function ActiveWord({ active }: { active: boolean }) {
+  return active ? (
+    <span className="inline-flex items-center gap-1.5 font-sans text-[0.75rem] text-moss whitespace-nowrap">
+      <span className="inline-block w-1.5 h-1.5 rounded-full bg-moss" />
+      Investing
+    </span>
+  ) : (
+    <span className="font-sans text-[0.75rem] text-ink-4 whitespace-nowrap">Not active</span>
+  );
+}
+
+function Check({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
+  return (
+    <label className="inline-flex items-center gap-2 cursor-pointer hover:text-ink transition-colors">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="h-3.5 w-3.5 rounded-none accent-clay cursor-pointer"
+      />
+      <span className={cn(checked && 'text-ink')}>{label}</span>
+    </label>
+  );
+}
+
+function FilterSelect({
+  label,
+  value,
+  onChange,
+  children,
+  className,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <label className={cn('block min-w-0', className)}>
+      <span className="meta block mb-1">{label}</span>
+      <span className="relative block">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full appearance-none truncate border-b border-ink bg-transparent py-1.5 pr-6 text-sm text-ink focus:border-clay focus:outline-none cursor-pointer"
+        >
+          {children}
+        </select>
+        <span aria-hidden className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-[0.625rem] text-ink-3">
+          ▼
+        </span>
+      </span>
+    </label>
+  );
+}
+
+function FactRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-[7rem_minmax(0,1fr)] gap-4 border-b border-rule py-2.5 first:border-t">
+      <dt className="meta pt-0.5">{label}</dt>
+      <dd className="text-ink-2 break-words">{children}</dd>
+    </div>
+  );
+}
+
+function SearchGlyph() {
+  return (
+    <svg aria-hidden width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" className="text-ink-3 shrink-0">
+      <circle cx="11" cy="11" r="7" />
+      <path d="M20 20l-3.5-3.5" />
+    </svg>
+  );
+}
+
+function shortDate(iso: string) {
+  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso));
+}

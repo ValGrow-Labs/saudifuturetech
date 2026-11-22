@@ -3,7 +3,6 @@
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Save, Eye, ArrowLeft, Loader2, AlertTriangle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { createCampaignAction, updateCampaignAction } from '@/actions/campaigns';
 
@@ -56,125 +55,113 @@ export function CampaignEditorForm({ initialData, isNew = false }: CampaignEdito
     });
   };
 
+  const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
+
   return (
-    <div className="space-y-6 max-w-4xl font-sans">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-sft">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/admin/campaigns"
-            className="p-1.5 rounded-sm bg-brand-dark hover:bg-brand-surface border border-sft text-sft-text-muted hover:text-brand-cloud transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 text-brand-yellow" />
+    <div className="space-y-6 max-w-3xl">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 pb-5 border-b border-rule">
+        <div className="min-w-0">
+          <Link href="/admin/campaigns" className="meta hover:text-ink transition-colors">
+            ← Campaigns
           </Link>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-brand-cloud font-heading tracking-tight">
-              {isNew ? 'Compose Executive Briefing' : `Edit: ${title || 'Campaign'}`}
-            </h1>
-            <p className="text-xs text-sft-text-muted">
-              Draft weekly intelligence dispatch for verified corporate and executive subscribers.
-            </p>
-          </div>
+          <h1 className="mt-2 font-serif text-display-sm text-ink line-clamp-2">
+            {isNew ? 'New campaign' : title || 'Untitled campaign'}
+          </h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4 shrink-0">
           {!isNew && initialData?.id && (
-            <Link
-              href={`/admin/campaigns/${initialData.id}/preview`}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-sm bg-brand-dark hover:bg-brand-surface border border-sft text-brand-cloud text-xs font-heading font-bold transition-colors"
-            >
-              <Eye className="w-3.5 h-3.5 text-brand-yellow" />
-              <span>Preview Email</span>
+            <Link href={`/admin/campaigns/${initialData.id}/preview`} className="row-action">
+              Preview
             </Link>
           )}
-
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            disabled={isPending}
-            onClick={() => handleSubmit('save')}
-            className="font-heading uppercase tracking-wider text-xs flex items-center gap-1.5"
-          >
-            {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-            <span>Save Draft</span>
+          <Button type="button" variant="primary" size="md" disabled={isPending} onClick={() => handleSubmit('save')}>
+            {isPending ? 'Saving…' : 'Save draft'}
           </Button>
         </div>
       </div>
 
       {errorMsg && (
-        <div className="p-3.5 bg-red-950/40 border border-red-500/40 rounded-sm text-xs text-red-200 flex items-start gap-2.5">
-          <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-          <p className="font-sans text-red-300">{errorMsg}</p>
-        </div>
+        <p role="alert" className="border-l-2 border-clay pl-3 text-sm text-ink-2">
+          {errorMsg}
+        </p>
       )}
 
-      {/* Campaign Form Box */}
-      <div className="bg-brand-surface rounded-sm border border-sft p-6 space-y-5 shadow-sm">
-        <div className="space-y-1.5">
-          <label className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-            Internal Campaign Title <span className="text-brand-yellow">*</span>
+      <div className="space-y-5">
+        <div>
+          <label htmlFor="campaign-title" className="field-label">
+            Internal name <span className="text-ink-4">*</span>
           </label>
           <input
+            id="campaign-title"
             type="text"
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Executive Dispatch #03: Sovereign Cloud Topology"
-            className="w-full bg-brand-dark border border-sft rounded-sm px-3.5 py-2 text-sm font-heading font-bold text-brand-cloud focus:outline-none focus:border-brand-yellow transition-colors"
+            placeholder="Weekly briefing, issue 03"
+            className="field"
           />
-          <p className="text-[11px] text-sft-text-muted">Used for internal tracking and reporting in the CMS console.</p>
+          <p className="field-hint">Only shown in the CMS.</p>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-            Email Subject Line <span className="text-brand-yellow">*</span>
+        <div>
+          <label htmlFor="campaign-subject" className="field-label">
+            Subject line <span className="text-ink-4">*</span>
           </label>
           <input
+            id="campaign-subject"
             type="text"
             required
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
-            placeholder="e.g. Inside Saudi Arabia’s Sovereign Compute Blueprint"
-            className="w-full bg-brand-dark border border-sft rounded-sm px-3.5 py-2 text-sm text-brand-cloud focus:outline-none focus:border-brand-yellow transition-colors font-sans"
+            placeholder="What readers see in their inbox"
+            className="field font-serif !text-[1.25rem] !py-2.5"
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-            Inbox Preview Text (Preheader)
+        <div>
+          <label htmlFor="campaign-preview" className="field-label">
+            Preview text
           </label>
           <input
+            id="campaign-preview"
             type="text"
             value={previewText}
             onChange={(e) => setPreviewText(e.target.value)}
-            placeholder="e.g. ALLaM foundation models, SDAIA compute roadmap, and OXAGON autonomous ports."
-            className="w-full bg-brand-dark border border-sft rounded-sm px-3.5 py-2 text-xs text-brand-cloud focus:outline-none focus:border-brand-yellow transition-colors font-sans"
+            placeholder="The line shown after the subject in most inboxes"
+            className="field"
           />
         </div>
 
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <label className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-              Newsletter Body & Editorial Content <span className="text-brand-yellow">*</span>
+        <div>
+          <div className="flex items-baseline justify-between gap-3">
+            <label htmlFor="campaign-content" className="field-label">
+              Body <span className="text-ink-4">*</span>
             </label>
-            <span className="text-[11px] font-mono text-sft-text-muted">
-              {content.trim().split(/\s+/).filter(Boolean).length} words
-            </span>
+            <span className="font-sans text-[0.6875rem] text-ink-3 tabular">{wordCount} words</span>
           </div>
           <textarea
-            rows={14}
+            id="campaign-content"
+            rows={16}
             required
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Write your newsletter dispatch here. Paragraphs separated by double line breaks will format cleanly into email blocks..."
-            className="w-full bg-brand-dark border border-sft rounded-sm p-4 text-xs sm:text-sm font-sans text-brand-cloud focus:outline-none focus:border-brand-yellow transition-colors leading-relaxed"
+            placeholder="Write the issue. Leave a blank line between paragraphs."
+            className="field font-serif !text-[1.0625rem] !leading-[1.75] !px-5 !py-4"
           />
-          <p className="text-[11px] text-sft-text-muted">
-            The publication header, brand logo, and mandatory personalized unsubscribe link are automatically appended during email transmission.
+          <p className="field-hint">
+            The header and each reader&rsquo;s unsubscribe link are added automatically when the email is sent.
           </p>
         </div>
+
+        {!isNew && (
+          <div className="pt-2">
+            <Button type="button" variant="outline" size="md" disabled={isPending} onClick={() => handleSubmit('preview')}>
+              Save and preview
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-

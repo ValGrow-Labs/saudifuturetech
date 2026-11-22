@@ -1,18 +1,20 @@
 import React from 'react';
 import { Metadata } from 'next';
+import Link from 'next/link';
 import { SiteHeader } from '@/components/public/SiteHeader';
 import { SiteFooter } from '@/components/public/SiteFooter';
+import { MainContainer } from '@/components/public/MainContainer';
 import { getOpportunities } from '@/lib/founder-intelligence';
 import { OpportunityDirectory, OpportunityItem } from '@/components/public/OpportunityDirectory';
-import { Coins, ShieldCheck, ArrowRight, Compass } from 'lucide-react';
-import Link from 'next/link';
+import { daysUntil } from '@/lib/labels';
+
 import prisma from '@/lib/prisma';
 import { OpportunityCategory, OpportunityStatus } from '@prisma/client';
 
 export const metadata: Metadata = {
-  title: 'Opportunity Hub & Grant Radar | Saudi Future Tech',
+  title: 'Grants and programmes for Saudi founders | Saudi Future Tech',
   description:
-    'Verified non-dilutive government grants, venture accelerators, innovation subsidies, and regulatory sandboxes for founders building in Saudi Arabia. Verified with official ministry sources.',
+    'Open grants, accelerators, subsidies and regulatory sandboxes for founders in Saudi Arabia, each checked against the issuing body’s own page.',
 };
 
 export const revalidate = 60; // 1-minute ISR
@@ -31,7 +33,6 @@ interface PageProps {
 export default async function OpportunitiesPage({ searchParams }: PageProps) {
   const resolvedParams = searchParams ? await searchParams : {};
 
-  // Fetch verified categories for the pillar selector
   const [rawCategories, rawOpportunities] = await Promise.all([
     prisma.category.findMany({
       orderBy: { displayOrder: 'asc' },
@@ -81,94 +82,69 @@ export default async function OpportunitiesPage({ searchParams }: PageProps) {
     categoryRel: opp.categoryRel,
   }));
 
-  const activeProgramsCount = opportunities.filter((o) => !o.isExpired && o.status !== OpportunityStatus.CLOSED).length;
+  const openItems = opportunities.filter((o) => !o.isExpired && o.status !== OpportunityStatus.CLOSED);
+  const closingSoon = openItems.filter((o) => {
+    const d = daysUntil(o.deadline);
+    return d !== null && d >= 0 && d <= 14;
+  }).length;
+  const lastChecked = opportunities.reduce<string | null>(
+    (latest, o) => (!latest || o.verifiedAt > latest ? o.verifiedAt : latest),
+    null
+  );
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-[#111827] font-sans">
+    <>
       <SiteHeader />
 
-      <main className="flex-1 pb-20">
-        {/* 1. Page Hero Banner & Institutional Verification Strip */}
-        <div className="bg-[#FAF9F6] border-b border-[#E2E8E4] py-12 sm:py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl space-y-4">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F1F5F2] border border-[#E2E8E4] text-xs font-semibold text-[#0A1F2C]">
-                <Compass className="w-3.5 h-3.5 text-[#0B6E4F]" />
-                <span>KSA Founder Capital &amp; Opportunity Hub</span>
-              </div>
+      <main id="main" className="flex-1">
+        <MainContainer className="pt-8 md:pt-12 pb-24">
+          <header className="max-w-3xl">
+            <p className="kicker mb-3">The grant desk</p>
+            <h1 className="font-serif text-display-lg text-ink">Grants and programmes</h1>
+            <p className="mt-4 max-w-2xl text-[1.0625rem] leading-relaxed text-ink-3">
+              Grants, accelerators, subsidies and regulatory sandboxes open to founders building in Saudi Arabia.
+              Each listing links to the issuing body’s own page and shows when we last checked it.
+            </p>
+            <p className="meta mt-6">
+              {opportunities.length} listed · {openItems.length} open · {closingSoon} closing within 14 days
+              {lastChecked && <> · last checked {new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(lastChecked))}</>}
+            </p>
+          </header>
 
-              <h1 className="text-3xl sm:text-5xl font-heading font-black tracking-tight text-[#111827] leading-tight">
-                Saudi Opportunity Hub &amp; Grant Radar
-              </h1>
-
-              <p className="text-sm sm:text-base text-[#4B5563] leading-relaxed">
-                Discover verified non-dilutive government grants, venture accelerators, innovation vouchers, and regulatory sandboxes across Saudi Arabia. Every opportunity is strictly vetted against official ministry portals with verified application URLs.
-              </p>
-
-              <div className="flex flex-wrap items-center gap-6 pt-2 text-xs text-[#4B5563]">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#0B6E4F]" />
-                  <span className="font-semibold text-[#111827]">
-                    {activeProgramsCount} Active Programs Available Now
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-[#0B6E4F]" />
-                  <span>Official Ministerial Provenance • Zero Speculation</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Coins className="w-4 h-4 text-[#C9A227]" />
-                  <span>SAR 150M+ In Tracked Founder Capital</span>
-                </div>
-              </div>
-            </div>
+          <div className="mt-12">
+            <OpportunityDirectory
+              initialOpportunities={opportunities}
+              availablePillars={rawCategories.map((c) => ({
+                slug: c.slug,
+                name: c.name,
+                color: c.accentColor || '',
+              }))}
+              initialQuery={resolvedParams.q || ''}
+              initialCategory={resolvedParams.category || 'ALL'}
+              initialPillar={resolvedParams.pillar || 'ALL'}
+              initialStatus={resolvedParams.status || 'ALL'}
+              initialEligibility={resolvedParams.eligibility || 'ALL'}
+              initialSort={resolvedParams.sort || 'deadline-asc'}
+            />
           </div>
-        </div>
 
-        {/* 2. Directory, Filter, & Opportunity Dossier Cards */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-          <OpportunityDirectory
-            initialOpportunities={opportunities}
-            availablePillars={rawCategories.map((c) => ({
-              slug: c.slug,
-              name: c.name,
-              color: c.accentColor || '#39765B',
-            }))}
-            initialQuery={resolvedParams.q || ''}
-            initialCategory={resolvedParams.category || 'ALL'}
-            initialPillar={resolvedParams.pillar || 'ALL'}
-            initialStatus={resolvedParams.status || 'ALL'}
-            initialEligibility={resolvedParams.eligibility || 'ALL'}
-            initialSort={resolvedParams.sort || 'deadline-asc'}
-          />
-        </div>
-
-        {/* 3. Program Submission Callout */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
-          <div className="bg-brand-navy text-white rounded-lg p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm">
-            <div className="space-y-2 max-w-xl">
-              <span className="text-xs font-bold uppercase tracking-wider text-brand-teal">
-                For Program Managers &amp; Ecosystem Operators
-              </span>
-              <h2 className="text-2xl font-heading font-bold text-white">
-                Operating a grant, accelerator cohort, or sandbox in KSA?
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-300">
-                Submit your program to our editorial desk for verification. Verification is 100% free for authorized public entities and private accelerators operating in Saudi Arabia.
+          <aside className="mt-20 grid gap-4 border-t border-rule pt-6 md:grid-cols-12 md:gap-10">
+            <p className="meta md:col-span-3">Run a programme?</p>
+            <div className="md:col-span-9 max-w-2xl">
+              <p className="text-[0.9375rem] leading-relaxed text-ink-2">
+                If you run a grant, accelerator cohort or sandbox in Saudi Arabia and it isn’t listed here, send us the
+                official page. We check it against the source before it goes up, and there’s no charge.
               </p>
+              <Link href="/newsletter" className="group mt-3 inline-flex items-center gap-2 text-sm text-ink">
+                <span className="link-rule">Submit a programme</span>
+                <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+              </Link>
             </div>
-            <Link
-              href="/newsletter"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-md bg-brand-yellow text-ink-high font-bold text-xs uppercase tracking-wider hover:bg-brand-yellow-hover transition-all shrink-0"
-            >
-              <span>Submit Verification Request</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
+          </aside>
+        </MainContainer>
       </main>
 
       <SiteFooter />
-    </div>
+    </>
   );
 }

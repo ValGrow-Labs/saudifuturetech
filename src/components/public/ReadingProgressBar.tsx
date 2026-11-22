@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 
+/** A 2px clay line across the top of the viewport that fills as you read. */
 export const ReadingProgressBar: React.FC = () => {
   const [progress, setProgress] = useState(0);
 
@@ -23,18 +24,14 @@ export const ReadingProgressBar: React.FC = () => {
 
   return (
     <div
-      className="fixed top-0 left-0 w-full h-[3px] z-50 bg-brand-dark/30 pointer-events-none"
+      className="fixed top-0 left-0 w-full h-[2px] z-overlay pointer-events-none"
       role="progressbar"
       aria-valuenow={Math.round(progress)}
       aria-valuemin={0}
       aria-valuemax={100}
       aria-label="Reading progress"
     >
-      <div
-        className="h-full bg-brand-yellow transition-all duration-75 ease-out shadow-[0_0_8px_rgba(244,197,66,0.6)]"
-        style={{ width: `${progress}%` }}
-      />
+      <div className="h-full bg-clay origin-left" style={{ width: `${progress}%` }} />
     </div>
   );
 };
-

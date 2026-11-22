@@ -8,7 +8,7 @@ export default async function NewCampaignPage() {
   await requireRole(['SUPER_ADMIN', 'EDITOR']);
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="space-y-6">
       <CampaignEditorForm isNew={true} />
     </div>
   );

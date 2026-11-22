@@ -5,6 +5,7 @@ import prisma from '@/lib/prisma';
 import { getCurrentSessionUser } from '@/lib/auth/guard';
 import { CampaignStatus, SubscriberStatus } from '@prisma/client';
 import { Resend } from 'resend';
+import { renderCampaignEmail } from '@/lib/newsletter/email-template';
 
 export interface CampaignActionState {
   success?: boolean;
@@ -190,31 +191,18 @@ export async function sendCampaignAction(id: string): Promise<CampaignActionStat
   try {
     const resend = new Resend(resendApiKey);
 
-    // Format HTML email
-    const paragraphs = lockedCampaign.content.split(/\n\s*\n/).filter(Boolean);
-    const bodyHtml = paragraphs.map((p) => `<p style="margin-bottom: 16px; line-height: 1.6; color: #333333;">${p.replace(/\n/g, '<br/>')}</p>`).join('');
-
     // In production, batch send or send per subscriber with individualized unsubscribe link
     let dispatchedCount = 0;
 
     for (const sub of activeSubscribers) {
       const unsubLink = `${siteUrl}/unsubscribe?token=${sub.unsubscribeToken}`;
-      const emailHtml = `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e5e5; border-radius: 4px; overflow: hidden;">
-          <div style="background-color: #25282B; padding: 24px 32px; border-bottom: 3px solid #F4C542;">
-            <div style="display: inline-block; background: #F4C542; color: #25282B; font-weight: 900; font-size: 14px; padding: 4px 8px; border-radius: 2px; margin-bottom: 8px;">SAUDI FUTURE TECH</div>
-            <h1 style="color: #F5F6F3; font-size: 20px; margin: 0; font-weight: 800;">${lockedCampaign.subject}</h1>
-            ${lockedCampaign.previewText ? `<p style="color: #8C96A0; font-size: 13px; margin: 6px 0 0 0;">${lockedCampaign.previewText}</p>` : ''}
-          </div>
-          <div style="padding: 32px; font-size: 15px;">
-            ${bodyHtml}
-          </div>
-          <div style="background: #F5F6F3; padding: 20px 32px; font-size: 11px; color: #666666; border-top: 1px solid #e5e5e5;">
-            <p style="margin: 0 0 8px 0;">You received this briefing because you subscribed to Saudi Future Tech executive intelligence.</p>
-            <p style="margin: 0;"><a href="${unsubLink}" style="color: #666666; text-decoration: underline;">Unsubscribe from future briefings</a> | <a href="${siteUrl}/privacy" style="color: #666666; text-decoration: underline;">Privacy Policy</a></p>
-          </div>
-        </div>
-      `;
+      const emailHtml = renderCampaignEmail({
+        subject: lockedCampaign.subject,
+        previewText: lockedCampaign.previewText,
+        content: lockedCampaign.content,
+        siteUrl,
+        unsubscribeUrl: unsubLink,
+      });
 
       try {
         await resend.emails.send({

@@ -7,14 +7,15 @@ import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { NewsletterBanner } from '@/components/public/NewsletterBanner';
 import { SearchClient } from './SearchClient';
 import { searchUnifiedEcosystem } from '@/lib/founder-intelligence';
-import { SITE_NAME } from '@/lib/constants';
 import { getCanonicalUrl, DEFAULT_SEO } from '@/lib/seo/config';
 import { BreadcrumbJsonLd } from '@/lib/seo/json-ld';
 
+const DESCRIPTION =
+  'Search Saudi Future Tech’s reporting and its directories of Saudi startups, investors, grants and accelerators in one place.';
+
 export const metadata: Metadata = {
-  title: `Unified Search | Discover Startups, Investors & Opportunities | ${DEFAULT_SEO.siteName}`,
-  description:
-    'Search once across Saudi startups, venture capital, sovereign funds, non-dilutive grants, accelerators, and frontier technology intelligence.',
+  title: `Search | ${DEFAULT_SEO.siteName}`,
+  description: DESCRIPTION,
   robots: {
     index: false,
     follow: true,
@@ -23,9 +24,8 @@ export const metadata: Metadata = {
     canonical: getCanonicalUrl('/search'),
   },
   openGraph: {
-    title: `Unified Search | ${DEFAULT_SEO.siteName}`,
-    description:
-      'Search once across Saudi startups, venture capital, sovereign funds, non-dilutive grants, accelerators, and frontier technology intelligence.',
+    title: `Search | ${DEFAULT_SEO.siteName}`,
+    description: DESCRIPTION,
     type: 'website',
     url: getCanonicalUrl('/search'),
     siteName: DEFAULT_SEO.siteName,
@@ -47,12 +47,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const page = parseInt(resolvedParams.page || '1', 10);
 
   let category: 'all' | 'startups' | 'investors' | 'opportunities' | 'articles' = 'all';
-  if (
-    rawCat === 'startups' ||
-    rawCat === 'investors' ||
-    rawCat === 'opportunities' ||
-    rawCat === 'articles'
-  ) {
+  if (rawCat === 'startups' || rawCat === 'investors' || rawCat === 'opportunities' || rawCat === 'articles') {
     category = rawCat;
   }
 
@@ -65,58 +60,35 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   const breadcrumbs = [
     { label: 'Home', href: '/' },
-    { label: 'Unified Search', current: true },
+    { label: 'Search', current: true },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-[#111827] font-sans">
-      {/* Schema.org Structured Data */}
+    <>
       <BreadcrumbJsonLd items={breadcrumbs} />
 
       <SiteHeader />
 
-      <main className="flex-1 py-8 sm:py-12 space-y-10 sm:space-y-14">
-        <MainContainer size="default">
-          {/* Breadcrumbs */}
-          <div className="pb-6 border-b border-[#E2E8E4]">
-            <Breadcrumbs items={breadcrumbs} />
-          </div>
+      <main id="main" className="flex-1">
+        <MainContainer className="pt-8 md:pt-10 pb-24">
+          <Breadcrumbs items={breadcrumbs} />
 
-          {/* Masthead */}
-          <header className="pt-6 pb-6 space-y-3 border-b-2 border-[#0B6E4F]">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#C9A227]" />
-              <span className="text-[11px] font-bold uppercase tracking-widest text-[#4B5563] font-heading">
-                Unified Ecosystem Discovery
-              </span>
-            </div>
-            <h1 className="text-3xl sm:text-5xl font-black text-[#111827] tracking-tight font-heading">
-              Search Saudi Future Tech
-            </h1>
-            <p className="text-sm sm:text-base text-[#4B5563] max-w-2xl leading-relaxed">
-              Discover verified Saudi startups, active institutional investors, sovereign grants, compute subsidies, and frontier technology intelligence.
+          <header className="mt-10 md:mt-12 mb-10 md:mb-12 max-w-3xl">
+            <h1 className="font-serif text-display-lg text-ink">Search</h1>
+            <p className="mt-4 max-w-2xl text-[1.0625rem] leading-relaxed text-ink-3">
+              One search across our reporting and the directories of startups, investors, grants and accelerators.
             </p>
           </header>
 
-          {/* Interactive Search Client wrapped in Suspense */}
-          <Suspense
-            fallback={
-              <div className="py-20 text-center text-ink-muted font-sans text-sm animate-pulse">
-                Loading unified discovery index...
-              </div>
-            }
-          >
+          <Suspense fallback={<p className="meta py-10">Loading search…</p>}>
             <SearchClient initialData={initialSearchData} />
           </Suspense>
 
-          {/* Newsletter Banner */}
-          <div className="pt-8">
-            <NewsletterBanner />
-          </div>
+          <NewsletterBanner className="mt-24 md:mt-28" />
         </MainContainer>
       </main>
 
       <SiteFooter />
-    </div>
+    </>
   );
 }

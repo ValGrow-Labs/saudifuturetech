@@ -1,150 +1,117 @@
-# Saudi Future Tech — Design System & Visual Specification
+# Saudi Future Tech — Design System (v2)
 
-**Document Version:** 1.0.0  
-**Phase:** Phase 0 (Discovery & Architecture)  
-**Status:** Approved Design Specification  
+The site is a serious publication, closer to the FT, Rest of World or a good
+city newspaper than a startup landing page. Structure comes from **typography
+and hairline rules**, not boxes, shadows or colour.
 
----
-
-## 1. Visual Identity & Brand Philosophy
-
-The visual language of **Saudi Future Tech** conveys architectural precision, editorial gravitas, and forward-looking technological optimism. It is styled in the lineage of world-class technology journalism institutions (such as MIT Technology Review, Bloomberg Technology, and The Information).
-
-### Design Rules: What to Emphasize vs. What to Avoid
-* **DO:**
-  * Prioritize typographic hierarchy, sharp 1px borders (`border-white/10`), generous negative space, and disciplined layout rhythm.
-  * Use the vibrant accent color (`#B7F36B`) sparingly as a laser focus indicator for badges, category highlights, critical callouts, and key active states.
-  * Establish high contrast and optimal line-lengths (65–75 characters per line) for long-form reading comfort.
-  * Use deliberate editorial layouts: asymmetrical lead features, editorial pull-quotes, and distinct category rails.
-* **DO NOT:**
-  * Avoid generic AI-generated tropes: purple/pink neon gradient blobs, glowing radial backdrops, overused glassmorphism, floating blur cards, or gratuitous parallax animations.
-  * Avoid repetitive, uniform card grids that look like e-commerce catalogs rather than a curated news publication.
-  * Do not compromise legibility for aesthetic novelty.
+Reference implementation: `src/app/page.tsx` and `src/components/home/*`.
+Read those before building anything.
 
 ---
 
-## 2. Color Palette & Token System
+## 1. Tokens (tailwind.config.ts)
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        PRIMARY COLOR PALETTE                           │
-├───────────────────┬───────────────────┬────────────────────────────────┤
-│ Primary Background│ Secondary BG      │ Future Accent                  │
-│ #071521           │ #102B35           │ #B7F36B                        │
-│ Deep Space Navy   │ Surface / Slate   │ Electric Acid Lime             │
-├───────────────────┴───────────────────┴────────────────────────────────┤
-│ Light Background: #F3F5F2 (Off-White / Alabaster)                      │
-└────────────────────────────────────────────────────────────────────────┘
-```
+| Token | Value | Use |
+|---|---|---|
+| `bg-paper` | `#F2EEE5` | Page background (limestone) |
+| `bg-paper-sheet` | `#FAF8F3` | Inputs, hover rows, the rare raised surface |
+| `bg-paper-band` | `#EAE4D8` | Full-width tonal band (e.g. newsletter), image placeholders |
+| `text-ink` | `#1A1714` | Headlines, primary text, primary buttons |
+| `text-ink-2` | `#3A352F` | Body copy |
+| `text-ink-3` | `#6F675D` | Standfirsts, secondary copy |
+| `text-ink-4` | `#9A9186` | Faint metadata, index numbers |
+| `border-rule` | `#D8D0C1` | Hairlines between items |
+| `border-ink` | | Heavy rules that open a section (`border-t-2 border-ink`) |
+| `clay` / `clay-dark` / `clay-tint` / `clay-wash` | `#A63D24` | **The only accent.** Kickers, urgent deadlines, hover on headlines, focus ring |
+| `moss` / `moss-tint` | `#3F6B52` | One meaning only: open / accepting / verified |
 
-### 2.1. Palette Specifications
+Legacy tokens (`editorial-*`, `brand-*`, `saudi-*`, `sft-*`, `ink-high/body/muted`)
+are remapped onto this palette so old code doesn't break. **Don't use them in new
+code.** Don't use raw hex values, Tailwind default palettes (`slate-`, `emerald-`,
+`gray-`, `blue-`…), gradients, or per-category rainbow colours (`category.color`
+is ignored).
 
-| Token Name | Hex Code | RGB | HSL | Semantic Role |
-| :--- | :--- | :--- | :--- | :--- |
-| `color-bg-primary` | `#071521` | `7, 21, 33` | `208°, 65%, 8%` | Root page background, deep dark canvas |
-| `color-bg-secondary`| `#102B35` | `16, 43, 53` | `196°, 54%, 14%` | Card surfaces, navigation bars, elevated containers |
-| `color-bg-subtle` | `#163A47` | `22, 58, 71` | `196°, 53%, 18%` | Hover states, active tabs, inset code blocks |
-| `color-accent` | `#B7F36B` | `183, 243, 107`| `86°, 84%, 69%` | Primary focal accent, active badges, breaking indicator |
-| `color-accent-hover`| `#9DE24F` | `157, 226, 79` | `88°, 73%, 60%` | Interactive hover state for accent buttons |
-| `color-bg-light` | `#F3F5F2` | `243, 245, 242`| `90°, 8%, 95%` | Editorial light canvas mode & high-contrast print view |
-| `color-text-high` | `#FFFFFF` | `255, 255, 255`| `0°, 0%, 100%` | Primary headlines, title text, prominent figures |
-| `color-text-body` | `#D1D8DD` | `209, 216, 221`| `205°, 16%, 84%`| Article reading body text, descriptions |
-| `color-text-muted`| `#8E9CA6` | `142, 156, 166`| `203°, 12%, 60%`| Metadata, bylines, timestamps, captions |
-| `color-border` | `rgba(255, 255, 255, 0.10)` | - | - | Subtle hairline borders, divider lines |
-| `color-border-hover`| `rgba(183, 243, 107, 0.35)` | - | - | Interactive card hover borders |
+## 2. Type
+
+- `font-serif`: Newsreader. All headlines, standfirsts, article body, big numerals. Weight 400–500. Never bold-black.
+- `font-sans`: Geist. UI, buttons, body copy in directories.
+- `font-mono`: Geist Mono — **code blocks only.** Dates, money, counts and labels use the sans with `tabular` figures. Monospace metadata reads as machine-generated; avoid it.
+
+Display sizes (fluid, tracking built in): `text-display-xl`, `text-display-lg`,
+`text-display-md`, `text-display-sm`. Use them for h1/h2 instead of `text-4xl` etc.
+
+Utility classes in `globals.css`:
+- `.kicker`: small uppercase sans label in clay, above headlines. One per block, max.
+- `.meta`: small sans metadata line (date · read time · source), tabular figures.
+- `.headline-link`: headline turns clay on hover (also on `.group:hover`).
+- `.link-rule`: underline grows from left on hover. For text links like "See all →".
+- `.btn-primary`: ink button, turns clay on hover. **One per view.**
+- `.btn-quiet`: outlined ink button.
+- `.prose-sft`: serif article body. `.standfirst`, `.drop-cap` for articles.
+- `.img-warm`: put on every photo so stock images sit warmly on the paper.
+- `.rise`: entry animation. Use sparingly (above-the-fold only), stagger with `style={{animationDelay}}`.
+
+Sentence case everywhere ("Closing soon", not "Closing Soon"). No ALL CAPS
+except `.kicker` and `.meta`-style column heads.
+
+## 3. Layout patterns
+
+- Container: `<MainContainer>` (84rem, matches masthead). Narrow reading column: `size="narrow"` or `max-w-measure`.
+- **Section opener**: `border-t-2 border-ink pt-4`, then optional `.kicker`, then a serif `h2`, then a one-line `text-ink-3` standfirst. A "See all →" `.link-rule` link sits on the right. Use `<SectionHeading>`.
+- **Lists over cards.** Items are separated by `border-b border-rule` (or `divide-y divide-rule`). Use a ruled list or table for directories (grants, startups, investors). See `GrantLedger.tsx` and `StartupRegister.tsx`.
+- **Tables are fine** for tabular data: mono column heads (`meta`), `border-b border-ink` under the head, `border-b border-rule` rows, `hover:bg-paper-sheet/60`.
+- **Asymmetry.** 12-column grids with 8/4, 7/5, 3/9 splits. Vertical rules between columns (`lg:border-l lg:border-rule lg:pl-10`). Avoid 3 or 4 equal boxed cards in a row.
+- Space generously between sections: `space-y-20 md:space-y-28`.
+- No boxes with border + shadow + rounded corners. If a surface is needed, use `bg-paper-sheet` with no border, or a hairline only. Radius max `rounded-sm` (2px).
+- No pill badges. Status is a word in mono, optionally with a 6px dot (`moss` = open, `clay` = urgent).
+- Filters: text tabs with an underline for the active one, or plain `<select>` styled with a bottom border. Not pill clouds.
+- Inputs: transparent with `border-b-2 border-ink`, `focus-within:border-clay`.
+- Page header for inner pages: kicker, `text-display-lg` serif h1, `text-ink-3` standfirst at `max-w-2xl`, then a `border-b border-rule` or the first section's heavy rule. Left-aligned, never centred hero blocks.
+- Breadcrumbs: `.meta` text, `/` separators.
+
+## 4. Icons
+
+Avoid decorative icons (shields, rockets, sparkles, building icons beside every
+label). Use text and arrows (`→`, `↗` for external links). If an icon is truly
+needed (search, close, external), use a small inline SVG with `strokeWidth 1.25`,
+or lucide at `w-4 h-4 strokeWidth={1.5}`.
+
+## 5. Copy
+
+Plain, specific, active. Banned: "sovereign" (except proper nouns), "elevate",
+"seamless", "unleash", "next-gen", "game-changer", "cutting-edge", "operating
+intelligence", "zero speculation", "verified intelligence", "ecosystem" as filler,
+exclamation marks. Errors: "We couldn't load this. Try again." Empty states:
+say what's empty and offer the next step. Never invent statistics.
+
+## 6. States
+
+Every interactive element has hover (colour shift), `active:translate-y-px` for
+buttons, and the global clay focus ring. Empty states are a short serif line plus
+a link. Loading: keep layout, no spinners where avoidable.
+
+## 7. Shared components (do not fork)
+
+`SiteHeader`, `SiteFooter`, `MainContainer`, `SectionHeading`, `CategoryBadge`
+(renders a clay kicker link), `ArticleCard` (borderless teaser, props `size`,
+`showImage`), `NewsletterBanner` (inner pages), `NewsletterForm`, `src/lib/labels.ts`
+(`stageLabel`, `opportunityTypeLabel`, `investorTypeLabel`, `businessModelLabel`,
+`deadlineInfo`, `daysUntil`).
 
 ---
 
-## 3. Typography System
+## 8. Admin (CMS)
 
-The publication employs two primary typefaces, imported via Next.js Google Fonts (`next/font/google`) with zero layout shift (CLS = 0) and local font subsetting:
+The admin is a working tool: denser than the public site, same system.
+Shell (`AdminClientShell`, `AdminSidebar`, `AdminHeader`) is done — don't fork it.
 
-1. **Headings & Display:** **Manrope** (Geometric sans-serif with modern grotesque authority).
-2. **Body & Reading:** **Inter** (Engineered for maximum screen legibility and neutral editorial clarity).
-3. **Code & Data Callouts:** **JetBrains Mono** or **Geist Mono** (Monospace tabular alignment).
-
-### Type Scale & Hierarchy
-
-| Semantic Level | Font Family | Size (Desktop / Mobile) | Weight | Line Height | Tracking |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Display / Hero H1** | Manrope | `48px (3rem) / 32px` | 800 (ExtraBold) | 1.15 | `-0.03em` |
-| **Section Title H2** | Manrope | `32px (2rem) / 24px` | 700 (Bold) | 1.25 | `-0.02em` |
-| **Article Card H3** | Manrope | `22px (1.375rem) / 18px`| 600 (SemiBold) | 1.30 | `-0.01em` |
-| **Subtitle / Subhead**| Manrope | `18px (1.125rem) / 16px`| 500 (Medium) | 1.40 | `0` |
-| **Article Body** | Inter | `18px (1.125rem) / 16px`| 400 (Regular) | 1.75 | `0` |
-| **Lead / Standfirst** | Inter | `20px (1.25rem) / 18px` | 400 (Regular) | 1.60 | `0` |
-| **Metadata & Byline** | Inter | `13px (0.8125rem)` | 500 (Medium) | 1.40 | `+0.01em` |
-| **Category Pill Badge**| Manrope | `11px (0.6875rem)` | 700 (Bold) | 1.00 | `+0.08em (Uppercase)`|
-
----
-
-## 4. Grid, Layout & Spacing Architecture
-
-* **Container Max Width:**
-  * Standard Layout: `1280px` (`max-w-7xl`)
-  * Hero Wide: `1440px` (`max-w-[90rem]`)
-  * Article Reading Canvas: `768px` (`max-w-3xl`) — locked to ensure ergonomic reading cadence.
-* **Layout Grid:** 12-column responsive CSS grid with standard `gap-6` (24px) or `gap-8` (32px).
-* **Base Unit:** 4px spacing scale (Tailwind default: `4`, `8`, `12`, `16`, `24`, `32`, `48`, `64`, `96px`).
-
----
-
-## 5. Core UI Component Specifications
-
-### 5.1. Global Header & Navigation
-* Fixed/Sticky bar with backdrop blur: `bg-[#071521]/90 backdrop-blur-md border-b border-white/10`.
-* Left: Saudi Future Tech wordmark + dynamic publication timestamp (Riyadh Time).
-* Center: Primary category links (`AI & Deep Tech`, `GovTech`, `Cybersecurity`, `Smart Cities`, `FinTech`, `Clean Energy`).
-* Right: Search icon modal trigger, Newsletter CTA button (`bg-[#B7F36B] text-[#071521] font-semibold hover:bg-[#9DE24F] px-4 py-2 rounded-md`).
-
-### 5.2. Hero Article Feature (Lead Story)
-* Asymmetrical 2-column or 70/30 layout:
-  * Left: High-impact 16:9 photography with subtle vignette, photo credit overlay.
-  * Right: Category badge pill, reading time indicator, H1 display headline, 3-line editorial standfirst, author avatar with byline and publication date.
-* Sharp, thin divider line in `#B7F36B` connecting the headline to the category taxonomy.
-
-### 5.3. Editorial Article Card (Standard Grid)
-* Card surface: `#102B35` with `border border-white/10`.
-* Hover state: Border smoothly shifts to `border-[#B7F36B]/40`, title transitions to `#B7F36B` (200ms ease).
-* Aspect ratio 16:10 thumbnail image with responsive Next.js Image component (`fill`, `object-cover`).
-* Category pill: Upper left with accent background or outline.
-* Metadata row: Author name, date (e.g., "Nov 14, 2026"), and reading time (e.g., "5 min read").
-
-### 5.4. Trending & Breaking Ticker
-* A horizontal stream or dedicated sidebar rail:
-  * Numbered indices `01`, `02`, `03`, `04`, `05` rendered in large, muted Manrope (`text-[#8E9CA6]/40`).
-  * Headline links with reading time.
-  * Live status indicator: pulsating dot in `#B7F36B` for breaking developments.
-
-### 5.5. Editorial Reading Canvas (Article Detail Page)
-* **Header Block:**
-  * Category badge pill.
-  * Headline H1 in Manrope (bold, high-contrast `#FFFFFF`).
-  * Standfirst excerpt in Inter 20px `#D1D8DD`.
-  * Author Byline Bar: Author avatar (48px rounded-full), author name with link to profile, publication date, last updated date, reading time, and social share buttons (X/Twitter, LinkedIn, Copy Link).
-* **Feature Image:** Full-width high-resolution photo with descriptive caption and photographer credit.
-* **Body Content Typography:**
-  * 18px Inter with 1.75 line-height.
-  * Paragraph spacing: `mb-6`.
-  * Drop cap on initial paragraph (optional editorial flair: Manrope, 3-line height, `#B7F36B`).
-  * Pull Quotes: Centered or left-bordered with 3px solid `#B7F36B`, Manrope 24px italic, `#FFFFFF`.
-  * Code blocks: `#071521` background, 1px border, syntax highlighted with monospace typography.
-  * Image embeds: Responsive with styled caption below in `text-xs text-[#8E9CA6]`.
-
-### 5.6. Author Bio Card (End of Article & Author Page)
-* Surface `#102B35` with `border border-white/10`.
-* Author portrait (80px), name, professional editorial title, bio paragraph, and verified social icons (X, LinkedIn, Personal Site).
-
-### 5.7. Newsletter Signup Module
-* Integrated within homepage flow and article footers.
-* High-impact layout: `#102B35` surface with `#B7F36B` accent border.
-* Value proposition: "The Saudi Tech Ecosystem, Delivered Every Thursday."
-* Input field: Deep background `#071521`, crisp 1px border, white text, instant submit button with loading state.
-
-### 5.8. Global Footer
-* Multi-column architecture:
-  * Column 1: Brand description, editorial mission, Vision 2030 tech focus statement, copyright.
-  * Column 2: Editorial categories.
-  * Column 3: Corporate & Legal (About Us, Editorial Ethics, Contact, Privacy Policy, Terms).
-  * Column 4: Newsletter signup micro-form and social channels.
-
+- **Page header**: `<PageHeading badge? title description?>{actions}</PageHeading>` from `src/components/ui/PageHeading.tsx`.
+- **Figures**: `<StatCard>` (serif number over a top ink rule, no box). Lay out in a grid with `gap-x-8 gap-y-6`.
+- **Status**: `<StatusBadge>` for article status; for other statuses use the same pattern — mono word + 6px dot (`moss` = live/open/active, `clay` = needs attention/closing/in review, `ink-4` = draft/inactive). No pills, no coloured backgrounds.
+- **Forms**: `.field-label` (sentence case, never uppercase), `.field` on every input/textarea/select (light sheet, hairline, ink focus — never dark inputs), `.field-hint`, `.field-error`. Group sections in `.panel` with `p-5` and a `.panel-title`. Checkboxes: `accent-[#A63D24]`.
+- **Tables**: `<table className="data-table">` — mono heads, ruled rows. Row actions are text (`.row-action`, `.row-action-danger`: "Edit", "Preview", "Delete"), not icon-button rows. An icon is OK only inside a text button if it genuinely helps.
+- **Buttons**: `<Button>` from `src/components/ui/Button.tsx` (primary = ink, one per view; secondary/outline/ghost). Destructive actions: ghost/outline with clay text and a confirm step, never solid red.
+- **Messages**: success = `border-l-2 border-moss pl-3` text; error = `border-l-2 border-clay pl-3` text. No coloured boxes, no emoji, no exclamation marks.
+- **Modals / drawers**: `bg-paper-sheet border border-rule shadow-lift`, overlay `bg-ink/40`.
+- **Copy**: plain labels ("Headline", "Slug", "Standfirst", "Section", "Cover image URL"), not "EDITORIAL PILLAR & BYLINE". No "sovereign", "encrypted session", "backstage console" theatre.
+- Remove legacy tokens (`editorial-*`, `brand-*`, `saudi-*`, `ink-high/body/muted`), Tailwind default palettes (`amber-`, `rose-`, `emerald-`, `sky-`, `slate-`, `stone-`, `red-`, `green-`…), raw hex and `uppercase tracking-widest` labels in files you touch.

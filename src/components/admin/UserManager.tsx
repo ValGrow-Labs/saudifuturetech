@@ -1,19 +1,8 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import {
-  Plus,
-  Edit2,
-  Trash2,
-  X,
-  AlertTriangle,
-  ShieldCheck,
-  CheckCircle,
-  XCircle,
-  KeyRound,
-  User as UserIcon,
-} from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { PageHeading } from '@/components/ui/PageHeading';
 import { cn } from '@/lib/utils';
 import {
   createUserAction,
@@ -23,6 +12,7 @@ import {
 } from '@/actions/users';
 import { UserRole } from '@prisma/client';
 
+import { StatusDot, Note, type Tone } from '@/components/ui/StatusDot';
 interface AuthorOption {
   id: string;
   name: string;
@@ -130,7 +120,7 @@ export function UserManager({ users, authors, currentUserId }: UserManagerProps)
   };
 
   const handleDelete = (id: string, userEmail: string) => {
-    if (confirm(`Permanently delete user account "${userEmail}"? This action cannot be undone.`)) {
+    if (confirm(`Delete the account for ${userEmail}? This cannot be undone.`)) {
       setErrorMsg(null);
       startTransition(async () => {
         const res = await deleteUserAction(id);
@@ -141,242 +131,193 @@ export function UserManager({ users, authors, currentUserId }: UserManagerProps)
     }
   };
 
-  return (
-    <div className="space-y-6 font-sans">
-      {errorMsg && (
-        <div className="p-3.5 bg-red-950/40 border border-red-500/40 rounded-sm text-xs text-red-200 flex items-start gap-2.5">
-          <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-          <p className="font-sans text-red-300">{errorMsg}</p>
-        </div>
-      )}
+  const isFormOpen = Boolean(isCreating || editingId);
 
-      {/* Action Header */}
-      <div className="flex justify-end">
-        {!isCreating && !editingId && (
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            onClick={openCreate}
-            className="font-heading uppercase tracking-wider text-xs flex items-center gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Create Staff Account</span>
+  return (
+    <div className="space-y-6">
+      <PageHeading title="Users and roles" description="Staff who can sign in to the admin, and what each one is allowed to do.">
+        {!isFormOpen && (
+          <Button type="button" onClick={openCreate}>
+            Add user
           </Button>
         )}
-      </div>
+      </PageHeading>
 
-      {/* Form Drawer / Card */}
-      {(isCreating || editingId) && (
-        <form onSubmit={handleSubmit} className="p-5 bg-brand-surface border border-brand-yellow/40 rounded-sm space-y-4 shadow-lg">
-          <div className="flex items-center justify-between border-b border-sft pb-3">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-brand-yellow font-heading">
-              {editingId ? 'Modify Staff Account' : 'Provision Staff Account'}
-            </h3>
-            <button type="button" onClick={closeForm} className="text-sft-text-muted hover:text-brand-cloud">
-              <X className="w-4 h-4" />
+      {errorMsg && !isFormOpen && (
+        <Note tone="error" onDismiss={() => setErrorMsg(null)}>
+          {errorMsg}
+        </Note>
+      )}
+
+      {/* Create / edit form */}
+      {isFormOpen && (
+        <form onSubmit={handleSubmit} className="panel p-5 space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="panel-title">{editingId ? 'Edit user' : 'New user'}</h2>
+            <button type="button" onClick={closeForm} className="row-action">
+              Close
             </button>
           </div>
 
+          {errorMsg && <Note tone="error">{errorMsg}</Note>}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase text-sft-text-muted font-heading">
-                Staff Name *
+            <div>
+              <label htmlFor="us-name" className="field-label">
+                Name
               </label>
               <input
+                id="us-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Noura Al-Ghamdi"
+                placeholder="Noura Al-Ghamdi"
                 required
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-1.5 text-xs text-brand-cloud focus:border-brand-yellow focus:outline-none"
+                className="field"
               />
             </div>
-
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase text-sft-text-muted font-heading">
-                Email Address *
+            <div>
+              <label htmlFor="us-email" className="field-label">
+                Email
               </label>
               <input
+                id="us-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="staff@saudifuturetech.com"
+                placeholder="name@saudifuturetech.com"
                 required
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-1.5 text-xs text-brand-cloud focus:border-brand-yellow focus:outline-none"
+                className="field"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase text-sft-text-muted font-heading">
-                Password {editingId ? '(Leave blank to keep unchanged)' : '*'}
+            <div>
+              <label htmlFor="us-password" className="field-label">
+                Password
               </label>
               <input
+                id="us-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder={editingId ? '••••••••••••' : 'Min 8 characters'}
+                placeholder={editingId ? '••••••••' : ''}
                 required={!editingId}
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-1.5 text-xs text-brand-cloud focus:border-brand-yellow focus:outline-none"
+                className="field"
               />
+              <p className="field-hint">{editingId ? 'Leave blank to keep the current password.' : 'At least 8 characters.'}</p>
             </div>
-
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase text-sft-text-muted font-heading">
-                Security Role (RBAC) *
+            <div>
+              <label htmlFor="us-role" className="field-label">
+                Role
               </label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-1.5 text-xs text-brand-cloud focus:border-brand-yellow focus:outline-none"
-              >
-                <option value={UserRole.AUTHOR}>AUTHOR (Drafting & Submissions)</option>
-                <option value={UserRole.EDITOR}>EDITOR (Publishing & Taxonomy)</option>
-                <option value={UserRole.SUPER_ADMIN}>SUPER_ADMIN (Full Platform Access)</option>
+              <select id="us-role" value={role} onChange={(e) => setRole(e.target.value as UserRole)} className="field">
+                <option value={UserRole.AUTHOR}>Author</option>
+                <option value={UserRole.EDITOR}>Editor</option>
+                <option value={UserRole.SUPER_ADMIN}>Super admin</option>
               </select>
+              <p className="field-hint">{ROLE_HINT[role]}</p>
             </div>
-
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase text-sft-text-muted font-heading">
-                Link to Contributor Byline
+            <div>
+              <label htmlFor="us-author" className="field-label">
+                Byline
               </label>
-              <select
-                value={authorId}
-                onChange={(e) => setAuthorId(e.target.value)}
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-1.5 text-xs text-brand-cloud focus:border-brand-yellow focus:outline-none"
-              >
-                <option value="">None (Administrative User)</option>
+              <select id="us-author" value={authorId} onChange={(e) => setAuthorId(e.target.value)} className="field">
+                <option value="">None</option>
                 {authors.map((a) => (
                   <option key={a.id} value={a.id}>
                     {a.name}
                   </option>
                 ))}
               </select>
+              <p className="field-hint">The author profile this person writes as.</p>
             </div>
           </div>
 
-          <div className="pt-2">
-            <label className="flex items-center gap-2 text-xs text-brand-cloud cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-                className="rounded-xs border-sft bg-brand-dark text-brand-yellow focus:ring-0"
-              />
-              <span className="font-heading font-bold">Account Active (Authorized to sign in)</span>
-            </label>
-          </div>
+          <label className="inline-flex items-center gap-2 text-sm text-ink-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isActive}
+              onChange={(e) => setIsActive(e.target.checked)}
+              className="accent-[#A63D24]"
+            />
+            Active (can sign in)
+          </label>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-sft">
-            <Button type="button" variant="outline" size="sm" onClick={closeForm} className="text-xs">
+          <div className="flex items-center justify-end gap-2 pt-1">
+            <Button type="button" variant="ghost" onClick={closeForm}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="sm"
-              disabled={isPending}
-              className="text-xs font-heading uppercase"
-            >
-              {isPending ? 'Saving...' : editingId ? 'Update Staff Member' : 'Create Account'}
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Saving…' : editingId ? 'Save changes' : 'Create user'}
             </Button>
           </div>
         </form>
       )}
 
-      {/* Users Table */}
-      <div className="bg-brand-surface rounded-sm border border-sft overflow-hidden shadow-sm">
-        <table className="w-full text-left border-collapse text-xs">
+      <div className="flex items-center justify-between gap-4">
+        <p className="meta">{users.length} users</p>
+        {isPending && <p className="meta">Saving…</p>}
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="data-table min-w-[720px]">
           <thead>
-            <tr className="border-b border-sft bg-brand-dark/60 text-sft-text-muted font-heading uppercase tracking-wider text-[11px]">
-              <th className="py-3 px-4 font-bold">Staff Member</th>
-              <th className="py-3 px-4 font-bold">Role Tier</th>
-              <th className="py-3 px-4 font-bold">Status</th>
-              <th className="py-3 px-4 font-bold">Linked Byline</th>
-              <th className="py-3 px-4 font-bold text-right">Actions</th>
+            <tr>
+              <th>User</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Byline</th>
+              <th className="text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-sft/50">
+          <tbody>
             {users.map((u) => {
               const isSelf = u.id === currentUserId;
 
               return (
-                <tr key={u.id} className="hover:bg-brand-dark/40 text-brand-cloud transition-editorial">
-                  <td className="py-3 px-4">
-                    <div className="font-bold font-heading flex items-center gap-2">
-                      <span>{u.name}</span>
-                      {isSelf && (
-                        <span className="px-1.5 py-0.2 rounded-xs bg-brand-yellow text-brand-graphite font-mono text-[9px] uppercase font-bold">
-                          You
-                        </span>
-                      )}
+                <tr key={u.id}>
+                  <td>
+                    <div className="flex items-baseline gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openEdit(u)}
+                        className="font-serif text-[1.0625rem] leading-snug text-ink text-left hover:text-clay transition-colors"
+                      >
+                        {u.name}
+                      </button>
+                      {isSelf && <span className="font-sans text-[0.6875rem] text-ink-4">You</span>}
                     </div>
-                    <div className="text-[11px] text-sft-text-muted font-mono">{u.email}</div>
+                    <p className="whitespace-nowrap font-sans text-[0.75rem] text-ink-3">{u.email}</p>
                   </td>
-
-                  <td className="py-3 px-4">
-                    <span
-                      className={cn(
-                        'text-[10px] uppercase font-heading font-bold px-2 py-0.5 rounded-xs inline-block',
-                        u.role === 'SUPER_ADMIN'
-                          ? 'bg-brand-yellow text-brand-graphite'
-                          : u.role === 'EDITOR'
-                          ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-                          : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                      )}
-                    >
-                      {u.role.replace('_', ' ')}
-                    </span>
-                  </td>
-
-                  <td className="py-3 px-4">
+                  <td className="whitespace-nowrap text-ink-2">{ROLE_LABEL[u.role] ?? u.role}</td>
+                  <td className="whitespace-nowrap">
                     <button
                       type="button"
                       onClick={() => handleToggleActive(u.id)}
                       disabled={isSelf || isPending}
-                      className={cn(
-                        'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-xs text-[10px] font-heading font-bold uppercase transition-colors',
-                        u.isActive
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20'
-                          : 'bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20',
-                        isSelf && 'cursor-default opacity-80'
-                      )}
-                      title={isSelf ? 'Cannot deactivate yourself' : 'Click to toggle active status'}
+                      title={isSelf ? 'You can’t deactivate your own account' : u.isActive ? 'Click to deactivate' : 'Click to reactivate'}
+                      className={cn('transition-opacity', isSelf ? 'cursor-default' : 'hover:opacity-70 disabled:opacity-50')}
                     >
-                      {u.isActive ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                      <span>{u.isActive ? 'Active' : 'Deactivated'}</span>
+                      <StatusDot tone={u.isActive ? 'moss' : 'ink'}>{u.isActive ? 'Active' : 'Inactive'}</StatusDot>
                     </button>
                   </td>
-
-                  <td className="py-3 px-4">
-                    {u.author ? (
-                      <span className="font-medium text-brand-cloud text-[11px]">{u.author.name}</span>
-                    ) : (
-                      <span className="text-sft-text-muted text-[11px] italic">Not linked</span>
-                    )}
+                  <td className="whitespace-nowrap">
+                    {u.author ? <span className="text-ink-2">{u.author.name}</span> : <span className="text-ink-4">—</span>}
                   </td>
-
-                  <td className="py-3 px-4 text-right space-x-1">
-                    <button
-                      type="button"
-                      onClick={() => openEdit(u)}
-                      className="p-1.5 rounded-sm hover:bg-brand-surface text-sft-text-muted hover:text-brand-cloud"
-                      title="Edit Account"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    {!isSelf && (
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(u.id, u.email)}
-                        className="p-1.5 rounded-sm hover:bg-red-950/20 text-red-400/80 hover:text-red-300"
-                        title="Delete User"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
+                  <td className="text-right whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-4">
+                      <button type="button" onClick={() => openEdit(u)} className="row-action">
+                        Edit
                       </button>
-                    )}
+                      {!isSelf && (
+                        <button type="button" onClick={() => handleDelete(u.id, u.email)} className="row-action-danger">
+                          Delete
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );
@@ -388,3 +329,14 @@ export function UserManager({ users, authors, currentUserId }: UserManagerProps)
   );
 }
 
+const ROLE_LABEL: Record<string, string> = {
+  SUPER_ADMIN: 'Super admin',
+  EDITOR: 'Editor',
+  AUTHOR: 'Author',
+};
+
+const ROLE_HINT: Record<string, string> = {
+  SUPER_ADMIN: 'Everything, including users and exports.',
+  EDITOR: 'Publishes articles and manages sections, tags and the directory.',
+  AUTHOR: 'Writes drafts and submits them for review.',
+};

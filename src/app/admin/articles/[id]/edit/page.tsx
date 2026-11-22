@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { requireAuth, canEditArticle } from '@/lib/auth/guard';
@@ -47,11 +48,14 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
   // Permission check
   if (!canEditArticle(currentUser, article)) {
     return (
-      <div className="p-8 bg-brand-surface rounded-sm border border-sft text-center space-y-3 font-sans">
-        <h2 className="text-lg font-bold text-red-400 font-heading">Access Denied</h2>
-        <p className="text-xs text-sft-text-muted max-w-md mx-auto">
-          You do not have permission to edit this article. As an Author, you can only modify stories linked to your own contributor byline.
+      <div className="border-y border-rule py-12 max-w-xl">
+        <p className="font-serif text-display-sm text-ink">You can&rsquo;t edit this article</p>
+        <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-3">
+          Authors can only edit articles under their own byline. Ask an editor if this one needs changes.
         </p>
+        <Link href="/admin/articles" className="mt-6 inline-block text-sm text-ink link-rule">
+          Back to articles →
+        </Link>
       </div>
     );
   }
@@ -81,7 +85,7 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
   };
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="space-y-6">
       <ArticleEditorForm
         isNew={false}
         initialData={initialData}

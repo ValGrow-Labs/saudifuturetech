@@ -3,17 +3,14 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Clock, Calendar, ArrowRight, BookOpen, Award, Layers } from 'lucide-react';
 import { SiteHeader } from '@/components/public/SiteHeader';
 import { SiteFooter } from '@/components/public/SiteFooter';
 import { MainContainer } from '@/components/public/MainContainer';
 import { CategoryBadge } from '@/components/public/CategoryBadge';
-import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { AuthorBioCard } from '@/components/public/AuthorBioCard';
 import { NewsletterBanner } from '@/components/public/NewsletterBanner';
 import { getAuthorBySlug, getArticlesByAuthor, getAllAuthorSlugs } from '@/lib/data';
 import { formatDate, formatReadingTime } from '@/lib/utils';
-import { SITE_NAME } from '@/lib/constants';
 import { getCanonicalUrl, DEFAULT_SEO } from '@/lib/seo/config';
 import { AuthorProfileJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld';
 
@@ -39,13 +36,13 @@ export async function generateMetadata({ params }: AuthorPageProps): Promise<Met
 
   if (!author) {
     return {
-      title: `Author Not Found | ${DEFAULT_SEO.siteName}`,
-      description: 'The requested editorial contributor profile could not be found.',
+      title: `Writer not found | ${DEFAULT_SEO.siteName}`,
+      description: 'We couldn’t find this writer.',
       robots: { index: false, follow: false },
     };
   }
 
-  const title = `${author.displayName} — Editorial Profile | ${DEFAULT_SEO.siteName}`;
+  const title = `${author.displayName} | ${DEFAULT_SEO.siteName}`;
   const description = author.bio || `${author.displayName} reports for ${DEFAULT_SEO.siteName}.`;
   const authorUrl = getCanonicalUrl(`/author/${author.slug}`);
 
@@ -93,156 +90,129 @@ export default async function AuthorProfilePage({ params }: AuthorPageProps) {
 
   const breadcrumbs = [
     { label: 'Home', href: '/' },
-    { label: 'Contributors', href: '/#about' },
+    { label: 'Contributors', href: '/about' },
     { label: author.displayName, current: true },
   ];
 
+  const firstName = author.displayName.split(' ')[0];
+
+  // The sections this writer files for, most frequent first.
+  const beats = Object.values(
+    articles.reduce<Record<string, { name: string; slug: string; count: number }>>((acc, a) => {
+      const entry = acc[a.category.slug] ?? { name: a.category.name, slug: a.category.slug, count: 0 };
+      entry.count += 1;
+      acc[a.category.slug] = entry;
+      return acc;
+    }, {}),
+  ).sort((x, y) => y.count - x.count);
+
   return (
-    <div className="min-h-screen flex flex-col bg-editorial-paper text-ink-body">
-      {/* Schema.org Structured Data */}
+    <>
       <AuthorProfileJsonLd author={author} />
       <BreadcrumbJsonLd items={breadcrumbs} />
-
       <SiteHeader />
 
-      <main className="flex-1 py-8 sm:py-12 space-y-12 sm:space-y-16">
-        <MainContainer size="default">
-          {/* Breadcrumbs */}
-          <div className="pb-6 border-b border-editorial-hairline">
-            <Breadcrumbs items={breadcrumbs} />
+      <main id="main" className="flex-1">
+        <MainContainer className="pt-6 md:pt-8 pb-24 space-y-20 md:space-y-28">
+          <div>
+            <nav aria-label="Breadcrumb" className="meta">
+              <Link href="/" className="hover:text-ink">
+                Home
+              </Link>
+              <span className="mx-2 text-ink-4">/</span>
+              <Link href="/about" className="hover:text-ink">
+                Contributors
+              </Link>
+            </nav>
+
+            <AuthorBioCard author={author} isProfileHeader className="mt-10 md:mt-14 pb-10 border-b border-rule" />
           </div>
 
-          {/* Author Masthead / Hero Card */}
-          <div className="pt-4">
-            <AuthorBioCard author={author} isProfileHeader={true} />
-          </div>
-
-          {/* Editorial Stats Bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-5 bg-editorial-pure rounded-xs border border-editorial-hairline shadow-xs text-center sm:text-left">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-ink-muted font-sans flex items-center justify-center sm:justify-start gap-1.5">
-                <BookOpen className="w-3.5 h-3.5 text-brand-gold" />
-                Published Reports
-              </span>
-              <p className="text-xl sm:text-2xl font-serif font-black text-ink-high">
-                {articles.length} Dispatches
-              </p>
-            </div>
-
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-ink-muted font-sans flex items-center justify-center sm:justify-start gap-1.5">
-                <Award className="w-3.5 h-3.5 text-brand-gold" />
-                Editorial Standing
-              </span>
-              <p className="text-xl sm:text-2xl font-serif font-black text-ink-high">
-                Senior Staff
-              </p>
-            </div>
-
-            <div className="space-y-1 col-span-2 sm:col-span-1 border-t sm:border-t-0 pt-3 sm:pt-0 border-editorial-hairline">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-ink-muted font-sans flex items-center justify-center sm:justify-start gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-brand-gold" />
-                Coverage Integrity
-              </span>
-              <p className="text-xs sm:text-sm text-ink-muted font-sans font-medium pt-1">
-                Peer-reviewed technical analysis
-              </p>
-            </div>
-          </div>
-
-          {/* Author's Articles Stream */}
-          <div className="space-y-6">
-            <div className="flex items-center justify-between border-b-2 border-ink-high pb-2.5">
-              <h2 className="text-xl font-serif font-bold text-ink-high">
-                Articles &amp; Investigations by {author.displayName}
-              </h2>
-              <span className="text-xs text-ink-muted font-sans">
-                {articles.length} Published
-              </span>
-            </div>
-
-            {articles.length === 0 ? (
-              <div className="p-12 text-center bg-editorial-pure rounded-xs border border-editorial-hairline space-y-3">
-                <p className="text-base text-ink-high font-serif font-bold">
-                  No published reports yet
-                </p>
-                <p className="text-xs text-ink-muted max-w-sm mx-auto font-sans">
-                  This contributor’s upcoming research pieces are currently undergoing editorial review.
+          <section aria-labelledby="author-stories" className="grid gap-12 lg:grid-cols-12 lg:gap-x-10">
+            <div className="lg:col-span-8">
+              <div className="border-t-2 border-ink pt-4 mb-2 flex items-end justify-between gap-4">
+                <h2 id="author-stories" className="font-serif text-display-sm md:text-display-md text-ink">
+                  Stories by {firstName}
+                </h2>
+                <p className="meta shrink-0 pb-1">
+                  {articles.length} {articles.length === 1 ? 'story' : 'stories'}
                 </p>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {articles.map((article) => (
-                  <article
-                    key={article.id}
-                    className="group bg-editorial-pure rounded-xs border border-editorial-hairline overflow-hidden hover:shadow-xs transition-editorial flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="relative aspect-[16/9] w-full bg-editorial-stone overflow-hidden">
-                        <Link href={`/article/${article.slug}`} className="block h-full w-full">
-                          <Image
-                            src={article.coverImageUrl}
-                            alt={article.coverImageAlt}
-                            fill
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            className="object-cover group-hover:scale-[1.03] transition-editorial duration-500"
-                          />
-                        </Link>
-                        <div className="absolute top-2.5 left-2.5">
-                          <CategoryBadge category={article.category} size="sm" />
-                        </div>
-                      </div>
 
-                      <div className="p-5 space-y-3">
-                        <div className="flex items-center gap-2 text-[11px] text-ink-muted font-sans">
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5" />
+              {articles.length === 0 ? (
+                <div className="py-10">
+                  <p className="font-serif text-[1.375rem] text-ink">{firstName} hasn’t published anything yet.</p>
+                  <p className="mt-2 text-[0.9375rem] text-ink-3">
+                    <Link href="/latest" className="text-ink link-rule">
+                      Read the latest from the newsroom →
+                    </Link>
+                  </p>
+                </div>
+              ) : (
+                <ul>
+                  {articles.map((article) => (
+                    <li key={article.id} className="group border-b border-rule">
+                      <article className="grid grid-cols-[1fr_6.5rem] sm:grid-cols-[6.5rem_1fr_9rem] gap-x-6 gap-y-2 py-6">
+                        <time dateTime={article.publishedAt} className="hidden sm:block meta pt-1">
+                          {formatDate(article.publishedAt)}
+                        </time>
+                        <div className="min-w-0">
+                          <CategoryBadge category={article.category} />
+                          <h3 className="mt-1.5 font-serif text-[1.3125rem] leading-snug text-ink">
+                            <Link href={`/article/${article.slug}`} className="headline-link">
+                              {article.title}
+                            </Link>
+                          </h3>
+                          <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink-3 line-clamp-2">{article.excerpt}</p>
+                          <p className="meta mt-2">
+                            <span className="sm:hidden">{formatDate(article.publishedAt)} · </span>
                             {formatReadingTime(article.readingTimeMinutes)}
-                          </span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3.5 h-3.5 text-ink-muted" />
-                            {formatDate(article.publishedAt)}
-                          </span>
+                          </p>
                         </div>
-
-                        <h3 className="text-lg font-serif font-bold text-ink-high group-hover:text-brand-gold transition-editorial leading-snug line-clamp-2">
-                          <Link href={`/article/${article.slug}`}>
-                            {article.title}
+                        {article.coverImageUrl && (
+                          <Link
+                            href={`/article/${article.slug}`}
+                            tabIndex={-1}
+                            aria-hidden
+                            className="relative block aspect-square sm:aspect-[4/3] overflow-hidden bg-paper-band self-start"
+                          >
+                            <Image src={article.coverImageUrl} alt="" fill sizes="144px" className="object-cover img-warm" />
                           </Link>
-                        </h3>
+                        )}
+                      </article>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
 
-                        <p className="text-xs sm:text-sm text-ink-body font-sans leading-relaxed line-clamp-3">
-                          {article.excerpt}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="p-5 pt-0 border-t border-editorial-hairline mt-4 flex items-center justify-between text-xs">
-                      <span className="text-[11px] text-ink-muted font-sans">
-                        Full Briefing
-                      </span>
-
-                      <Link
-                        href={`/article/${article.slug}`}
-                        className="inline-flex items-center gap-1 text-[11px] font-bold text-ink-high hover:text-brand-gold font-sans uppercase tracking-wider"
-                      >
-                        <span>Read</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
-                    </div>
-                  </article>
-                ))}
-              </div>
+            {beats.length > 0 && (
+              <aside aria-label="Sections" className="lg:col-span-4 lg:border-l lg:border-rule lg:pl-10">
+                <div className="lg:sticky lg:top-28 border-t-2 border-ink pt-4 lg:border-t-0 lg:pt-0">
+                  <p className="meta uppercase tracking-[0.04em]">Writes for</p>
+                  <ul className="mt-3">
+                    {beats.map((b) => (
+                      <li key={b.slug} className="border-b border-rule">
+                        <Link
+                          href={`/category/${b.slug}`}
+                          className="group flex items-baseline justify-between gap-4 py-3"
+                        >
+                          <span className="font-serif text-[1.1875rem] text-ink headline-link">{b.name}</span>
+                          <span className="meta">{b.count}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </aside>
             )}
-          </div>
+          </section>
 
-          {/* Newsletter Subscription */}
           <NewsletterBanner />
         </MainContainer>
       </main>
 
       <SiteFooter />
-    </div>
+    </>
   );
 }

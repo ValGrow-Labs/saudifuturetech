@@ -2,34 +2,16 @@
 
 import React, { useState, useTransition, useMemo } from 'react';
 import Link from 'next/link';
-import { 
-  Building2, 
-  ShieldCheck, 
-  ShieldAlert, 
-  ExternalLink, 
-  Trash2, 
-  Loader2, 
-  Check, 
-  X,
-  Search, 
-  Filter, 
-  Plus, 
-  Edit2, 
-  Eye, 
-  MapPin, 
-  Sparkles, 
-  CheckCircle2, 
-  Coins, 
-  Landmark,
-  Layers,
-  TrendingUp,
-  FileText
-} from 'lucide-react';
 import { formatDate, cn } from '@/lib/utils';
-import { 
-  saveInvestorAction, 
-  verifyInvestorLicenseAction, 
-  toggleInvestorPublishAction, 
+import { investorTypeLabel } from '@/lib/labels';
+import { PageHeading } from '@/components/ui/PageHeading';
+import { StatCard } from '@/components/ui/StatCard';
+import { Button } from '@/components/ui/Button';
+import { StatusDot, Note, type Tone } from '@/components/ui/StatusDot';
+import {
+  saveInvestorAction,
+  verifyInvestorLicenseAction,
+  toggleInvestorPublishAction,
   deleteInvestorAction,
   InvestorFormData
 } from '@/actions/founder-admin';
@@ -232,7 +214,7 @@ export const InvestorManager: React.FC<InvestorManagerProps> = ({ initialInvesto
         setErrorMessage(res.error);
       } else {
         setActiveMessage(
-          editingInvestor ? 'Investor updated successfully.' : 'New investor profile created.'
+          editingInvestor ? `Saved "${formData.name}".` : `Created "${formData.name}".`
         );
         setIsModalOpen(false);
       }
@@ -247,7 +229,7 @@ export const InvestorManager: React.FC<InvestorManagerProps> = ({ initialInvesto
       if (res.error) {
         setErrorMessage(res.error);
       } else {
-        setActiveMessage('Publication status updated.');
+        setActiveMessage('Visibility changed.');
       }
     });
   };
@@ -260,13 +242,13 @@ export const InvestorManager: React.FC<InvestorManagerProps> = ({ initialInvesto
       if (res.error) {
         setErrorMessage(res.error);
       } else {
-        setActiveMessage('Investor license verification re-attested.');
+        setActiveMessage('Marked as checked today.');
       }
     });
   };
 
   const handleDelete = (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to permanently delete '${name}'? This action cannot be undone.`)) {
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) {
       return;
     }
     setActiveMessage(null);
@@ -276,268 +258,217 @@ export const InvestorManager: React.FC<InvestorManagerProps> = ({ initialInvesto
       if (res.error) {
         setErrorMessage(res.error);
       } else {
-        setActiveMessage(`Investor '${name}' deleted successfully.`);
+        setActiveMessage(`Deleted "${name}".`);
       }
     });
   };
 
+  const typeOptions = ['VENTURE_CAPITAL', 'GOVERNMENT_FUND', 'CORPORATE_VC', 'ANGEL_NETWORK', 'FAMILY_OFFICE', 'ACCELERATOR_FUND'];
+
   return (
     <div className="space-y-6">
-      {/* 1. Global Metrics Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-editorial-pure p-4 rounded-none border border-editorial-hairline shadow-xs">
-          <div className="text-2xl font-bold font-heading text-ink-high">{totalCount}</div>
-          <div className="text-xs text-ink-muted">Total Funds Tracked</div>
-        </div>
+      <PageHeading
+        title="Investors"
+        description="Funds, angel networks and family offices listed in the investor directory."
+      >
+        <Button type="button" onClick={handleOpenCreateModal}>
+          Add investor
+        </Button>
+      </PageHeading>
 
-        <div className="bg-emerald-50/60 p-4 rounded-none border border-emerald-200 shadow-xs">
-          <div className="text-2xl font-bold font-heading text-emerald-900">{cmaCount}</div>
-          <div className="text-xs text-emerald-800 flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-            <span>CMA Authorized</span>
-          </div>
-        </div>
-
-        <div className="bg-amber-50/60 p-4 rounded-none border border-amber-200 shadow-xs">
-          <div className="text-2xl font-bold font-heading text-amber-900">{svcCount}</div>
-          <div className="text-xs text-amber-800 flex items-center gap-1">
-            <Landmark className="w-3.5 h-3.5 text-amber-700" />
-            <span>SVC Partner Funds</span>
-          </div>
-        </div>
-
-        <div className="bg-brand-oasis/10 p-4 rounded-none border border-brand-oasis/20 shadow-xs">
-          <div className="text-2xl font-bold font-heading text-brand-oasis">{liveCount}</div>
-          <div className="text-xs text-brand-oasis font-medium flex items-center gap-1">
-            <Eye className="w-3.5 h-3.5" />
-            <span>Publicly Live Dossiers</span>
-          </div>
-        </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-6 max-w-3xl">
+        <StatCard label="Listed" value={String(totalCount)} change="" trend="neutral" description="" />
+        <StatCard label="CMA authorised" value={String(cmaCount)} change="" trend="neutral" description="" />
+        <StatCard label="SVC partners" value={String(svcCount)} change="" trend="neutral" description="" />
+        <StatCard label="Published" value={String(liveCount)} change="" trend="neutral" description="" />
       </div>
 
-      {/* Messages */}
       {activeMessage && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs flex items-center gap-2">
-          <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>{activeMessage}</span>
-        </div>
+        <Note tone="success" onDismiss={() => setActiveMessage(null)}>
+          {activeMessage}
+        </Note>
       )}
-      {errorMessage && (
-        <div className="p-3 bg-red-50 text-red-800 border border-red-200 text-xs flex items-center gap-2">
-          <ShieldAlert className="w-4 h-4 text-red-600 shrink-0" />
-          <span>{errorMessage}</span>
-        </div>
+      {errorMessage && !isModalOpen && (
+        <Note tone="error" onDismiss={() => setErrorMessage(null)}>
+          {errorMessage}
+        </Note>
       )}
 
-      {/* 2. Search & Controls Bar */}
-      <div className="bg-editorial-pure p-4 rounded-none border border-editorial-hairline shadow-xs space-y-3">
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
-            <input
-              type="text"
-              placeholder="Search investors by name, HQ, CMA license, or description..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-xs bg-editorial-sand/40 border border-editorial-hairline rounded-none text-ink-high focus:outline-none focus:border-brand-navy"
-            />
-          </div>
-
-          <button
-            onClick={handleOpenCreateModal}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-brand-navy text-white text-xs font-bold uppercase tracking-wider hover:bg-opacity-95 transition-all shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add New Investor</span>
-          </button>
+      {/* Filters */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_repeat(4,minmax(0,1fr))] gap-3">
+        <div>
+          <label htmlFor="inv-search" className="field-label">
+            Search
+          </label>
+          <input
+            id="inv-search"
+            type="search"
+            placeholder="Name, city or CMA licence"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="field"
+          />
         </div>
-
-        {/* Filter Selectors */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-editorial-hairline text-xs">
-          <div className="flex items-center gap-1 text-ink-muted">
-            <Filter className="w-3.5 h-3.5" />
-            <span>Filter:</span>
-          </div>
-
-          {/* Typology */}
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-2 py-1 bg-editorial-pure border border-editorial-hairline text-xs text-ink-high rounded-none"
-          >
-            <option value="ALL">All Typologies</option>
-            <option value="VENTURE_CAPITAL">Venture Capital</option>
-            <option value="GOVERNMENT_FUND">Sovereign / Gov Fund</option>
-            <option value="CORPORATE_VC">Corporate VC (CVC)</option>
-            <option value="ANGEL_NETWORK">Angel Syndicate</option>
-            <option value="FAMILY_OFFICE">Family Office</option>
-            <option value="ACCELERATOR_FUND">Accelerator Fund</option>
+        <div>
+          <label htmlFor="inv-type" className="field-label">
+            Type
+          </label>
+          <select id="inv-type" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="field">
+            <option value="ALL">All types</option>
+            {typeOptions.map((t) => (
+              <option key={t} value={t}>
+                {investorTypeLabel(t)}
+              </option>
+            ))}
           </select>
-
-          {/* Regulatory */}
-          <select
-            value={regFilter}
-            onChange={(e) => setRegFilter(e.target.value)}
-            className="px-2 py-1 bg-editorial-pure border border-editorial-hairline text-xs text-ink-high rounded-none"
-          >
-            <option value="ALL">All Regulatory Standings</option>
-            <option value="CMA_ONLY">CMA Authorized Only</option>
-            <option value="SVC_ONLY">SVC Partners Only</option>
-            <option value="UNREGULATED">Non-CMA / Syndicates</option>
+        </div>
+        <div>
+          <label htmlFor="inv-reg" className="field-label">
+            Regulation
+          </label>
+          <select id="inv-reg" value={regFilter} onChange={(e) => setRegFilter(e.target.value)} className="field">
+            <option value="ALL">All</option>
+            <option value="CMA_ONLY">CMA authorised</option>
+            <option value="SVC_ONLY">SVC partners</option>
+            <option value="UNREGULATED">Neither</option>
           </select>
-
-          {/* Active Status */}
-          <select
-            value={activeFilter}
-            onChange={(e) => setActiveFilter(e.target.value)}
-            className="px-2 py-1 bg-editorial-pure border border-editorial-hairline text-xs text-ink-high rounded-none"
-          >
-            <option value="ALL">All Deployment Mandates</option>
-            <option value="ACTIVE">Actively Deploying</option>
-            <option value="CLOSED">Closed Allocations</option>
+        </div>
+        <div>
+          <label htmlFor="inv-active" className="field-label">
+            Investing
+          </label>
+          <select id="inv-active" value={activeFilter} onChange={(e) => setActiveFilter(e.target.value)} className="field">
+            <option value="ALL">All</option>
+            <option value="ACTIVE">Actively investing</option>
+            <option value="CLOSED">Not investing</option>
           </select>
-
-          {/* Publish */}
-          <select
-            value={publishFilter}
-            onChange={(e) => setPublishFilter(e.target.value)}
-            className="px-2 py-1 bg-editorial-pure border border-editorial-hairline text-xs text-ink-high rounded-none"
-          >
-            <option value="ALL">All Statuses</option>
-            <option value="PUBLISHED">Published Live</option>
-            <option value="DRAFT">Draft / Hidden</option>
+        </div>
+        <div>
+          <label htmlFor="inv-published" className="field-label">
+            Visibility
+          </label>
+          <select id="inv-published" value={publishFilter} onChange={(e) => setPublishFilter(e.target.value)} className="field">
+            <option value="ALL">Published and drafts</option>
+            <option value="PUBLISHED">Published</option>
+            <option value="DRAFT">Drafts</option>
           </select>
         </div>
       </div>
 
-      {/* 3. Table of Investors */}
-      <div className="bg-editorial-pure rounded-none border border-editorial-hairline shadow-xs overflow-x-auto">
-        <table className="w-full text-left text-xs">
+      <div className="flex items-center justify-between gap-4">
+        <p className="meta">
+          {filteredInvestors.length} of {totalCount} investors
+        </p>
+        {isPending && <p className="meta">Saving…</p>}
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="data-table min-w-[960px]">
           <thead>
-            <tr className="border-b border-editorial-hairline bg-editorial-sand/30 text-ink-muted uppercase font-bold tracking-wider text-[10px]">
-              <th className="py-3 px-4">Organization &amp; Mandate</th>
-              <th className="py-3 px-3">Typology</th>
-              <th className="py-3 px-3">Check Size</th>
-              <th className="py-3 px-3">Regulatory Standing</th>
-              <th className="py-3 px-3 text-center">Status</th>
-              <th className="py-3 px-4 text-right">Actions</th>
+            <tr>
+              <th>Investor</th>
+              <th>Type</th>
+              <th>Cheque size</th>
+              <th>Regulation</th>
+              <th>Last checked</th>
+              <th>Status</th>
+              <th className="text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-editorial-hairline">
+          <tbody>
             {filteredInvestors.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-ink-muted">
-                  No investors found matching the selected criteria.
+                <td colSpan={7} className="py-10">
+                  <p className="font-serif text-lg text-ink">No investors match these filters.</p>
+                  <p className="mt-1 text-sm text-ink-3">Clear the search or add an investor.</p>
                 </td>
               </tr>
             ) : (
               filteredInvestors.map((inv) => (
-                <tr key={inv.id} className="hover:bg-editorial-sand/20 transition-colors">
-                  {/* Name & Slug */}
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/investor/${inv.slug}`}
-                        target="_blank"
-                        className="font-bold text-ink-high hover:text-brand-navy hover:underline flex items-center gap-1"
+                <tr key={inv.id}>
+                  <td className="min-w-[220px] max-w-xs">
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditModal(inv)}
+                        className="font-serif text-[1.0625rem] leading-snug text-ink text-left hover:text-clay transition-colors"
                       >
-                        <span>{inv.name}</span>
-                        <ExternalLink className="w-3 h-3 text-ink-faint" />
-                      </Link>
-                      {inv.isFeatured && (
-                        <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-brand-desertGold/15 text-brand-navy">
-                          Anchor
-                        </span>
-                      )}
+                        {inv.name}
+                      </button>
+                      {inv.isFeatured && <span className="ml-2 font-sans text-[0.6875rem] text-clay whitespace-nowrap">Featured</span>}
                     </div>
-                    <div className="text-[11px] text-ink-faint flex items-center gap-2 pt-0.5">
-                      <span>/{inv.slug}</span>
-                      <span>•</span>
-                      <span>{inv.hqLocation}</span>
-                    </div>
+                    <p className="mt-0.5 text-[0.8125rem] text-ink-3">{inv.hqLocation}</p>
+                    <p className="mt-0.5 whitespace-nowrap font-sans text-[0.71875rem] text-ink-4">/{inv.slug}</p>
                   </td>
 
-                  {/* Typology */}
-                  <td className="py-3 px-3">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-brand-sand text-brand-navy">
-                      {inv.type}
-                    </span>
+                  <td className="whitespace-nowrap text-ink-2">{investorTypeLabel(inv.type)}</td>
+
+                  <td className="max-w-[180px]">
+                    <p className="font-sans tabular text-[0.8125rem] text-ink">{inv.checkSizeRange || '—'}</p>
                   </td>
 
-                  {/* Check Size */}
-                  <td className="py-3 px-3 font-medium text-ink-high">
-                    {inv.checkSizeRange || 'Unspecified'}
-                  </td>
-
-                  {/* Regulatory Badges */}
-                  <td className="py-3 px-3">
-                    <div className="flex flex-col gap-1 items-start">
-                      {inv.isCmaAuthorized ? (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                          <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                          <span>CMA Authorized</span>
-                        </span>
-                      ) : null}
-
-                      {inv.isSvcPartner ? (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                          <Landmark className="w-3 h-3 text-amber-700" />
-                          <span>SVC Partner</span>
-                        </span>
-                      ) : null}
-
+                  <td className="whitespace-nowrap">
+                    <div className="flex flex-col items-start gap-1">
+                      {inv.isCmaAuthorized && <StatusDot tone="moss">CMA authorised</StatusDot>}
+                      {inv.isSvcPartner && <StatusDot tone="moss">SVC partner</StatusDot>}
                       {!inv.isCmaAuthorized && !inv.isSvcPartner && (
-                        <span className="text-[10px] text-ink-faint italic">
-                          {inv.regulatoryCategory || 'Private Syndicate'}
+                        <span className="text-[0.8125rem] text-ink-3 whitespace-normal max-w-[180px]">
+                          {inv.regulatoryCategory || 'Not regulated'}
                         </span>
                       )}
                     </div>
                   </td>
 
-                  {/* Publication Toggle */}
-                  <td className="py-3 px-3 text-center">
+                  <td className="whitespace-nowrap">
+                    <p className="whitespace-nowrap font-sans tabular text-[0.8125rem] text-ink-2">
+                      {inv.verifiedAt ? formatDate(inv.verifiedAt) : '—'}
+                    </p>
                     <button
-                      onClick={() => handleTogglePublish(inv.id)}
+                      type="button"
+                      onClick={() => handleVerifyLicense(inv.id)}
                       disabled={isPending}
-                      className={cn(
-                        'px-2 py-0.5 rounded text-[10px] font-bold transition-all',
-                        inv.isPublished
-                          ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                          : 'bg-editorial-sand text-ink-muted hover:bg-editorial-sand/80'
-                      )}
+                      className="row-action block mt-1 disabled:opacity-50"
                     >
-                      {inv.isPublished ? 'PUBLISHED' : 'DRAFT'}
+                      Mark checked
                     </button>
                   </td>
 
-                  {/* Actions */}
-                  <td className="py-3 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
+                  <td className="whitespace-nowrap">
+                    <div className="flex flex-col items-start gap-1.5">
                       <button
-                        onClick={() => handleVerifyLicense(inv.id)}
+                        type="button"
+                        onClick={() => handleTogglePublish(inv.id)}
                         disabled={isPending}
-                        title="Re-verify license and provenance"
-                        className="p-1 rounded text-ink-muted hover:text-emerald-700 hover:bg-editorial-sand"
+                        title={inv.isPublished ? 'Click to unpublish' : 'Click to publish'}
+                        className="disabled:opacity-50 hover:opacity-70 transition-opacity"
                       >
-                        <ShieldCheck className="w-4 h-4" />
+                        <StatusDot tone={inv.isPublished ? 'moss' : 'ink'}>{inv.isPublished ? 'Published' : 'Draft'}</StatusDot>
                       </button>
+                      {!inv.isActiveInvesting && <StatusDot tone="ink">Not investing</StatusDot>}
+                    </div>
+                  </td>
 
+                  <td className="text-right whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-4">
                       <button
+                        type="button"
                         onClick={() => handleOpenEditModal(inv)}
                         disabled={isPending}
-                        title="Edit dossier"
-                        className="p-1 rounded text-ink-muted hover:text-ink-high hover:bg-editorial-sand"
+                        className="row-action disabled:opacity-50"
                       >
-                        <Edit2 className="w-4 h-4" />
+                        Edit
                       </button>
-
+                      <Link href={`/investor/${inv.slug}`} target="_blank" className="row-action">
+                        View ↗
+                      </Link>
                       <button
+                        type="button"
                         onClick={() => handleDelete(inv.id, inv.name)}
                         disabled={isPending}
-                        title="Delete investor"
-                        className="p-1 rounded text-ink-muted hover:text-red-700 hover:bg-editorial-sand"
+                        className="row-action-danger disabled:opacity-50"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        Delete
                       </button>
                     </div>
                   </td>
@@ -548,354 +479,352 @@ export const InvestorManager: React.FC<InvestorManagerProps> = ({ initialInvesto
         </table>
       </div>
 
-      {/* 4. Edit / Create Modal */}
+      {/* Create / edit modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-          <div className="bg-editorial-pure rounded-lg border border-editorial-hairline shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col my-8">
-            {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-editorial-hairline flex items-center justify-between">
-              <div>
-                <h3 className="font-heading font-bold text-lg text-ink-high">
-                  {editingInvestor ? `Edit Investor: ${editingInvestor.name}` : 'Register New Institutional Investor'}
-                </h3>
-                <p className="text-xs text-ink-muted">
-                  Strict regulatory classification: verify CMA license and SVC participation separately.
-                </p>
-              </div>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 text-ink-muted hover:text-ink-high"
-              >
-                <X className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-ink/40">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="inv-modal-title"
+            className="bg-paper-sheet border border-rule shadow-lift rounded-sm max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-rule">
+              <h2 id="inv-modal-title" className="font-serif text-[1.5rem] leading-tight text-ink">
+                {editingInvestor ? `Edit ${editingInvestor.name}` : 'Add investor'}
+              </h2>
+              <button type="button" onClick={() => setIsModalOpen(false)} className="row-action">
+                Close
               </button>
             </div>
 
-            {/* Modal Form Body */}
-            <form onSubmit={handleFormSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Organization Name */}
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">
-                    Organization Name <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g. STV (Saudi Technology Ventures)"
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded text-ink-high"
-                  />
-                </div>
+            <form onSubmit={handleFormSubmit} className="p-6 space-y-5">
+              {errorMessage && (
+                <Note tone="error" onDismiss={() => setErrorMessage(null)}>
+                  {errorMessage}
+                </Note>
+              )}
 
-                {/* Slug */}
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">
-                    URL Slug
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.slug}
-                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                    placeholder="e.g. stv-vc (leave empty to auto-generate)"
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded text-ink-high font-mono"
-                  />
-                </div>
-
-                {/* Typology */}
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">
-                    Institutional Typology <span className="text-red-600">*</span>
-                  </label>
-                  <select
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                    className="w-full p-2 bg-editorial-pure border border-editorial-hairline rounded text-ink-high"
-                  >
-                    <option value="VENTURE_CAPITAL">Venture Capital</option>
-                    <option value="GOVERNMENT_FUND">Sovereign Wealth / Government Fund</option>
-                    <option value="CORPORATE_VC">Corporate Venture Capital (CVC)</option>
-                    <option value="ANGEL_NETWORK">Angel Syndicate</option>
-                    <option value="FAMILY_OFFICE">Family Office</option>
-                    <option value="ACCELERATOR_FUND">Accelerator Seed Fund</option>
-                  </select>
-                </div>
-
-                {/* HQ Location */}
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">
-                    Headquarters Location <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.hqLocation}
-                    onChange={(e) => setFormData({ ...formData, hqLocation: e.target.value })}
-                    placeholder="e.g. Riyadh, KSA"
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded text-ink-high"
-                  />
-                </div>
-
-                {/* Official Website */}
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">
-                    Official Website URL <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="url"
-                    required
-                    value={formData.websiteUrl}
-                    onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
-                    placeholder="https://stv.vc"
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded text-ink-high"
-                  />
-                </div>
-
-                {/* Pitch URL */}
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">
-                    Public Pitch Link (Omit if private/referral-only)
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.pitchUrl || ''}
-                    onChange={(e) => setFormData({ ...formData, pitchUrl: e.target.value })}
-                    placeholder="https://stv.vc/founders"
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded text-ink-high"
-                  />
-                </div>
-              </div>
-
-              {/* Strict Regulatory Section */}
-              <div className="p-4 bg-emerald-50/50 rounded border border-emerald-200/80 space-y-3">
-                <span className="font-bold uppercase tracking-wider text-[11px] text-emerald-950 block">
-                  Regulatory Classification &amp; Evidence
-                </span>
-
+              <section className="panel p-5 space-y-4">
+                <h3 className="panel-title">Organisation</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* CMA Authorized */}
-                  <div className="space-y-1.5">
-                    <label className="flex items-center gap-2 font-bold text-emerald-900">
+                  <div>
+                    <label htmlFor="inv-name" className="field-label">
+                      Name
+                    </label>
+                    <input
+                      id="inv-name"
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="STV"
+                      className="field"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="inv-slug" className="field-label">
+                      Slug
+                    </label>
+                    <input
+                      id="inv-slug"
+                      type="text"
+                      value={formData.slug}
+                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                      placeholder="stv"
+                      className="field font-sans"
+                    />
+                    <p className="field-hint">Leave blank to generate from the name.</p>
+                  </div>
+                  <div>
+                    <label htmlFor="inv-type-f" className="field-label">
+                      Type
+                    </label>
+                    <select
+                      id="inv-type-f"
+                      value={formData.type}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                      className="field"
+                    >
+                      {typeOptions.map((t) => (
+                        <option key={t} value={t}>
+                          {investorTypeLabel(t)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="inv-hq" className="field-label">
+                      Headquarters
+                    </label>
+                    <input
+                      id="inv-hq"
+                      type="text"
+                      required
+                      value={formData.hqLocation}
+                      onChange={(e) => setFormData({ ...formData, hqLocation: e.target.value })}
+                      placeholder="Riyadh, KSA"
+                      className="field"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="inv-website" className="field-label">
+                      Website
+                    </label>
+                    <input
+                      id="inv-website"
+                      type="url"
+                      required
+                      value={formData.websiteUrl}
+                      onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
+                      placeholder="https://stv.vc"
+                      className="field"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="inv-pitch" className="field-label">
+                      Pitch link
+                    </label>
+                    <input
+                      id="inv-pitch"
+                      type="url"
+                      value={formData.pitchUrl || ''}
+                      onChange={(e) => setFormData({ ...formData, pitchUrl: e.target.value })}
+                      placeholder="https://stv.vc/founders"
+                      className="field"
+                    />
+                    <p className="field-hint">Leave blank if they only take referrals.</p>
+                  </div>
+                </div>
+              </section>
+
+              <section className="panel p-5 space-y-4">
+                <h3 className="panel-title">Regulation</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="inline-flex items-center gap-2 text-sm text-ink-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={formData.isCmaAuthorized}
                         onChange={(e) => setFormData({ ...formData, isCmaAuthorized: e.target.checked })}
-                        className="rounded border-emerald-300"
+                        className="accent-[#A63D24]"
                       />
-                      <span>CMA-Authorized Capital Market Institution</span>
+                      Authorised by the CMA
                     </label>
                     {formData.isCmaAuthorized && (
-                      <input
-                        type="text"
-                        placeholder="CMA License No. (e.g. License No. 17188-37)"
-                        value={formData.cmaLicenseNumber || ''}
-                        onChange={(e) => setFormData({ ...formData, cmaLicenseNumber: e.target.value })}
-                        className="w-full p-2 bg-white border border-emerald-300 rounded font-mono text-emerald-900 text-xs"
-                      />
+                      <div>
+                        <label htmlFor="inv-cma" className="field-label">
+                          CMA licence number
+                        </label>
+                        <input
+                          id="inv-cma"
+                          type="text"
+                          placeholder="17188-37"
+                          value={formData.cmaLicenseNumber || ''}
+                          onChange={(e) => setFormData({ ...formData, cmaLicenseNumber: e.target.value })}
+                          className="field font-sans tabular"
+                        />
+                      </div>
                     )}
                   </div>
-
-                  {/* SVC Partner */}
-                  <div className="space-y-1.5">
-                    <label className="flex items-center gap-2 font-bold text-emerald-900">
+                  <div className="space-y-2">
+                    <label className="inline-flex items-center gap-2 text-sm text-ink-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={formData.isSvcPartner}
                         onChange={(e) => setFormData({ ...formData, isSvcPartner: e.target.checked })}
-                        className="rounded border-emerald-300"
+                        className="accent-[#A63D24]"
                       />
-                      <span>SVC Partner / Co-Investment Recipient</span>
+                      SVC partner or co-investee
                     </label>
                     {formData.isSvcPartner && (
-                      <input
-                        type="text"
-                        placeholder="SVC Program (e.g. Investment in Funds Program)"
-                        value={formData.svcProgramDetails || ''}
-                        onChange={(e) => setFormData({ ...formData, svcProgramDetails: e.target.value })}
-                        className="w-full p-2 bg-white border border-emerald-300 rounded text-emerald-900 text-xs"
-                      />
+                      <div>
+                        <label htmlFor="inv-svc" className="field-label">
+                          SVC programme
+                        </label>
+                        <input
+                          id="inv-svc"
+                          type="text"
+                          placeholder="Investment in Funds Program"
+                          value={formData.svcProgramDetails || ''}
+                          onChange={(e) => setFormData({ ...formData, svcProgramDetails: e.target.value })}
+                          className="field"
+                        />
+                      </div>
                     )}
                   </div>
                 </div>
-
                 <div>
-                  <label className="font-bold text-emerald-950 block mb-1">
-                    Regulatory Category Descriptor
+                  <label htmlFor="inv-regcat" className="field-label">
+                    Regulatory category
                   </label>
                   <input
+                    id="inv-regcat"
                     type="text"
                     value={formData.regulatoryCategory || ''}
                     onChange={(e) => setFormData({ ...formData, regulatoryCategory: e.target.value })}
-                    placeholder="e.g. CMA-Authorized Fund Manager / Sovereign Fund-of-Funds"
-                    className="w-full p-2 bg-white border border-emerald-300 rounded text-emerald-900"
+                    placeholder="CMA-authorised fund manager"
+                    className="field"
                   />
                 </div>
-              </div>
+              </section>
 
-              {/* Investment Mandates */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">
-                    Disclosed Check Size Range
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.checkSizeRange || ''}
-                    onChange={(e) => setFormData({ ...formData, checkSizeRange: e.target.value })}
-                    placeholder="e.g. $2M – $20M (Disclosed Lead Ticket)"
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded text-ink-high"
-                  />
+              <section className="panel p-5 space-y-4">
+                <h3 className="panel-title">Investing</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="inv-check" className="field-label">
+                      Cheque size
+                    </label>
+                    <input
+                      id="inv-check"
+                      type="text"
+                      value={formData.checkSizeRange || ''}
+                      onChange={(e) => setFormData({ ...formData, checkSizeRange: e.target.value })}
+                      placeholder="$2M – $20M"
+                      className="field font-sans tabular"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="inv-stages" className="field-label">
+                      Stages
+                    </label>
+                    <input
+                      id="inv-stages"
+                      type="text"
+                      value={stagesText}
+                      onChange={(e) => setStagesText(e.target.value)}
+                      placeholder="Seed, Series A, Series B"
+                      className="field"
+                    />
+                    <p className="field-hint">Separate with commas.</p>
+                  </div>
+                  <div>
+                    <label htmlFor="inv-sectors" className="field-label">
+                      Sectors
+                    </label>
+                    <input
+                      id="inv-sectors"
+                      type="text"
+                      value={sectorsText}
+                      onChange={(e) => setSectorsText(e.target.value)}
+                      placeholder="FinTech, AI & Deep Tech"
+                      className="field"
+                    />
+                    <p className="field-hint">Separate with commas.</p>
+                  </div>
+                  <div>
+                    <label htmlFor="inv-portfolio" className="field-label">
+                      Portfolio highlights
+                    </label>
+                    <input
+                      id="inv-portfolio"
+                      type="text"
+                      value={portfolioText}
+                      onChange={(e) => setPortfolioText(e.target.value)}
+                      placeholder="Jahez, Tamara, Lucidya"
+                      className="field"
+                    />
+                    <p className="field-hint">Separate with commas.</p>
+                  </div>
                 </div>
-
                 <div>
-                  <label className="font-bold text-ink-high block mb-1">
-                    Target Stages (Comma-separated)
+                  <label htmlFor="inv-description" className="field-label">
+                    Description
                   </label>
-                  <input
-                    type="text"
-                    value={stagesText}
-                    onChange={(e) => setStagesText(e.target.value)}
-                    placeholder="Seed, Series A, Series B, Growth"
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded text-ink-high"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">
-                    Sectors &amp; Sovereign Pillars (Comma-separated)
-                  </label>
-                  <input
-                    type="text"
-                    value={sectorsText}
-                    onChange={(e) => setSectorsText(e.target.value)}
-                    placeholder="FinTech, AI & Deep Tech, Clean Energy"
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded text-ink-high"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">
-                    Verified Portfolio Highlights (Comma-separated)
-                  </label>
-                  <input
-                    type="text"
-                    value={portfolioText}
-                    onChange={(e) => setPortfolioText(e.target.value)}
-                    placeholder="Jahez, Tamara, Lucidya, Unifonic"
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded text-ink-high"
-                  />
-                </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="font-bold text-ink-high block mb-1">
-                  Institutional Description <span className="text-red-600">*</span>
-                </label>
-                <textarea
-                  rows={4}
-                  required
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Comprehensive institutional overview of the fund, fund size, anchor LPs, and market position."
-                  className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded text-ink-high"
-                />
-              </div>
-
-              {/* Thesis Summary */}
-              <div>
-                <label className="font-bold text-ink-high block mb-1">
-                  Investment Thesis &amp; Sovereign Mandate
-                </label>
-                <textarea
-                  rows={2}
-                  value={formData.thesisSummary || ''}
-                  onChange={(e) => setFormData({ ...formData, thesisSummary: e.target.value })}
-                  placeholder="High-conviction investment thesis aligned with Saudi Vision 2030 digital economy targets."
-                  className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded text-ink-high"
-                />
-              </div>
-
-              {/* Provenance & Source URLs */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">
-                    Provenance Source Name <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="text"
+                  <textarea
+                    id="inv-description"
+                    rows={4}
                     required
-                    value={formData.sourceName}
-                    onChange={(e) => setFormData({ ...formData, sourceName: e.target.value })}
-                    placeholder="e.g. Capital Market Authority (CMA) Directory"
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded text-ink-high"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Fund size, main backers and what they invest in."
+                    className="field"
                   />
                 </div>
-
                 <div>
-                  <label className="font-bold text-ink-high block mb-1">
-                    Source Provenance URL
+                  <label htmlFor="inv-thesis" className="field-label">
+                    Investment thesis
                   </label>
-                  <input
-                    type="url"
-                    value={formData.sourceUrl || ''}
-                    onChange={(e) => setFormData({ ...formData, sourceUrl: e.target.value })}
-                    placeholder="https://cma.org.sa"
-                    className="w-full p-2 bg-editorial-sand/40 border border-editorial-hairline rounded text-ink-high"
+                  <textarea
+                    id="inv-thesis"
+                    rows={2}
+                    value={formData.thesisSummary || ''}
+                    onChange={(e) => setFormData({ ...formData, thesisSummary: e.target.value })}
+                    placeholder="One or two sentences on what they look for."
+                    className="field"
                   />
                 </div>
-              </div>
+              </section>
 
-              {/* Flags */}
-              <div className="flex flex-wrap items-center gap-6 pt-2 border-t border-editorial-hairline">
-                <label className="flex items-center gap-2 font-bold text-ink-high">
-                  <input
-                    type="checkbox"
-                    checked={formData.isActiveInvesting}
-                    onChange={(e) => setFormData({ ...formData, isActiveInvesting: e.target.checked })}
-                    className="rounded"
-                  />
-                  <span>Actively Investing (Active Mandate)</span>
-                </label>
+              <section className="panel p-5 space-y-4">
+                <h3 className="panel-title">Source and visibility</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="inv-source-name" className="field-label">
+                      Source
+                    </label>
+                    <input
+                      id="inv-source-name"
+                      type="text"
+                      required
+                      value={formData.sourceName}
+                      onChange={(e) => setFormData({ ...formData, sourceName: e.target.value })}
+                      placeholder="CMA directory"
+                      className="field"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="inv-source-url" className="field-label">
+                      Source URL
+                    </label>
+                    <input
+                      id="inv-source-url"
+                      type="url"
+                      value={formData.sourceUrl || ''}
+                      onChange={(e) => setFormData({ ...formData, sourceUrl: e.target.value })}
+                      placeholder="https://cma.org.sa"
+                      className="field"
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-x-6 gap-y-2 pt-1">
+                  <label className="inline-flex items-center gap-2 text-sm text-ink-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.isActiveInvesting}
+                      onChange={(e) => setFormData({ ...formData, isActiveInvesting: e.target.checked })}
+                      className="accent-[#A63D24]"
+                    />
+                    Actively investing
+                  </label>
+                  <label className="inline-flex items-center gap-2 text-sm text-ink-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.isFeatured}
+                      onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
+                      className="accent-[#A63D24]"
+                    />
+                    Featured
+                  </label>
+                  <label className="inline-flex items-center gap-2 text-sm text-ink-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.isPublished}
+                      onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
+                      className="accent-[#A63D24]"
+                    />
+                    Published
+                  </label>
+                </div>
+              </section>
 
-                <label className="flex items-center gap-2 font-bold text-ink-high">
-                  <input
-                    type="checkbox"
-                    checked={formData.isFeatured}
-                    onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
-                    className="rounded"
-                  />
-                  <span>Featured Anchor Fund</span>
-                </label>
-
-                <label className="flex items-center gap-2 font-bold text-ink-high">
-                  <input
-                    type="checkbox"
-                    checked={formData.isPublished}
-                    onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                    className="rounded"
-                  />
-                  <span>Publicly Published</span>
-                </label>
-              </div>
-
-              {/* Modal Actions */}
-              <div className="pt-4 border-t border-editorial-hairline flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-editorial-hairline text-ink-high hover:bg-editorial-sand font-medium rounded"
-                >
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="px-5 py-2 bg-brand-navy hover:bg-opacity-95 text-white font-bold rounded flex items-center gap-2"
-                >
-                  {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  <span>{editingInvestor ? 'Save Changes' : 'Create Investor'}</span>
-                </button>
+                </Button>
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? 'Saving…' : editingInvestor ? 'Save changes' : 'Create investor'}
+                </Button>
               </div>
             </form>
           </div>

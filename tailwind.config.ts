@@ -1,5 +1,57 @@
 import type { Config } from 'tailwindcss';
 
+/**
+ * Saudi Future Tech — design tokens
+ *
+ * One paper, one ink, one accent.
+ *   paper  — Riyadh limestone. The reading surface.
+ *   ink    — warm near-black, four steps from headline to faint metadata.
+ *   rule   — hairlines. Structure comes from rules, not boxes.
+ *   clay   — Najdi mud-brick red. The only accent. Use sparingly:
+ *            kickers, live states, the primary action, link hovers.
+ *   moss   — reserved for a single semantic meaning: "open / accepting".
+ *
+ * Legacy token families (editorial, brand, saudi, sft) are remapped onto
+ * this palette so admin screens inherit the system without rewrites.
+ */
+
+const paper = {
+  DEFAULT: '#F2EEE5',
+  sheet: '#FAF8F3',
+  band: '#EAE4D8',
+  deep: '#E2DBCC',
+};
+
+const ink = {
+  DEFAULT: '#1A1714',
+  2: '#3A352F',
+  3: '#6F675D',
+  4: '#9A9186',
+  // legacy aliases
+  high: '#1A1714',
+  body: '#3A352F',
+  muted: '#6F675D',
+  faint: '#9A9186',
+};
+
+const rule = {
+  DEFAULT: '#D8D0C1',
+  strong: '#1A1714',
+  soft: '#E4DDD0',
+};
+
+const clay = {
+  DEFAULT: '#A63D24',
+  dark: '#86301B',
+  tint: '#F0DFD5',
+  wash: '#F6ECE5',
+};
+
+const moss = {
+  DEFAULT: '#3F6B52',
+  tint: '#DFE8DF',
+};
+
 const config: Config = {
   darkMode: ['class'],
   content: [
@@ -10,102 +62,117 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // User-Specified Modern Saudi Palette
-        saudi: {
-          green: '#0B6E4F',          // Primary brand: Deep Saudi green (Buttons, links, active states)
-          greenHover: '#08533C',     // Primary brand hover / pressed state
-          greenSubtle: '#E8F5EF',    // Soft green tint for badges / pills
-          navy: '#0A1F2C',           // Deep base: Midnight navy (Dark sections, footer, premium areas)
-          navyElevated: '#122B3D',   // Elevated midnight surface
-          warmWhite: '#FAF9F6',      // Background: Warm white (Main page background)
-          surface: '#F1F5F2',        // Surface: Soft mint/gray (Cards, section backgrounds)
-          surfaceHover: '#E7EFE9',   // Hover state for soft surface
-          gold: '#C9A227',           // Accent: Desert gold (Thin lines, badges, highlights only)
-          goldSubtle: '#FDF8EC',     // Subtle gold tint
-          teal: '#19B5A3',           // Alert/energy: Electric teal (AI, innovation, interactive highlights)
-          tealSubtle: '#E6FAF7',     // Subtle electric teal tint
-          text: '#111827',           // Text: Near-black (Body text)
-          muted: '#4B5563',          // Secondary muted text (Readable charcoal)
-          border: '#E2E8E4',         // Soft border tone
-        },
-        // Editorial Paper & Ink Palette (Longreads Aesthetic)
+        paper,
+        ink,
+        rule,
+        clay,
+        moss,
+
+        // ---- legacy families, remapped ----
         editorial: {
-          paper: '#FBFBF9',          // Warm, literary off-white paper canvas
-          pure: '#FFFFFF',           // Crisp clean white for reading sheets & cards
-          sand: '#F5F5EE',           // Warm cream/linen for callout cards & pull quotes
-          stone: '#EBEBE6',          // Soft neutral surface
-          hairline: '#E7E7E0',       // Delicate 1px print-style newspaper divider
-          rule: '#141517',           // Bold masthead & section rules
+          paper: paper.DEFAULT,
+          pure: paper.sheet,
+          sand: paper.band,
+          stone: paper.deep,
+          hairline: rule.DEFAULT,
+          rule: rule.strong,
         },
-        ink: {
-          high: '#141517',           // Deepest black for commanding serif headlines
-          body: '#2B2E33',           // Rich, readable charcoal for longform paragraphs
-          muted: '#6B7280',          // Bylines, reading times, publication dates, captions
-          faint: '#9CA3AF',          // Subtle metadata & arrows
+        saudi: {
+          green: clay.DEFAULT,
+          greenHover: clay.dark,
+          greenSubtle: clay.wash,
+          navy: ink.DEFAULT,
+          navyElevated: ink[2],
+          warmWhite: paper.DEFAULT,
+          surface: paper.band,
+          surfaceHover: paper.deep,
+          gold: clay.DEFAULT,
+          goldSubtle: clay.wash,
+          teal: clay.DEFAULT,
+          tealSubtle: clay.wash,
+          text: ink.DEFAULT,
+          muted: ink[3],
+          border: rule.DEFAULT,
         },
-        // Official Brand Palette (Founder Intelligence & Saudi Modern Identity)
         brand: {
-          navy: '#14283D',           // Midnight Navy (Executive authority & contrast)
-          sand: '#F2EDE2',           // Desert Sand (Al-Turaif limestone reading canvas)
-          oasis: '#39765B',          // Oasis Green (Verified signals, active grants)
-          teal: '#25A6A0',           // Digital Teal (Tech accents, interactive pills)
-          desertGold: '#C69B59',     // Desert Gold (Deadlines, high-priority callouts)
-          white: '#FFFFFF',          // Clean White (Surface cards & containers)
-          graphite: '#FBFBF9',       // Canvas paper background
-          surface: '#FFFFFF',        // Clean white card surface
-          elevated: '#F5F5EE',       // Warm sand elevated surface
-          dark: '#14283D',           // Dark foundation
-          cloud: '#141517',          // High-contrast deep ink text
-          yellow: '#F4C542',         // Sunshine Yellow
-          'yellow-hover': '#E0B332', // Active / hover state
-          'yellow-subtle': 'rgba(244, 197, 66, 0.15)', // Subtle yellow tint
-          gold: '#C69B59',           // Refined Desert Gold
+          navy: ink.DEFAULT,
+          sand: paper.band,
+          oasis: moss.DEFAULT,
+          teal: clay.DEFAULT,
+          desertGold: clay.DEFAULT,
+          white: paper.sheet,
+          graphite: paper.DEFAULT,
+          surface: paper.sheet,
+          elevated: paper.band,
+          dark: ink.DEFAULT,
+          cloud: ink.DEFAULT,
+          yellow: clay.DEFAULT,
+          'yellow-hover': clay.dark,
+          'yellow-subtle': clay.wash,
+          gold: clay.DEFAULT,
         },
-        // Semantic Typography & Border Tokens
         sft: {
-          text: {
-            high: '#141517',         // Primary headlines
-            body: '#2B2E33',         // Editorial reading body text
-            muted: '#6B7280',        // Bylines, timestamps, captions
-            dark: '#141517',         // Deep text
-          },
+          text: { high: ink.DEFAULT, body: ink[2], muted: ink[3], dark: ink.DEFAULT },
           border: {
-            subtle: '#E7E7E0',       // Fine 1px hairline border
-            medium: '#D1D1C7',       // Distinct section dividers
-            hover: 'rgba(244, 197, 66, 0.60)', // Interactive hover borders
-            yellow: '#F4C542',       // Solid accent border
+            subtle: rule.DEFAULT,
+            medium: '#C9BFAE',
+            hover: clay.DEFAULT,
+            yellow: clay.DEFAULT,
           },
-          // Editorial Category Pillar Accents
           category: {
-            ai: '#D49A3D',           // Desert Gold
-            govtech: '#2563EB',      // Royal Blue
-            cybersecurity: '#DC2626',// Crimson
-            smartcities: '#D97706',  // Amber
-            fintech: '#0D9488',      // Teal
-            cleanenergy: '#16A34A',  // Emerald
+            ai: ink[3],
+            govtech: ink[3],
+            cybersecurity: ink[3],
+            smartcities: ink[3],
+            fintech: ink[3],
+            cleanenergy: ink[3],
           },
         },
       },
       fontFamily: {
-        // Primary Headings: Codec Pro (Mirroring Saudi Makes Future geometric typography)
-        heading: ['var(--font-codec)', 'Codec Pro', 'sans-serif'],
-        codec: ['var(--font-codec)', 'Codec Pro', 'sans-serif'],
-        // Primary Body & UI: Lato (Mirroring Saudi Makes Future body typography)
-        sans: ['var(--font-lato)', 'Lato', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        lato: ['var(--font-lato)', 'Lato', '-apple-system', 'sans-serif'],
-        // Legacy serif mapping defaults to Codec Pro display font for unified Saudi Makes Future aesthetic
-        serif: ['var(--font-codec)', 'Codec Pro', 'var(--font-serif)', 'Georgia', 'serif'],
-        editorial: ['var(--font-serif)', 'Georgia', 'Palatino Linotype', 'serif'],
+        serif: ['var(--font-serif)', 'Georgia', 'serif'],
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
+        // legacy aliases
+        heading: ['var(--font-serif)', 'Georgia', 'serif'],
+        codec: ['var(--font-serif)', 'Georgia', 'serif'],
+        editorial: ['var(--font-serif)', 'Georgia', 'serif'],
+        lato: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        // Display scale for the serif — tight leading, negative tracking.
+        'display-xl': ['clamp(2.75rem, 5.2vw, 4.75rem)', { lineHeight: '1.02', letterSpacing: '-0.025em' }],
+        'display-lg': ['clamp(2.25rem, 4vw, 3.5rem)', { lineHeight: '1.05', letterSpacing: '-0.022em' }],
+        'display-md': ['clamp(1.75rem, 2.8vw, 2.5rem)', { lineHeight: '1.1', letterSpacing: '-0.018em' }],
+        'display-sm': ['clamp(1.375rem, 2vw, 1.75rem)', { lineHeight: '1.18', letterSpacing: '-0.012em' }],
+        micro: ['0.6875rem', { lineHeight: '1rem', letterSpacing: '0.02em' }],
       },
       borderRadius: {
+        none: '0',
+        xs: '2px',
         sm: '2px',
-        DEFAULT: '4px',
-        md: '6px',
-        lg: '8px',
+        DEFAULT: '3px',
+        md: '4px',
+        lg: '6px',
+        xl: '8px',
       },
       maxWidth: {
+        measure: '66ch',
         '8xl': '88rem',
         '9xl': '96rem',
+      },
+      transitionTimingFunction: {
+        out: 'cubic-bezier(0.22, 1, 0.36, 1)',
+      },
+      zIndex: {
+        header: '40',
+        overlay: '50',
+        grain: '60',
+      },
+      boxShadow: {
+        // tinted to the paper, never pure black
+        lift: '0 1px 0 rgba(26,23,20,0.04), 0 8px 24px -12px rgba(74,52,30,0.18)',
+        'card-hover': '0 1px 0 rgba(26,23,20,0.04), 0 12px 32px -16px rgba(74,52,30,0.22)',
       },
     },
   },

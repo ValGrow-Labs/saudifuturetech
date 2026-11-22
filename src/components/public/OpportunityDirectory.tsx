@@ -1,28 +1,10 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { 
-  Search, 
-  Filter, 
-  ExternalLink, 
-  Calendar, 
-  Clock, 
-  CheckCircle2, 
-  ShieldCheck, 
-  Coins, 
-  Building2, 
-  X,
-  ChevronRight,
-  Info,
-  SlidersHorizontal,
-  ArrowUpDown,
-  Sparkles,
-  Layers,
-  ArrowRight
-} from 'lucide-react';
-import { cn, formatDate } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { deadlineInfo, opportunityTypeLabel, shortEquity } from '@/lib/labels';
 
 export interface OpportunityItem {
   id: string;
@@ -74,37 +56,39 @@ interface OpportunityDirectoryProps {
 }
 
 const CATEGORY_TABS = [
-  { label: 'All Opportunities', value: 'ALL' },
-  { label: 'Non-Dilutive Grants', value: 'GRANT' },
+  { label: 'All', value: 'ALL' },
+  { label: 'Grants', value: 'GRANT' },
   { label: 'Accelerators', value: 'ACCELERATOR' },
-  { label: 'Subsidies & Vouchers', value: 'SUBSIDY' },
-  { label: 'Regulatory Sandboxes', value: 'GOVERNMENT_PROGRAM' },
+  { label: 'Subsidies', value: 'SUBSIDY' },
+  { label: 'Government programmes', value: 'GOVERNMENT_PROGRAM' },
   { label: 'Incubators', value: 'INCUBATOR' },
-  { label: 'Compute Credits', value: 'SUBSIDIZED_PERK' },
+  { label: 'Credits & perks', value: 'SUBSIDIZED_PERK' },
   { label: 'Hackathons', value: 'HACKATHON' },
 ];
 
 const ELIGIBILITY_OPTIONS = [
-  { label: 'All Eligibility Stages', value: 'ALL' },
-  { label: '100% Non-Dilutive (0% Equity)', value: 'NON_DILUTIVE' },
-  { label: 'Saudi Commercial Registration (CR)', value: 'SAUDI_CR' },
-  { label: 'Pre-Revenue / Working MVP', value: 'PRE_REVENUE_MVP' },
+  { label: 'Any', value: 'ALL' },
+  { label: 'Non-dilutive (0% equity)', value: 'NON_DILUTIVE' },
+  { label: 'Needs a Saudi CR', value: 'SAUDI_CR' },
+  { label: 'Pre-revenue or MVP', value: 'PRE_REVENUE_MVP' },
 ];
 
 const STATUS_OPTIONS = [
-  { label: 'All Tracked Programs', value: 'ALL' },
-  { label: 'Open Admission Only', value: 'ACTIVE_ONLY' },
-  { label: 'Open Now', value: 'OPEN' },
-  { label: 'Closing Soon (< 14 Days)', value: 'CLOSING_SOON' },
-  { label: 'Rolling Admission', value: 'ROLLING' },
-  { label: 'Cohort Closed / Between Batches', value: 'CLOSED' },
+  { label: 'All listings', value: 'ALL' },
+  { label: 'Open (hide closed)', value: 'ACTIVE_ONLY' },
+  { label: 'Open now', value: 'OPEN' },
+  { label: 'Closing within 14 days', value: 'CLOSING_SOON' },
+  { label: 'Rolling', value: 'ROLLING' },
+  { label: 'Closed', value: 'CLOSED' },
 ];
 
 const SORT_OPTIONS = [
-  { label: 'Application Deadline (Soonest)', value: 'deadline-asc' },
-  { label: 'Recently Verified', value: 'verified-desc' },
-  { label: 'Program Name (A to Z)', value: 'title-asc' },
+  { label: 'Deadline, soonest first', value: 'deadline-asc' },
+  { label: 'Recently checked', value: 'verified-desc' },
+  { label: 'Name, A–Z', value: 'title-asc' },
 ];
+
+const COLS = 'md:grid-cols-[8.5rem_minmax(0,1fr)_12rem_4.5rem_6.5rem_2rem]';
 
 export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
   initialOpportunities,
@@ -120,16 +104,13 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Filter States
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedPillar, setSelectedPillar] = useState(initialPillar);
   const [selectedStatus, setSelectedStatus] = useState(initialStatus);
   const [selectedEligibility, setSelectedEligibility] = useState(initialEligibility);
   const [selectedSort, setSelectedSort] = useState(initialSort);
-
-  // Modal Detail State
-  const [activeModalItem, setActiveModalItem] = useState<OpportunityItem | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   // Sync state to URL searchParams without page reload
   const updateUrlParams = useCallback(
@@ -155,37 +136,33 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
     setSearchQuery(val);
     updateUrlParams({ q: val });
   };
-
   const handleCategoryChange = (val: string) => {
     setSelectedCategory(val);
     updateUrlParams({ category: val });
   };
-
   const handlePillarChange = (val: string) => {
     setSelectedPillar(val);
     updateUrlParams({ pillar: val });
   };
-
   const handleStatusChange = (val: string) => {
     setSelectedStatus(val);
     updateUrlParams({ status: val });
   };
-
   const handleEligibilityChange = (val: string) => {
     setSelectedEligibility(val);
     updateUrlParams({ eligibility: val });
   };
-
   const handleSortChange = (val: string) => {
     setSelectedSort(val);
     updateUrlParams({ sort: val });
   };
 
+  // Reset returns to the same state a clean URL loads with.
   const handleResetFilters = () => {
     setSearchQuery('');
     setSelectedCategory('ALL');
     setSelectedPillar('ALL');
-    setSelectedStatus('ACTIVE_ONLY');
+    setSelectedStatus('ALL');
     setSelectedEligibility('ALL');
     setSelectedSort('deadline-asc');
     router.replace(pathname, { scroll: false });
@@ -195,15 +172,22 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
     searchQuery.trim().length > 0 ||
     selectedCategory !== 'ALL' ||
     selectedPillar !== 'ALL' ||
-    selectedStatus !== 'ACTIVE_ONLY' ||
+    selectedStatus !== 'ALL' ||
     selectedEligibility !== 'ALL' ||
     selectedSort !== 'deadline-asc';
 
-  // Client-Side Computed List
+  const typeCounts = useMemo(() => {
+    const counts: Record<string, number> = { ALL: initialOpportunities.length };
+    initialOpportunities.forEach((o) => {
+      counts[o.category] = (counts[o.category] ?? 0) + 1;
+    });
+    return counts;
+  }, [initialOpportunities]);
+
   const filteredItems = useMemo(() => {
     let result = [...initialOpportunities];
 
-    // 1. Text Search
+    // 1. Text search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       result = result.filter(
@@ -215,17 +199,17 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
       );
     }
 
-    // 2. Category Tab
+    // 2. Type
     if (selectedCategory !== 'ALL') {
       result = result.filter((item) => item.category === selectedCategory);
     }
 
-    // 3. Sovereign Pillar
+    // 3. Section
     if (selectedPillar !== 'ALL') {
       result = result.filter((item) => item.categoryRel?.slug === selectedPillar);
     }
 
-    // 4. Status Filter
+    // 4. Status
     if (selectedStatus === 'ACTIVE_ONLY') {
       result = result.filter((item) => !item.isExpired && item.status !== 'CLOSED');
     } else if (selectedStatus !== 'ALL') {
@@ -237,7 +221,7 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
       });
     }
 
-    // 5. Eligibility Stage Filter
+    // 5. Eligibility
     if (selectedEligibility !== 'ALL') {
       if (selectedEligibility === 'NON_DILUTIVE') {
         result = result.filter(
@@ -262,7 +246,13 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
       } else if (selectedEligibility === 'PRE_REVENUE_MVP') {
         result = result.filter((item) => {
           const text = `${item.title} ${item.description} ${item.eligibilitySummary}`.toLowerCase();
-          return text.includes('mvp') || text.includes('prototype') || text.includes('seed') || text.includes('pre-seed') || text.includes('early');
+          return (
+            text.includes('mvp') ||
+            text.includes('prototype') ||
+            text.includes('seed') ||
+            text.includes('pre-seed') ||
+            text.includes('early')
+          );
         });
       }
     }
@@ -283,479 +273,349 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
     return result;
   }, [initialOpportunities, searchQuery, selectedCategory, selectedPillar, selectedStatus, selectedEligibility, selectedSort]);
 
-  // Format deadline badge helper
-  const renderDeadlineBadge = (deadlineStr: string | null, status: string, isExpired?: boolean) => {
-    if (isExpired || status === 'CLOSED') {
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F1F5F2] text-[#4B5563] border border-[#E2E8E4]">
-          <Clock className="w-3 h-3 text-[#4B5563]" />
-          <span>Cohort Closed</span>
-        </span>
-      );
-    }
-
-    if (!deadlineStr) {
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F1F5F2] text-[#111827] border border-[#E2E8E4]">
-          <Clock className="w-3 h-3 text-[#0B6E4F]" />
-          <span>Rolling Admission</span>
-        </span>
-      );
-    }
-
-    const deadline = new Date(deadlineStr);
-    const now = new Date();
-    const diffDays = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
-    if (diffDays <= 0) {
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F1F5F2] text-[#4B5563] border border-[#E2E8E4]">
-          <Clock className="w-3 h-3 text-[#4B5563]" />
-          <span>Cohort Closed</span>
-        </span>
-      );
-    } else if (diffDays <= 14) {
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#FDF8EC] text-[#9A7B1C] border border-[#C9A227]">
-          <Clock className="w-3 h-3 text-[#C9A227] animate-pulse" />
-          <span>Closes in {diffDays} {diffDays === 1 ? 'day' : 'days'}</span>
-        </span>
-      );
-    } else {
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/30">
-          <Calendar className="w-3 h-3 text-[#0B6E4F]" />
-          <span>Closes {formatDate(deadline)}</span>
-        </span>
-      );
-    }
-  };
-
-  // Helper to distinguish cash vs non-cash support
-  const renderSupportBadge = (fundingAmount: string | null, category: string) => {
-    if (!fundingAmount) return null;
-
-    const isNonCash =
-      fundingAmount.toLowerCase().includes('non-cash') ||
-      fundingAmount.toLowerCase().includes('credits') ||
-      fundingAmount.toLowerCase().includes('exemption') ||
-      category === 'GOVERNMENT_PROGRAM' ||
-      category === 'SUBSIDIZED_PERK';
-
-    return (
-      <span
-        className={cn(
-          'inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold shrink-0',
-          isNonCash
-            ? 'bg-[#E6FAF7] text-[#0A1F2C] border border-[#19B5A3]/40'
-            : 'bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/30'
-        )}
-      >
-        <Coins className={cn('w-3.5 h-3.5', isNonCash ? 'text-[#19B5A3]' : 'text-[#0B6E4F]')} />
-        <span>{fundingAmount}</span>
-      </span>
-    );
-  };
+  const sortLabel = SORT_OPTIONS.find((s) => s.value === selectedSort)?.label.toLowerCase() ?? '';
 
   return (
-    <div className="space-y-8 font-sans">
-      {/* ==================================================================== */}
-      {/* 1. FILTER & SEARCH CONTROL MATRIX                                    */}
-      {/* ==================================================================== */}
-      <div className="bg-[#F1F5F2] p-5 sm:p-6 rounded-lg border border-[#E2E8E4] shadow-xs space-y-5">
-        {/* Top Search Input */}
-        <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
+    <div>
+      {/* Filter bar */}
+      <div className="space-y-6">
+        <label className="flex items-center gap-3 border-b-2 border-ink pb-2 focus-within:border-clay transition-colors">
+          <span className="sr-only">Search programmes</span>
+          <SearchGlyph />
           <input
-            type="text"
-            placeholder="Search verified grants, accelerator cohorts, or government entities (e.g. NTDP, The Garage, SAMA)..."
+            type="search"
+            placeholder="Search programmes and organisations"
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-[#E2E8E4] rounded-md text-[#111827] placeholder:text-[#4B5563]/70 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] focus:border-[#0B6E4F] transition-all"
+            className="min-w-0 flex-1 bg-transparent py-1.5 text-base text-ink placeholder:text-ink-4 focus:outline-none [&::-webkit-search-cancel-button]:hidden"
           />
           {searchQuery && (
             <button
+              type="button"
               onClick={() => handleSearchChange('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#111827] p-1"
-              aria-label="Clear search query"
+              className="meta hover:text-ink transition-colors"
             >
-              <X className="w-4 h-4" />
+              Clear
             </button>
           )}
-        </div>
+        </label>
 
-        {/* Opportunity Category Pills (Grants, Accelerators, Sandboxes...) */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs font-semibold text-[#4B5563] uppercase tracking-wider">
-            <span>Opportunity Classification</span>
-            {isFilteringActive && (
-              <button
-                onClick={handleResetFilters}
-                className="text-[#0B6E4F] hover:underline font-bold text-xs capitalize flex items-center gap-1"
-              >
-                <span>Reset All Filters</span>
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-1.5">
-            {CATEGORY_TABS.map((tab) => (
+        <div role="tablist" aria-label="Programme type" className="flex flex-wrap gap-x-6 gap-y-1 border-b border-rule">
+          {CATEGORY_TABS.filter((t) => (typeCounts[t.value] ?? 0) > 0 || t.value === selectedCategory).map((tab) => {
+            const active = selectedCategory === tab.value;
+            return (
               <button
                 key={tab.value}
+                role="tab"
+                aria-selected={active}
                 onClick={() => handleCategoryChange(tab.value)}
                 className={cn(
-                  'px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer',
-                  selectedCategory === tab.value
-                    ? 'bg-[#0B6E4F] text-white shadow-xs font-bold'
-                    : 'bg-white text-[#4B5563] hover:text-[#111827] hover:bg-[#E8F5EF] border border-[#E2E8E4]'
+                  '-mb-px border-b-2 py-2.5 text-sm transition-colors',
+                  active ? 'border-clay text-ink' : 'border-transparent text-ink-3 hover:text-ink'
                 )}
               >
                 {tab.label}
+                <span className="ml-1.5 font-sans text-[0.6875rem] tabular text-ink-4">{typeCounts[tab.value] ?? 0}</span>
               </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Secondary Detailed Filter Bar (Pillar, Eligibility, Status, Sort) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-[#E2E8E4]">
-          {/* 1. Technology Pillar */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] block">
-              Sovereign Pillar
-            </label>
-            <select
-              value={selectedPillar}
-              onChange={(e) => handlePillarChange(e.target.value)}
-              className="w-full text-xs bg-white border border-[#E2E8E4] text-[#111827] rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F]"
-            >
-              <option value="ALL">All Tech Pillars (6 Desks)</option>
-              {availablePillars.map((p) => (
-                <option key={p.slug} value={p.slug}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* 2. Eligibility Stage */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] block">
-              Founder Eligibility
-            </label>
-            <select
-              value={selectedEligibility}
-              onChange={(e) => handleEligibilityChange(e.target.value)}
-              className="w-full text-xs bg-white border border-[#E2E8E4] text-[#111827] rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F]"
-            >
-              {ELIGIBILITY_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* 3. Cohort Status */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] block">
-              Application Status
-            </label>
-            <select
-              value={selectedStatus}
-              onChange={(e) => handleStatusChange(e.target.value)}
-              className="w-full text-xs bg-white border border-[#E2E8E4] text-[#111827] rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F]"
-            >
-              {STATUS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* 4. Sorting */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] block">
-              Order By
-            </label>
-            <select
-              value={selectedSort}
-              onChange={(e) => handleSortChange(e.target.value)}
-              className="w-full text-xs bg-white border border-[#E2E8E4] text-[#111827] rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F]"
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* ==================================================================== */}
-      {/* 2. RESULTS SUMMARY BAR                                               */}
-      {/* ==================================================================== */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#4B5563] px-1">
-        <p>
-          Showing <span className="font-bold text-[#111827]">{filteredItems.length}</span> verified{' '}
-          {filteredItems.length === 1 ? 'opportunity' : 'opportunities'}
-          {selectedCategory !== 'ALL' && <span> in this category</span>}
-        </p>
-        <div className="flex items-center gap-2 text-[11px] text-[#0B6E4F] font-medium">
-          <ShieldCheck className="w-4 h-4 shrink-0 text-[#0B6E4F]" />
-          <span>Every opportunity backed by official source portal and last verification date</span>
-        </div>
-      </div>
-
-      {/* ==================================================================== */}
-      {/* 3. OPPORTUNITIES GRID                                                */}
-      {/* ==================================================================== */}
-      {filteredItems.length === 0 ? (
-        <div className="bg-editorial-pure p-12 sm:p-16 text-center rounded-lg border border-editorial-hairline space-y-4 shadow-xs">
-          <div className="w-12 h-12 rounded-full bg-editorial-sand flex items-center justify-center mx-auto text-ink-muted">
-            <Info className="w-6 h-6" />
-          </div>
-          <div className="space-y-1.5 max-w-md mx-auto">
-            <h3 className="font-heading font-bold text-lg text-ink-high">
-              No matching verified opportunities found
-            </h3>
-            <p className="text-xs sm:text-sm text-ink-muted leading-relaxed">
-              We did not find any opportunities matching your active combination of filters. Try broadening your criteria or reset the search filters.
-            </p>
-          </div>
-          <button
-            onClick={handleResetFilters}
-            className="inline-flex items-center gap-2 text-xs font-bold px-5 py-2.5 rounded-md bg-[#0B6E4F] text-white hover:bg-[#08533C] transition-all shadow-xs cursor-pointer"
-          >
-            <span>Reset All Filters</span>
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
-          {filteredItems.map((item) => {
-            const criteriaList = Array.isArray(item.eligibilityCriteria)
-              ? (item.eligibilityCriteria as string[])
-              : [];
-            const benefitsList = Array.isArray(item.benefits)
-              ? (item.benefits as string[])
-              : [];
-
-            return (
-              <article
-                key={item.id}
-                className="group bg-white rounded-lg border border-[#E2E8E4] hover:border-[#0B6E4F]/50 hover:shadow-md transition-all duration-200 p-5 sm:p-6 flex flex-col justify-between relative overflow-hidden"
-              >
-                <div className="space-y-3.5">
-                  {/* Card Header: Organization, Pillar, & Status Badge */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-md bg-[#F1F5F2] flex items-center justify-center text-[#0A1F2C] shrink-0 border border-[#E2E8E4]">
-                        <Building2 className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <span className="text-xs font-bold text-[#111827] tracking-tight block">
-                          {item.organization}
-                        </span>
-                        {item.categoryRel && (
-                          <span
-                            className="text-[10px] uppercase font-bold tracking-wider inline-block"
-                            style={{ color: item.categoryRel.color }}
-                          >
-                            {item.categoryRel.name}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div>{renderDeadlineBadge(item.deadline, item.status, item.isExpired)}</div>
-                  </div>
-
-                  {/* Program Title */}
-                  <Link href={`/opportunity/${item.slug}`} className="block focus:outline-none focus:underline">
-                    <h3 className="font-heading font-black text-lg text-[#111827] group-hover:text-[#0B6E4F] leading-snug transition-colors">
-                      {item.title}
-                    </h3>
-                  </Link>
-
-                  {/* Capital Support & Terms Strip */}
-                  <div className="flex flex-wrap items-center gap-2 pt-0.5">
-                    {renderSupportBadge(item.fundingAmount, item.category)}
-                    {item.equityTaken && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-semibold bg-[#F1F5F2] text-[#111827] border border-[#E2E8E4]">
-                        {item.equityTaken}
-                      </span>
-                    )}
-                    {item.location && (
-                      <span className="text-[11px] text-[#4B5563]">
-                        • {item.location}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-xs text-[#4B5563] leading-relaxed line-clamp-3">
-                    {item.description}
-                  </p>
-
-                  {/* Eligibility / Benefits Preview Pills */}
-                  {criteriaList.length > 0 && (
-                    <div className="pt-1">
-                      <button
-                        type="button"
-                        onClick={() => setActiveModalItem(item)}
-                        className="text-xs text-[#0B6E4F] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>View eligibility &amp; benefits checklist ({criteriaList.length} criteria)</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Card Footer: Official Provenance & Actions */}
-                <div className="pt-4 mt-5 border-t border-[#E2E8E4] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                  <div className="text-[11px] text-[#4B5563]">
-                    <div className="flex items-center gap-1">
-                      <span className="font-medium">Source:</span>
-                      {item.sourceUrl ? (
-                        <a
-                          href={item.sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[#111827] hover:text-[#0B6E4F] hover:underline font-semibold inline-flex items-center gap-0.5"
-                        >
-                          <span>{item.sourceName}</span>
-                          <ExternalLink className="w-2.5 h-2.5" />
-                        </a>
-                      ) : (
-                        <span className="font-semibold text-[#111827]">{item.sourceName}</span>
-                      )}
-                    </div>
-                    <span className="block text-[10px] text-slate-400 pt-0.5">
-                      Verified {formatDate(item.verifiedAt)}
-                      {item.verifiedBy && ` • ${item.verifiedBy}`}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Link
-                      href={`/opportunity/${item.slug}`}
-                      className="px-3.5 py-1.5 rounded-md border border-[#E2E8E4] bg-[#F1F5F2] hover:bg-[#E8F5EF] text-[#111827] font-semibold transition-colors text-xs"
-                    >
-                      Dossier
-                    </Link>
-                    <a
-                      href={item.applicationUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-[#0B6E4F] hover:bg-[#08533C] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-xs"
-                    >
-                      <span>Apply</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
-                </div>
-              </article>
             );
           })}
         </div>
-      )}
 
-      {/* ==================================================================== */}
-      {/* 4. ELIGIBILITY & BENEFITS POPUP MODAL                                */}
-      {/* ==================================================================== */}
-      {activeModalItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1F2C]/70 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-lg border border-[#E2E8E4] shadow-2xl max-w-xl w-full p-6 space-y-5 animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-start justify-between gap-4 pb-3 border-b border-[#E2E8E4]">
-              <div>
-                <span className="text-xs font-bold text-[#0B6E4F] uppercase tracking-wider block">
-                  {activeModalItem.organization}
-                </span>
-                <h3 className="font-heading font-black text-xl text-[#111827]">
-                  {activeModalItem.title}
-                </h3>
-              </div>
-              <button
-                onClick={() => setActiveModalItem(null)}
-                className="p-1.5 rounded-md text-[#4B5563] hover:text-[#111827] hover:bg-[#F1F5F2] transition-colors"
-                aria-label="Close modal"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-5 md:grid-cols-4">
+          <FilterSelect label="Section" value={selectedPillar} onChange={handlePillarChange}>
+            <option value="ALL">All sections</option>
+            {availablePillars.map((p) => (
+              <option key={p.slug} value={p.slug}>
+                {p.name}
+              </option>
+            ))}
+          </FilterSelect>
+          <FilterSelect label="Eligibility" value={selectedEligibility} onChange={handleEligibilityChange}>
+            {ELIGIBILITY_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </FilterSelect>
+          <FilterSelect label="Status" value={selectedStatus} onChange={handleStatusChange}>
+            {STATUS_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </FilterSelect>
+          <FilterSelect label="Order" value={selectedSort} onChange={handleSortChange}>
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </FilterSelect>
+        </div>
+      </div>
 
-            {/* Quick Metrics */}
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="p-3 rounded-md bg-[#F1F5F2] border border-[#E2E8E4]">
-                <span className="text-[10px] uppercase font-bold text-[#4B5563] block">Support Value</span>
-                <span className="font-bold text-[#111827] pt-0.5 block">{activeModalItem.fundingAmount || 'Non-Cash Program'}</span>
-              </div>
-              <div className="p-3 rounded-md bg-[#F1F5F2] border border-[#E2E8E4]">
-                <span className="text-[10px] uppercase font-bold text-[#4B5563] block">Equity Taken</span>
-                <span className="font-bold text-[#111827] pt-0.5 block">{activeModalItem.equityTaken || '0%'}</span>
-              </div>
-            </div>
+      {/* Result line */}
+      <div className="mt-10 flex flex-wrap items-baseline justify-between gap-3">
+        <p className="meta" aria-live="polite">
+          {filteredItems.length} of {initialOpportunities.length}{' '}
+          {initialOpportunities.length === 1 ? 'programme' : 'programmes'} · {sortLabel}
+        </p>
+        {isFilteringActive && (
+          <button type="button" onClick={handleResetFilters} className="group meta text-ink hover:text-clay transition-colors">
+            <span className="link-rule">Clear filters</span> →
+          </button>
+        )}
+      </div>
 
-            {/* Verified Benefits Package */}
-            {Array.isArray(activeModalItem.benefits) && activeModalItem.benefits.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[#111827] flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-[#C9A227]" />
-                  <span>Verified Founder Benefits Package</span>
-                </h4>
-                <div className="space-y-1.5">
-                  {activeModalItem.benefits.map((b: string, idx: number) => (
-                    <div key={idx} className="flex items-start gap-2 text-xs text-[#111827] bg-[#F1F5F2] p-2.5 rounded-md border border-[#E2E8E4]">
-                      <span className="text-[#0B6E4F] font-bold mt-0.5">✦</span>
-                      <span>{b}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Eligibility Criteria Checklist */}
-            <div className="space-y-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#111827] flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#0B6E4F]" />
-                <span>Eligibility Prerequisites</span>
-              </h4>
-              <div className="space-y-1.5">
-                {Array.isArray(activeModalItem.eligibilityCriteria) &&
-                  activeModalItem.eligibilityCriteria.map((c: string, idx: number) => (
-                    <div key={idx} className="flex items-start gap-2 text-xs text-[#111827] bg-[#F1F5F2] p-2.5 rounded-md border border-[#E2E8E4]">
-                      <span className="text-[#0B6E4F] font-bold mt-0.5">✓</span>
-                      <span>{c}</span>
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            {/* Modal Actions */}
-            <div className="pt-4 border-t border-[#E2E8E4] flex items-center justify-between gap-3">
-              <Link
-                href={`/opportunity/${activeModalItem.slug}`}
-                onClick={() => setActiveModalItem(null)}
-                className="text-xs font-bold text-[#0B6E4F] hover:underline flex items-center gap-1"
-              >
-                <span>Read Full Intelligence Dossier</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-              <a
-                href={activeModalItem.applicationUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md bg-[#0B6E4F] hover:bg-[#08533C] text-white font-bold text-xs uppercase tracking-wider transition-colors shadow-xs"
-              >
-                <span>Apply on Official Portal</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
+      {filteredItems.length === 0 ? (
+        <div className="mt-3 border-t-2 border-ink py-14">
+          <p className="font-serif text-[1.5rem] leading-snug text-ink">No programmes match these filters.</p>
+          <button
+            type="button"
+            onClick={handleResetFilters}
+            className="group mt-3 inline-flex items-center gap-2 text-sm text-ink"
+          >
+            <span className="link-rule">Clear filters</span>
+            <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+          </button>
+        </div>
+      ) : (
+        <div className="mt-3">
+          <div className={cn('hidden md:grid gap-6 border-t-2 border-ink border-b border-rule py-3 meta', COLS)}>
+            <span>Deadline</span>
+            <span>Programme</span>
+            <span>Value</span>
+            <span className="text-right">Equity</span>
+            <span>Status</span>
+            <span className="sr-only">Details</span>
           </div>
+
+          <ul className="border-t-2 border-ink md:border-t-0">
+            {filteredItems.map((item) => {
+              const d = deadlineInfo(item.deadline, item.isExpired ? 'CLOSED' : item.status);
+              const st = statusWord(item, d.urgent, d.closed);
+              const open = openId === item.id;
+              const panelId = `opp-${item.id}`;
+              const criteria = Array.isArray(item.eligibilityCriteria) ? (item.eligibilityCriteria as string[]) : [];
+              const benefits = Array.isArray(item.benefits) ? (item.benefits as string[]) : [];
+
+              return (
+                <li key={item.id} className={cn('border-b border-rule', open && 'bg-paper-sheet/60')}>
+                  <div
+                    className={cn(
+                      'grid grid-cols-[minmax(0,1fr)_auto] gap-x-6 gap-y-2 py-5 md:items-baseline -mx-3 px-3 transition-colors hover:bg-paper-sheet/60',
+                      COLS
+                    )}
+                  >
+                    {/* Deadline */}
+                    <div className="font-sans tabular text-sm">
+                      <span className={cn(d.closed ? 'text-ink-4' : 'text-ink')}>{d.date}</span>
+                      <span className={cn('block text-[0.71875rem] mt-0.5', d.urgent ? 'text-clay' : 'text-ink-3')}>
+                        {d.urgent && (
+                          <span className="live-dot inline-block w-1.5 h-1.5 rounded-full bg-clay mr-1.5 align-middle" />
+                        )}
+                        {d.note}
+                      </span>
+                    </div>
+
+                    {/* Mobile: status + toggle beside the date */}
+                    <div className="flex items-baseline gap-4 md:hidden">
+                      <StatusWord {...st} />
+                    </div>
+
+                    {/* Programme */}
+                    <div className="col-span-2 md:col-span-1 min-w-0">
+                      <Link
+                        href={`/opportunity/${item.slug}`}
+                        className="font-serif text-[1.25rem] leading-snug text-ink headline-link"
+                      >
+                        {item.title}
+                      </Link>
+                      <p className="mt-1 text-sm text-ink-3">
+                        {item.organization} · {opportunityTypeLabel(item.category)}
+                      </p>
+                    </div>
+
+                    {/* Value */}
+                    <p className="col-span-2 md:col-span-1 text-sm text-ink-2 leading-snug">
+                      <span className="meta mr-2 md:hidden">Value</span>
+                      {item.fundingAmount ?? '—'}
+                    </p>
+
+                    {/* Equity */}
+                    <p className="font-sans tabular text-sm text-ink-2 md:text-right">
+                      <span className="meta mr-2 md:hidden">Equity</span>
+                      {shortEquity(item.equityTaken)}
+                    </p>
+
+                    {/* Status (desktop) */}
+                    <div className="hidden md:block">
+                      <StatusWord {...st} />
+                    </div>
+
+                    {/* Toggle */}
+                    <button
+                      type="button"
+                      aria-expanded={open}
+                      aria-controls={panelId}
+                      onClick={() => setOpenId(open ? null : item.id)}
+                      className="justify-self-end font-sans text-sm text-ink-3 hover:text-clay transition-colors md:w-8 md:text-right"
+                    >
+                      <span className="md:hidden mr-1.5 text-[0.71875rem]">{open ? 'Less' : 'Details'}</span>
+                      <span aria-hidden>{open ? '−' : '+'}</span>
+                      <span className="sr-only">{open ? 'Hide details' : `Show details for ${item.title}`}</span>
+                    </button>
+                  </div>
+
+                  {open && (
+                    <div id={panelId} className="grid gap-8 pb-8 pt-1 md:grid-cols-12 md:pl-[10rem]">
+                      <div className="md:col-span-7 space-y-5">
+                        <p className="text-[0.9375rem] leading-relaxed text-ink-2">{item.description}</p>
+                        {criteria.length > 0 && (
+                          <div>
+                            <p className="meta mb-2">Who can apply</p>
+                            <NumberedList items={criteria} />
+                          </div>
+                        )}
+                        {benefits.length > 0 && (
+                          <div>
+                            <p className="meta mb-2">What you get</p>
+                            <NumberedList items={benefits} />
+                          </div>
+                        )}
+                      </div>
+                      <div className="md:col-span-5 md:border-l md:border-rule md:pl-8">
+                        <dl className="text-sm">
+                          <FactRow label="Location">{item.location ?? '—'}</FactRow>
+                          <FactRow label="Source">
+                            {item.sourceUrl ? (
+                              <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer" className="link-rule text-ink">
+                                {item.sourceName} ↗
+                              </a>
+                            ) : (
+                              item.sourceName
+                            )}
+                          </FactRow>
+                          <FactRow label="Last checked">
+                            <span className="font-sans tabular">{shortDate(item.verifiedAt)}</span>
+                          </FactRow>
+                        </dl>
+                        <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
+                          <a
+                            href={item.applicationUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-quiet"
+                          >
+                            {d.closed ? 'Programme site' : 'Apply'} <span aria-hidden>↗</span>
+                          </a>
+                          <Link href={`/opportunity/${item.slug}`} className="group inline-flex items-center gap-2 text-ink">
+                            <span className="link-rule">Full listing</span>
+                            <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         </div>
       )}
     </div>
   );
 };
+
+/* ------------------------------------------------------------------ */
+
+function statusWord(item: OpportunityItem, urgent: boolean, closed: boolean): { word: string; tone: 'moss' | 'clay' | 'faint' } {
+  if (closed || item.isExpired || item.status === 'CLOSED') return { word: 'Closed', tone: 'faint' };
+  if (urgent || item.status === 'CLOSING_SOON') return { word: 'Closing', tone: 'clay' };
+  if (item.status === 'ROLLING') return { word: 'Rolling', tone: 'moss' };
+  return { word: 'Open', tone: 'moss' };
+}
+
+function StatusWord({ word, tone }: { word: string; tone: 'moss' | 'clay' | 'faint' }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 font-sans text-[0.75rem]',
+        tone === 'moss' && 'text-moss',
+        tone === 'clay' && 'text-clay',
+        tone === 'faint' && 'text-ink-4'
+      )}
+    >
+      {tone !== 'faint' && (
+        <span className={cn('inline-block w-1.5 h-1.5 rounded-full', tone === 'moss' ? 'bg-moss' : 'bg-clay')} />
+      )}
+      {word}
+    </span>
+  );
+}
+
+function FilterSelect({
+  label,
+  value,
+  onChange,
+  children,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="block min-w-0">
+      <span className="meta block mb-1">{label}</span>
+      <span className="relative block">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full appearance-none truncate border-b border-ink bg-transparent py-1.5 pr-6 text-sm text-ink focus:border-clay focus:outline-none cursor-pointer"
+        >
+          {children}
+        </select>
+        <span aria-hidden className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-[0.625rem] text-ink-3">
+          ▼
+        </span>
+      </span>
+    </label>
+  );
+}
+
+function FactRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-[7rem_minmax(0,1fr)] gap-4 border-b border-rule py-2.5 first:border-t">
+      <dt className="meta pt-0.5">{label}</dt>
+      <dd className="text-ink-2 break-words">{children}</dd>
+    </div>
+  );
+}
+
+function NumberedList({ items }: { items: string[] }) {
+  return (
+    <ol className="border-t border-rule">
+      {items.map((t, i) => (
+        <li key={i} className="grid grid-cols-[2rem_minmax(0,1fr)] gap-2 border-b border-rule py-2 text-sm text-ink-2 leading-snug">
+          <span className="font-sans tabular text-[0.71875rem] text-ink-4 pt-0.5">{String(i + 1).padStart(2, '0')}</span>
+          <span>{t}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function SearchGlyph() {
+  return (
+    <svg aria-hidden width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" className="text-ink-3 shrink-0">
+      <circle cx="11" cy="11" r="7" />
+      <path d="M20 20l-3.5-3.5" />
+    </svg>
+  );
+}
+
+
+function shortDate(iso: string) {
+  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso));
+}

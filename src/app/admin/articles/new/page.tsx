@@ -20,7 +20,7 @@ export default async function NewArticlePage() {
   ]);
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="space-y-6">
       <ArticleEditorForm
         isNew={true}
         categories={categories}

@@ -1,80 +1,66 @@
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Search, Home, AlertTriangle } from 'lucide-react';
 import { SiteHeader } from '@/components/public/SiteHeader';
 import { SiteFooter } from '@/components/public/SiteFooter';
 import { MainContainer } from '@/components/public/MainContainer';
-import { EDITORIAL_CATEGORIES } from '@/lib/constants';
+import { EDITORIAL_CATEGORIES, NAV_LINKS } from '@/lib/constants';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex flex-col bg-editorial-paper text-ink-body font-sans selection:bg-brand-yellow/30">
+    <>
       <SiteHeader />
 
-      <main className="flex-1 py-16 sm:py-24 flex items-center">
-        <MainContainer size="narrow">
-          <div className="text-center space-y-8 bg-editorial-pure p-8 sm:p-12 rounded-none border border-editorial-hairline shadow-xs">
-            {/* Error Marker */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-editorial-sand border border-editorial-hairline rounded-none text-ink-high text-xs font-bold uppercase tracking-widest font-sans">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-              <span>404 — Disconnection Notice</span>
-            </div>
-
-            {/* Display Number */}
-            <div className="space-y-3">
-              <h1 className="text-6xl sm:text-8xl font-black text-ink-high font-serif tracking-tighter">
-                404
-              </h1>
-              <h2 className="text-2xl sm:text-3xl font-bold text-ink-high font-serif">
-                Editorial Resource Not Located
-              </h2>
-              <p className="text-base sm:text-lg text-ink-body font-serif italic max-w-md mx-auto leading-relaxed">
-                The technical dispatch, vertical archive, or author profile you requested may have been relocated, updated, or is no longer in active circulation.
-              </p>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-yellow text-ink-high rounded-none text-xs font-bold font-sans uppercase tracking-wider hover:bg-brand-yellow/90 border border-ink-high/20 transition-editorial shadow-xs"
-              >
-                <Home className="w-3.5 h-3.5" />
-                <span>Return to Homepage</span>
+      <main id="main" className="flex-1">
+        <MainContainer className="pt-14 md:pt-20 pb-24">
+          <div className="max-w-3xl">
+            <p className="kicker mb-3">Error 404</p>
+            <h1 className="font-serif text-display-lg text-ink">We couldn’t find that page.</h1>
+            <p className="mt-5 max-w-xl text-[1.0625rem] leading-relaxed text-ink-3">
+              It may have moved, or the link may be mistyped. A search usually finds it.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
+              <Link href="/search" className="btn-primary">
+                Search the site
               </Link>
-
-              <Link
-                href="/search"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-editorial-sand text-ink-high border border-editorial-hairline rounded-none text-xs font-bold font-sans uppercase tracking-wider hover:border-ink-high hover:bg-editorial-stone transition-editorial"
-              >
-                <Search className="w-3.5 h-3.5" />
-                <span>Search Archives</span>
+              <Link href="/" className="group inline-flex items-center gap-2 text-sm text-ink">
+                <span className="link-rule">Go to the front page</span>
+                <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
               </Link>
             </div>
+          </div>
 
-            {/* Pillar Navigation Shortcuts */}
-            <div className="pt-8 border-t border-editorial-hairline space-y-4">
-              <span className="text-[11px] font-bold uppercase tracking-widest text-ink-muted font-sans block">
-                Or Navigate Directly to an Editorial Pillar:
-              </span>
-              <div className="flex flex-wrap justify-center gap-2">
-                {EDITORIAL_CATEGORIES.map((cat) => (
-                  <Link
-                    key={cat.id}
-                    href={`/category/${cat.slug}`}
-                    className="text-xs font-sans px-3 py-1.5 rounded-none bg-editorial-sand border border-editorial-hairline text-ink-body hover:border-ink-high hover:text-ink-high transition-editorial"
-                  >
-                    {cat.name}
-                  </Link>
+          <div className="mt-20 md:mt-24 grid gap-12 md:grid-cols-2 md:gap-x-10">
+            <nav aria-label="Directory" className="border-t-2 border-ink pt-4">
+              <p className="meta mb-3">Directory and reporting</p>
+              <ul className="border-t border-rule">
+                {NAV_LINKS.map((l) => (
+                  <li key={l.href} className="group border-b border-rule">
+                    <Link href={l.href} className="flex items-baseline justify-between py-3">
+                      <span className="font-serif text-[1.25rem] text-ink headline-link">{l.label}</span>
+                      <span aria-hidden className="text-ink-4 group-hover:text-clay transition-colors">→</span>
+                    </Link>
+                  </li>
                 ))}
-              </div>
-            </div>
+              </ul>
+            </nav>
+            <nav aria-label="Sections" className="border-t-2 border-ink pt-4 md:border-l-0">
+              <p className="meta mb-3">Sections</p>
+              <ul className="border-t border-rule">
+                {EDITORIAL_CATEGORIES.map((cat) => (
+                  <li key={cat.slug} className="group border-b border-rule">
+                    <Link href={`/category/${cat.slug}`} className="flex items-baseline justify-between py-3">
+                      <span className="font-serif text-[1.25rem] text-ink headline-link">{cat.name}</span>
+                      <span aria-hidden className="text-ink-4 group-hover:text-clay transition-colors">→</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
           </div>
         </MainContainer>
       </main>
 
       <SiteFooter />
-    </div>
+    </>
   );
 }
-

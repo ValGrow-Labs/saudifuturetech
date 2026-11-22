@@ -1,10 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
-import { FolderOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from './Button';
 
 interface EmptyStateProps {
+  /** Optional; most empty states read better without one. */
   icon?: React.ReactNode;
   title: string;
   description: string;
@@ -14,6 +13,7 @@ interface EmptyStateProps {
   className?: string;
 }
 
+/** A short serif line, a sentence of explanation, and a next step. No box, no illustration. */
 export const EmptyState: React.FC<EmptyStateProps> = ({
   icon,
   title,
@@ -23,33 +23,28 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   onAction,
   className,
 }) => {
+  const action = actionLabel ? (
+    actionHref ? (
+      <Link href={actionHref} className="group inline-flex items-center gap-2 text-sm text-ink">
+        <span className="link-rule">{actionLabel}</span>
+        <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+      </Link>
+    ) : (
+      <button type="button" onClick={onAction} className="group inline-flex items-center gap-2 text-sm text-ink">
+        <span className="link-rule">{actionLabel}</span>
+        <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+      </button>
+    )
+  ) : null;
+
   return (
-    <div
-      className={cn(
-        'flex flex-col items-center justify-center text-center p-8 sm:p-12 border border-dashed border-editorial-hairline rounded-none bg-editorial-pure shadow-xs',
-        className
-      )}
-    >
-      <div className="w-12 h-12 rounded-none bg-editorial-sand flex items-center justify-center text-ink-muted mb-4 border border-editorial-hairline">
-        {icon || <FolderOpen className="w-6 h-6" />}
+    <div className={cn('border-y border-rule py-12 md:py-16', className)}>
+      <div className="max-w-xl">
+        {icon && <div className="mb-4 text-ink-4">{icon}</div>}
+        <p className="font-serif text-display-sm text-ink">{title}</p>
+        <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-3">{description}</p>
+        {action && <div className="mt-6">{action}</div>}
       </div>
-      <h3 className="text-lg font-bold text-ink-high font-serif mb-1">{title}</h3>
-      <p className="text-xs sm:text-sm text-ink-muted max-w-sm mb-6 font-sans">{description}</p>
-      {actionLabel && (
-        <>
-          {actionHref ? (
-            <Link href={actionHref}>
-              <Button variant="secondary" size="sm">
-                {actionLabel}
-              </Button>
-            </Link>
-          ) : (
-            <Button variant="secondary" size="sm" onClick={onAction}>
-              {actionLabel}
-            </Button>
-          )}
-        </>
-      )}
     </div>
   );
 };
