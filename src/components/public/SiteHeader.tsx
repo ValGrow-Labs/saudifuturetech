@@ -192,111 +192,77 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ variant = 'standard' }) 
   }
 
   // ============================================================================
-  // VARIANT B: STANDARD EDITORIAL MASTHEAD (For subpages, articles, directories)
-  // Clean broadsheet styling with centered publication masthead
-  // ============================================================================
-  // VARIANT B: REFINED EDITORIAL HEADER FOR FOUNDER DIRECTORIES & WIRE
+  // VARIANT B: REFINED COMPACT HEADER FOR FOUNDER DIRECTORIES & WIRE
   // Warm white background, Deep Saudi green active states, Desert gold accents
+  // Single compact bar (~56px) so directory content is immediately visible
   // ============================================================================
   return (
-    <header className="w-full bg-[#FAF9F6] transition-all">
-      {/* 1. Grand Editorial Masthead — Purely Centered & Symmetrical */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4 text-center">
-        <div className="flex flex-col items-center justify-center space-y-1">
+    <header className="sticky top-0 z-40 w-full bg-[#FAF9F6]/95 backdrop-blur-md border-b border-[#E2E8E4] shadow-xs transition-all">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 h-14 sm:h-16">
+        {/* Brand Identity / Logo */}
+        <Link
+          href="/"
+          className="flex flex-col group focus:outline-none shrink-0"
+        >
+          <span className="font-serif font-black text-lg sm:text-xl tracking-tight text-[#111827] group-hover:text-[#0B6E4F] transition-editorial leading-none">
+            {SITE_NAME}
+          </span>
+          <span className="font-sans text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#C9A227] pt-0.5 leading-tight">
+            Founder Operating Intelligence
+          </span>
+        </Link>
+
+        {/* Desktop Categories Navigation */}
+        <nav
+          className="hidden lg:flex items-center gap-1 sm:gap-2 xl:gap-3 justify-center flex-1 overflow-x-auto min-w-0"
+          aria-label="Main Navigation"
+        >
+          {NAV_LINKS.map((link) => {
+            const isActive = pathname === link.href;
+            const hasBadge = 'badge' in link && Boolean(link.badge);
+
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold font-sans uppercase tracking-wider transition-editorial whitespace-nowrap border-b-2 shrink-0',
+                  isActive
+                    ? 'text-[#0B6E4F] font-bold border-[#0B6E4F]'
+                    : 'text-[#4B5563] hover:text-[#111827] border-transparent hover:border-[#C9A227]/40'
+                )}
+              >
+                <span>{link.label}</span>
+                {hasBadge && (
+                  <span className="inline-flex items-center px-1.5 py-0.5 text-[9px] font-bold font-sans tracking-wide uppercase rounded-full bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/20">
+                    {link.badge}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Right Utilities: Subscribe */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 ml-auto pl-2">
+          {/* Subscribe Action Button */}
           <Link
-            href="/"
-            className="group inline-block focus:outline-none"
+            href="/newsletter"
+            className="text-xs font-bold font-sans px-3.5 py-1.5 rounded-md bg-[#0B6E4F] text-white hover:bg-[#08533C] transition-editorial shadow-xs uppercase tracking-wider"
           >
-            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-serif font-black tracking-tight text-[#111827] group-hover:text-[#0B6E4F] transition-colors">
-              {SITE_NAME}
-            </h1>
+            Subscribe
           </Link>
-          <p className="font-heading font-medium text-xs sm:text-sm text-[#4B5563] tracking-wide max-w-lg mx-auto">
-            Build in the Kingdom. Powered by verified intelligence.
-          </p>
-          <p className="font-sans text-[10px] sm:text-[11px] uppercase tracking-wider text-[#0B6E4F] font-bold">
-            Founder Operating Intelligence Platform • Kingdom of Saudi Arabia
-          </p>
+
+          {/* Mobile Menu Toggle Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden p-1.5 text-[#4B5563] hover:text-[#111827] transition-editorial ml-1"
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+          >
+            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          </button>
         </div>
       </div>
-
-      {/* Spacer to prevent layout shift when navbar becomes fixed on scroll */}
-      {isScrolled && <div className="h-11 sm:h-12 w-full" aria-hidden="true" />}
-
-      {/* 2. Main Navigation Ribbon & Utility Bar */}
-      <div
-        className={cn(
-          'w-full bg-[#FAF9F6]/95 backdrop-blur-md transition-all duration-200 z-40',
-          isScrolled
-            ? 'fixed top-0 left-0 right-0 border-b border-[#E2E8E4] shadow-xs py-1.5 animate-in slide-in-from-top-1 duration-200'
-            : 'relative border-t border-b border-[#E2E8E4] py-1.5 sm:py-2'
-        )}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 h-9 sm:h-10">
-          {/* Scrolled Brand Indicator (Visible when sticky) */}
-          {isScrolled && (
-            <Link
-              href="/"
-              className="font-serif font-black text-base sm:text-lg tracking-tight text-[#111827] hover:text-[#0B6E4F] transition-editorial shrink-0 pr-4 border-r border-[#E2E8E4]"
-            >
-              {SITE_NAME}
-            </Link>
-          )}
-
-          {/* Desktop Categories Navigation */}
-          <nav
-            className={cn(
-              'hidden lg:flex items-center gap-1 sm:gap-2 xl:gap-3 overflow-x-auto min-w-0',
-              isScrolled ? 'justify-start' : 'justify-center flex-1'
-            )}
-            aria-label="Main Navigation"
-          >
-            {NAV_LINKS.map((link) => {
-              const isActive = pathname === link.href;
-              const hasBadge = 'badge' in link && Boolean(link.badge);
-
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    'inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold font-sans uppercase tracking-wider transition-editorial whitespace-nowrap border-b-2 shrink-0',
-                    isActive
-                      ? 'text-[#0B6E4F] font-bold border-[#0B6E4F]'
-                      : 'text-[#4B5563] hover:text-[#111827] border-transparent hover:border-[#C9A227]/40'
-                  )}
-                >
-                  <span>{link.label}</span>
-                  {hasBadge && (
-                    <span className="inline-flex items-center px-1.5 py-0.5 text-[9px] font-bold font-sans tracking-wide uppercase rounded-full bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/20">
-                      {link.badge}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Right Utilities: Subscribe */}
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 ml-auto pl-2">
-            {/* Subscribe Action Button */}
-            <Link
-              href="/newsletter"
-              className="text-xs font-bold font-sans px-3.5 py-1.5 rounded-md bg-[#0B6E4F] text-white hover:bg-[#08533C] transition-editorial shadow-xs uppercase tracking-wider"
-            >
-              Subscribe
-            </Link>
-
-            {/* Mobile Menu Toggle Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-1.5 text-[#4B5563] hover:text-[#111827] transition-editorial ml-1"
-              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-            >
-              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
 
         {/* Mobile Drawer Navigation */}
         {mobileMenuOpen && (
@@ -366,7 +332,6 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({ variant = 'standard' }) 
             aria-hidden="true"
           />
         )}
-      </div>
     </header>
   );
 };
