@@ -128,7 +128,7 @@ export const FounderCommandHero: React.FC<FounderCommandHeroProps> = ({
   };
 
   return (
-    <div className="relative w-full overflow-hidden bg-[#0e1828] border-b border-brand-navy/30 shadow-xl text-white" style={{ contain: 'paint', clipPath: 'inset(0)' }}>
+    <div className="relative w-full min-h-screen min-h-[100dvh] flex flex-col justify-between overflow-hidden bg-[#0e1828] border-b border-brand-navy/30 shadow-xl text-white" style={{ contain: 'paint', clipPath: 'inset(0)' }}>
       {/* ==================================================================== */}
       {/* BACKGROUND MEDIA SLIDESHOW & RUNNER                                  */}
       {/* ==================================================================== */}
@@ -195,7 +195,7 @@ export const FounderCommandHero: React.FC<FounderCommandHeroProps> = ({
       {/* ==================================================================== */}
       {/* FOREGROUND CONTENT & ALIGNMENT STRUCTURE                             */}
       {/* ==================================================================== */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 lg:pt-28 pb-8 sm:pb-10 lg:pb-12 flex flex-col justify-between">
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 lg:pt-32 pb-8 sm:pb-12 flex-1 flex flex-col justify-between">
         {/* Middle Main Content Stack */}
         <div className="my-auto text-center space-y-4 sm:space-y-6 max-w-3xl mx-auto w-full">
           {/* 1. Value Badge with Pulsing Live Dot */}

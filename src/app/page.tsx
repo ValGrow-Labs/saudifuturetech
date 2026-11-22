@@ -141,8 +141,8 @@ export default async function HomePage() {
       </div>
 
       {/* Main Operating Terminal Canvas */}
-      <main className="flex-1 py-10 sm:py-16 font-sans">
-        <MainContainer className="space-y-16 sm:space-y-20">
+      <main className="flex-1 pt-6 pb-16 sm:pt-8 sm:pb-20 font-sans">
+        <MainContainer className="space-y-14 sm:space-y-16">
           {/* 2. Verified Opportunity Radar Strip */}
           <section aria-label="Verified Opportunity Radar">
             <OpportunityRadarPreview opportunities={opportunities} />
