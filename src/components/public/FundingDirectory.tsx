@@ -235,21 +235,21 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
   return (
     <div className="space-y-8 font-sans">
       {/* 1. Filter and Search Controls Box */}
-      <div className="bg-[#F1F5F2] p-5 sm:p-6 rounded-xl border border-[#E2E8E4] shadow-xs space-y-5">
+      <div className="bg-[#F1F5F2] dark:bg-[#102433] p-5 sm:p-6 rounded-xl border border-[#E2E8E4] dark:border-[#1E3A4C] shadow-xs space-y-5">
         {/* Search Input Bar */}
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563] dark:text-[#94A3B8]" />
           <input
             type="text"
             placeholder="Search funds, sectors, portfolio champions, or CMA license (e.g. STV, Raed, FinTech, Tamara, 17188-37)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-11 pr-10 py-3 text-sm bg-white border border-[#E2E8E4] rounded-lg text-[#111827] placeholder:text-[#4B5563]/70 focus:outline-none focus:ring-2 focus:ring-[#0B6E4F]/30 focus:border-[#0B6E4F] transition-all shadow-2xs"
+            className="w-full pl-11 pr-10 py-3 text-sm bg-white dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C] rounded-lg text-[#111827] dark:text-[#FAF9F6] placeholder:text-[#4B5563]/70 dark:placeholder:text-[#94A3B8]/70 focus:outline-none focus:ring-2 focus:ring-[#0B6E4F]/30 focus:border-[#0B6E4F] transition-all shadow-2xs"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#111827] p-1"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4B5563] dark:text-[#94A3B8] hover:text-[#111827] dark:hover:text-white p-1"
               aria-label="Clear search"
             >
               <X className="w-4 h-4" />
@@ -259,12 +259,12 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
 
         {/* Typology Pills */}
         <div className="space-y-2.5">
-          <div className="flex items-center justify-between text-xs font-bold text-[#4B5563] uppercase tracking-wider">
+          <div className="flex items-center justify-between text-xs font-bold text-[#4B5563] dark:text-[#94A3B8] uppercase tracking-wider">
             <span>Capital Typology</span>
             {hasActiveFilters && (
               <button
                 onClick={handleResetFilters}
-                className="text-[#0B6E4F] hover:underline font-bold text-xs capitalize flex items-center gap-1 cursor-pointer"
+                className="text-[#0B6E4F] dark:text-[#19B5A3] hover:underline font-bold text-xs capitalize flex items-center gap-1 cursor-pointer"
               >
                 <span>Reset All Filters</span>
                 <X className="w-3.5 h-3.5" />
@@ -280,7 +280,7 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
                   'px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer',
                   selectedType === type.value
                     ? 'bg-[#0B6E4F] text-white shadow-xs font-bold'
-                    : 'bg-white text-[#4B5563] hover:text-[#111827] hover:bg-white/80 border border-[#E2E8E4]'
+                    : 'bg-white dark:bg-[#132B3D] text-[#4B5563] dark:text-[#94A3B8] hover:text-[#111827] dark:hover:text-white hover:bg-white/80 dark:hover:bg-[#1A374D] border border-[#E2E8E4] dark:border-[#1E3A4C]'
                 )}
               >
                 {type.label}
@@ -290,10 +290,10 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
         </div>
 
         {/* Secondary Filters: Stage & Regulatory Flags */}
-        <div className="pt-4 border-t border-[#E2E8E4] flex flex-wrap items-center justify-between gap-4">
+        <div className="pt-4 border-t border-[#E2E8E4] dark:border-[#1E3A4C] flex flex-wrap items-center justify-between gap-4">
           {/* Target Stage selector */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#4B5563]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#94A3B8]">
               Target Stage:
             </span>
             <div className="flex flex-wrap items-center gap-1.5">
@@ -304,8 +304,8 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
                   className={cn(
                     'px-3 py-1 text-xs rounded-md transition-all cursor-pointer font-medium',
                     selectedStage === st.value
-                      ? 'bg-[#FDF8EC] text-[#9A7B1C] border border-[#C9A227] font-bold shadow-2xs'
-                      : 'bg-white text-[#4B5563] hover:text-[#111827] border border-[#E2E8E4]'
+                      ? 'bg-[#FDF8EC] dark:bg-[#C9A227]/25 text-[#9A7B1C] dark:text-[#F4C542] border border-[#C9A227] font-bold shadow-2xs'
+                      : 'bg-white dark:bg-[#132B3D] text-[#4B5563] dark:text-[#94A3B8] hover:text-[#111827] dark:hover:text-white border border-[#E2E8E4] dark:border-[#1E3A4C]'
                   )}
                 >
                   {st.label}
@@ -323,7 +323,7 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
                 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-all cursor-pointer',
                 cmaOnly
                   ? 'bg-[#0B6E4F] text-white border-[#0B6E4F] font-bold shadow-xs'
-                  : 'bg-white text-[#0B6E4F] border-[#0B6E4F]/30 hover:bg-[#E8F5EF] font-semibold'
+                  : 'bg-white dark:bg-[#132B3D] text-[#0B6E4F] dark:text-[#19B5A3] border-[#0B6E4F]/30 hover:bg-[#E8F5EF] dark:hover:bg-[#1A374D] font-semibold'
               )}
             >
               <ShieldCheck className="w-3.5 h-3.5" />
@@ -337,7 +337,7 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
                 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-all cursor-pointer',
                 svcOnly
                   ? 'bg-[#C9A227] text-white border-[#C9A227] font-bold shadow-xs'
-                  : 'bg-white text-[#9A7B1C] border-[#C9A227]/40 hover:bg-[#FDF8EC] font-semibold'
+                  : 'bg-white dark:bg-[#132B3D] text-[#9A7B1C] dark:text-[#F4C542] border-[#C9A227]/40 hover:bg-[#FDF8EC] dark:hover:bg-[#1A374D] font-semibold'
               )}
             >
               <Landmark className="w-3.5 h-3.5" />
@@ -351,7 +351,7 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
                 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-all cursor-pointer',
                 activeOnly
                   ? 'bg-[#0B6E4F] text-white border-[#0B6E4F] font-bold shadow-xs'
-                  : 'bg-white text-[#0B6E4F] border-[#0B6E4F]/30 hover:bg-[#E8F5EF] font-semibold'
+                  : 'bg-white dark:bg-[#132B3D] text-[#0B6E4F] dark:text-[#19B5A3] border-[#0B6E4F]/30 hover:bg-[#E8F5EF] dark:hover:bg-[#1A374D] font-semibold'
               )}
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
@@ -409,7 +409,7 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
             return (
               <article
                 key={item.id}
-                className="group bg-white rounded-xl border border-[#E2E8E4] hover:border-[#0B6E4F]/40 hover:shadow-lg transition-all duration-200 p-6 flex flex-col justify-between"
+                className="group bg-white dark:bg-[#102433] rounded-xl border border-[#E2E8E4] dark:border-[#1E3A4C] hover:border-[#0B6E4F]/40 dark:hover:border-[#19B5A3]/40 hover:shadow-lg transition-all duration-200 p-6 flex flex-col justify-between"
               >
                 <div className="space-y-4">
                   {/* Zone 1: Investor Name, Typology & Regulatory Status */}
@@ -418,31 +418,31 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/investor/${item.slug}`}
-                          className="font-heading font-black text-xl text-[#111827] group-hover:text-[#0B6E4F] transition-colors"
+                          className="font-heading font-black text-xl text-[#111827] dark:text-[#FAF9F6] group-hover:text-[#0B6E4F] dark:group-hover:text-[#19B5A3] transition-colors"
                         >
                           {item.name}
                         </Link>
                         {item.isFeatured && (
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#FDF8EC] text-[#9A7B1C] border border-[#C9A227]/40">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#FDF8EC] dark:bg-[#C9A227]/25 text-[#9A7B1C] dark:text-[#F4C542] border border-[#C9A227]/40">
                             Pillar Lead
                           </span>
                         )}
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-[#4B5563]">
-                        <span className="font-bold text-[#0B6E4F]">
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-[#4B5563] dark:text-[#94A3B8]">
+                        <span className="font-bold text-[#0B6E4F] dark:text-[#19B5A3]">
                           {formatType(item.type)}
                         </span>
                         <span>•</span>
                         <span className="inline-flex items-center gap-1 font-medium">
-                          <MapPin className="w-3.5 h-3.5 text-[#4B5563]" />
+                          <MapPin className="w-3.5 h-3.5 text-[#4B5563] dark:text-[#94A3B8]" />
                           {item.hqLocation}
                         </span>
                         {item.isActiveInvesting && (
                           <>
                             <span>•</span>
-                            <span className="inline-flex items-center gap-1 text-xs font-bold text-[#0B6E4F]">
-                              <span className="w-2 h-2 rounded-full bg-[#0B6E4F] animate-pulse" />
+                            <span className="inline-flex items-center gap-1 text-xs font-bold text-[#0B6E4F] dark:text-[#19B5A3]">
+                              <span className="w-2 h-2 rounded-full bg-[#0B6E4F] dark:bg-[#19B5A3] animate-pulse" />
                               Actively Deploying
                             </span>
                           </>
@@ -453,14 +453,14 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
                     {/* Strict Regulatory Badges (CMA vs SVC separated) */}
                     <div className="flex flex-col items-end gap-1.5 shrink-0">
                       {item.isCmaAuthorized && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/30">
-                          <ShieldCheck className="w-3.5 h-3.5 text-[#0B6E4F]" />
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-[#E8F5EF] dark:bg-[#0B6E4F]/20 text-[#0B6E4F] dark:text-[#19B5A3] border border-[#0B6E4F]/30 dark:border-[#19B5A3]/30">
+                          <ShieldCheck className="w-3.5 h-3.5 text-[#0B6E4F] dark:text-[#19B5A3]" />
                           CMA Authorized
                         </span>
                       )}
 
                       {item.isSvcPartner && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-[#FDF8EC] text-[#9A7B1C] border border-[#C9A227]/40">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-[#FDF8EC] dark:bg-[#C9A227]/20 text-[#9A7B1C] dark:text-[#F4C542] border border-[#C9A227]/40 dark:border-[#C9A227]/50">
                           <Landmark className="w-3.5 h-3.5 text-[#C9A227]" />
                           SVC Partner
                         </span>
@@ -469,17 +469,17 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
                   </div>
 
                   {/* Zone 2: Check Size & Target Stages (Clean Box Architecture) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-[#F1F5F2] rounded-lg border border-[#E2E8E4] text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-[#F1F5F2] dark:bg-[#132B3D] rounded-lg border border-[#E2E8E4] dark:border-[#1E3A4C] text-xs">
                     <div>
-                      <span className="text-[10px] uppercase font-bold text-[#4B5563] block">
+                      <span className="text-[10px] uppercase font-bold text-[#4B5563] dark:text-[#94A3B8] block">
                         Typical Ticket Size
                       </span>
-                      <span className="font-black text-sm text-[#111827] pt-0.5 block">
+                      <span className="font-black text-sm text-[#111827] dark:text-[#FAF9F6] pt-0.5 block">
                         {item.checkSizeRange || 'Unspecified (Confidential)'}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase font-bold text-[#4B5563] block">
+                      <span className="text-[10px] uppercase font-bold text-[#4B5563] dark:text-[#94A3B8] block">
                         Target Stages
                       </span>
                       <div className="flex flex-wrap gap-1 pt-1">
@@ -487,35 +487,35 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
                           stages.map((st: string, idx: number) => (
                             <span
                               key={idx}
-                              className="px-2 py-0.5 rounded bg-white text-[11px] font-bold text-[#111827] border border-[#E2E8E4]"
+                              className="px-2 py-0.5 rounded bg-white dark:bg-[#102433] text-[11px] font-bold text-[#111827] dark:text-[#FAF9F6] border border-[#E2E8E4] dark:border-[#1E3A4C]"
                             >
                               {st}
                             </span>
                           ))
                         ) : (
-                          <span className="text-xs text-[#4B5563] font-medium">Early to Growth</span>
+                          <span className="text-xs text-[#4B5563] dark:text-[#94A3B8] font-medium">Early to Growth</span>
                         )}
                       </div>
                     </div>
                   </div>
 
                   {/* Zone 3: Investment Focus & Thesis Description */}
-                  <p className="text-sm text-[#374151] leading-relaxed line-clamp-2">
+                  <p className="text-sm text-[#374151] dark:text-[#CBD5E1] leading-relaxed line-clamp-2">
                     {item.thesisSummary || item.description}
                   </p>
 
                   {/* Zone 4: Target Sectors & Portfolio Highlights */}
                   {(sectors.length > 0 || portfolio.length > 0) && (
-                    <div className="space-y-2 pt-1 border-t border-[#E2E8E4]">
+                    <div className="space-y-2 pt-1 border-t border-[#E2E8E4] dark:border-[#1E3A4C]">
                       {sectors.length > 0 && (
                         <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] mr-1">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#94A3B8] mr-1">
                             Sectors:
                           </span>
                           {sectors.map((sec: string, idx: number) => (
                             <span
                               key={idx}
-                              className="px-2 py-0.5 rounded-md bg-[#F1F5F2] text-[11px] font-bold text-[#111827] border border-[#E2E8E4]"
+                              className="px-2 py-0.5 rounded-md bg-[#F1F5F2] dark:bg-[#132B3D] text-[11px] font-bold text-[#111827] dark:text-[#FAF9F6] border border-[#E2E8E4] dark:border-[#1E3A4C]"
                             >
                               {sec}
                             </span>
@@ -525,10 +525,10 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
 
                       {portfolio.length > 0 && (
                         <div className="flex flex-wrap items-center gap-1 text-xs">
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] mr-1">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#94A3B8] mr-1">
                             Backed:
                           </span>
-                          <span className="text-[#111827] font-semibold text-xs">
+                          <span className="text-[#111827] dark:text-[#FAF9F6] font-semibold text-xs">
                             {portfolio.join(' • ')}
                           </span>
                         </div>
@@ -538,17 +538,17 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
                 </div>
 
                 {/* Zone 5: Card Footer (Clear Action Buttons & Verification) */}
-                <div className="pt-4 mt-5 border-t border-[#E2E8E4] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                  <div className="text-xs text-[#4B5563] space-y-0.5">
-                    <span className="text-[11px] text-slate-400 block">
+                <div className="pt-4 mt-5 border-t border-[#E2E8E4] dark:border-[#1E3A4C] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="text-xs text-[#4B5563] dark:text-[#94A3B8] space-y-0.5">
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500 block">
                       Audited {formatDate(item.verifiedAt)}
                     </span>
                     {item.cmaLicenseNumber ? (
-                      <span className="text-[10px] text-[#0B6E4F] font-mono font-bold block">
+                      <span className="text-[10px] text-[#0B6E4F] dark:text-[#19B5A3] font-mono font-bold block">
                         CMA: {item.cmaLicenseNumber}
                       </span>
                     ) : item.sourceName ? (
-                      <span className="text-[11px] text-[#4B5563] font-medium block truncate max-w-[200px]">
+                      <span className="text-[11px] text-[#4B5563] dark:text-[#94A3B8] font-medium block truncate max-w-[200px]">
                         via {item.sourceName}
                       </span>
                     ) : null}
@@ -559,7 +559,7 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
                       href={item.websiteUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3.5 py-2 rounded-lg border border-[#E2E8E4] text-[#111827] bg-[#F1F5F2] hover:bg-[#E8F5EF] text-xs font-bold transition-colors"
+                      className="px-3.5 py-2 rounded-lg border border-[#E2E8E4] dark:border-[#1E3A4C] text-[#111827] dark:text-[#FAF9F6] bg-[#F1F5F2] dark:bg-[#132B3D] hover:bg-[#E8F5EF] dark:hover:bg-[#1A374D] text-xs font-bold transition-colors"
                     >
                       Website
                     </a>
@@ -569,7 +569,7 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
                         href={item.pitchUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-3.5 py-2 rounded-lg bg-[#F1F5F2] border border-[#E2E8E4] hover:bg-[#E8F5EF] text-[#0B6E4F] text-xs font-bold transition-all shadow-xs"
+                        className="inline-flex items-center gap-1 px-3.5 py-2 rounded-lg bg-[#F1F5F2] dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C] hover:bg-[#E8F5EF] dark:hover:bg-[#1A374D] text-[#0B6E4F] dark:text-[#19B5A3] text-xs font-bold transition-all shadow-xs"
                       >
                         <span>Pitch</span>
                         <ExternalLink className="w-3 h-3" />

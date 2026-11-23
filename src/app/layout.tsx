@@ -4,6 +4,7 @@ import { Newsreader, IBM_Plex_Sans_Arabic } from 'next/font/google';
 import './globals.css';
 import { SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION } from '@/lib/constants';
 import { SmoothScrollProvider } from '@/components/providers/SmoothScrollProvider';
+import { ThemeProvider } from '@/components/providers/ThemeProvider';
 
 // Codec Pro (Headings & Display Typography from saudimakesfuture.com)
 const codecPro = localFont({
@@ -109,11 +110,37 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${codecPro.variable} ${lato.variable} ${newsreader.variable} ${ibmPlexArabic.variable}`}>
-      <body className="bg-editorial-paper text-ink-body font-sans antialiased min-h-screen flex flex-col selection:bg-brand-yellow selection:text-ink-high">
-        <SmoothScrollProvider>
-          {children}
-        </SmoothScrollProvider>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${codecPro.variable} ${lato.variable} ${newsreader.variable} ${ibmPlexArabic.variable}`}
+    >
+      <head>
+        {/* Anti-FOUC Theme Script: execute before paint to eliminate any flash */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var theme = localStorage.getItem('sft-theme');
+                var supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (theme === 'dark' || (!theme && supportDarkMode)) {
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.style.colorScheme = 'dark';
+                } else {
+                  document.documentElement.classList.remove('dark');
+                  document.documentElement.style.colorScheme = 'light';
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
+      <body className="bg-editorial-paper dark:bg-[#0A1F2C] text-ink-body dark:text-[#E2E8F0] font-sans antialiased min-h-screen flex flex-col selection:bg-brand-yellow selection:text-ink-high transition-colors duration-200">
+        <ThemeProvider>
+          <SmoothScrollProvider>
+            {children}
+          </SmoothScrollProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

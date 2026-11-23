@@ -154,24 +154,37 @@ export const FounderCommandHero: React.FC<FounderCommandHeroProps> = ({
 
                 {/* Real Media Layer (Photo with Ken Burns or Video) */}
                 {slide.src && (
-                  <div className={`absolute inset-0 overflow-hidden ${isActive ? 'animate-hero-kb' : ''}`} style={{ contain: 'paint' }}>
-                    {isVideo ? (
-                      <video
-                        src={slide.src}
-                        muted
-                        loop
-                        playsInline
-                        autoPlay={isActive}
-                        className="w-full h-full object-cover block"
-                      />
-                    ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
+                  <div className="absolute inset-0 overflow-hidden" style={{ contain: 'paint' }}>
+                    {/* Ambient blurred backdrop on mobile to fill vertical height with matching atmospheric lighting */}
+                    <div className="absolute inset-0 overflow-hidden block sm:hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={slide.src}
                         alt=""
-                        className="w-full h-full object-cover block"
+                        className="w-full h-full object-cover blur-2xl opacity-40 scale-125 block"
                       />
-                    )}
+                    </div>
+
+                    {/* Desktop full-bleed cinematic picture with Ken Burns effect */}
+                    <div className={`relative w-full h-full overflow-hidden hidden sm:block ${isActive ? 'animate-hero-kb' : ''}`}>
+                      {isVideo ? (
+                        <video
+                          src={slide.src}
+                          muted
+                          loop
+                          playsInline
+                          autoPlay={isActive}
+                          className="w-full h-full object-cover object-center block"
+                        />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={slide.src}
+                          alt=""
+                          className="w-full h-full object-cover object-center block"
+                        />
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -195,14 +208,14 @@ export const FounderCommandHero: React.FC<FounderCommandHeroProps> = ({
       {/* ==================================================================== */}
       {/* FOREGROUND CONTENT & ALIGNMENT STRUCTURE                             */}
       {/* ==================================================================== */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 lg:pt-32 pb-8 sm:pb-12 flex-1 flex flex-col justify-between">
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-28 lg:pt-32 pb-6 sm:pb-12 flex-1 flex flex-col justify-between">
         {/* Middle Main Content Stack */}
-        <div className="my-auto text-center space-y-4 sm:space-y-6 max-w-3xl mx-auto w-full">
+        <div className="my-auto text-center space-y-3 sm:space-y-6 max-w-3xl mx-auto w-full">
           {/* 1. Value Badge with Pulsing Live Dot & Subtle Arabic Typography Accent */}
-          <div className="inline-flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-full bg-white/12 border border-white/20 backdrop-blur-md shadow-xs">
-            <div className="flex items-center gap-2">
+          <div className="inline-flex flex-wrap items-center justify-center gap-1.5 sm:gap-2.5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-white/12 border border-white/20 backdrop-blur-md shadow-xs">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <span className="w-2 h-2 rounded-full bg-[#6fd39a] animate-hero-pulse shrink-0" />
-              <span className="font-heading text-[11px] sm:text-xs font-bold tracking-wider uppercase text-white">
+              <span className="font-heading text-[10px] sm:text-xs font-bold tracking-wider uppercase text-white">
                 Founder Operating Intelligence Platform
               </span>
             </div>
@@ -210,76 +223,120 @@ export const FounderCommandHero: React.FC<FounderCommandHeroProps> = ({
             <span
               lang="ar"
               dir="rtl"
-              className="font-arabic text-[11px] sm:text-xs font-medium text-[#f3dfae] tracking-normal"
+              className="font-arabic text-[10px] sm:text-xs font-medium text-[#f3dfae] tracking-normal"
             >
               ذكاء موثوق لرواد الأعمال
             </span>
           </div>
 
           {/* 2. Primary Headline & Slogan */}
-          <div className="space-y-2">
-            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-heading font-black tracking-tight leading-[1.12] text-white">
+          <div className="space-y-1.5 sm:space-y-2">
+            <h1 className="text-xl sm:text-4xl lg:text-5xl font-heading font-black tracking-tight leading-[1.15] text-white">
               <span>Build in the Kingdom.</span>{' '}
-              <span className="block mt-1 bg-gradient-to-r from-white via-[#c4a265] to-[#f3dfae] bg-clip-text text-transparent">
+              <span className="block mt-0.5 sm:mt-1 bg-gradient-to-r from-white via-[#c4a265] to-[#f3dfae] bg-clip-text text-transparent">
                 Powered by verified intelligence.
               </span>
             </h1>
             <p
               lang="ar"
               dir="rtl"
-              className="text-xs sm:text-sm lg:text-base text-white/90 leading-relaxed max-w-2xl mx-auto font-arabic pt-1 tracking-normal"
+              className="text-xs sm:text-sm lg:text-base text-white/90 leading-relaxed max-w-xl mx-auto font-arabic pt-1 tracking-normal line-clamp-3 sm:line-clamp-none"
             >
               منصة استخباراتية موثوقة تدعم رواد الأعمال في اكتشاف المنح والتمويل غير القائم على التنازل عن حصص الملكية، والتواصل مع مستثمري رأس المال الجريء، واستكشاف التقنيات الناشئة، واتخاذ قرارات استراتيجية مدروسة لتعزيز نمو أعمالهم في المملكة العربية السعودية.
             </p>
           </div>
 
           {/* 3. Centered Explore Button — Redirects to Unified Search */}
-          <div className="pt-2 sm:pt-4 flex items-center justify-center">
+          <div className="pt-1.5 sm:pt-4 flex items-center justify-center">
             <Link
               href="/search"
-              className="inline-flex items-center justify-center gap-3 px-8 sm:px-10 py-3.5 sm:py-4 rounded-xl bg-brand-navy hover:bg-[#0B6E4F] text-white font-heading font-bold text-xs sm:text-sm uppercase tracking-widest border border-white/20 hover:border-[#C9A227]/70 shadow-2xl hover:shadow-[0_0_25px_rgba(11,110,79,0.4)] transition-all duration-200 group hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2.5 sm:gap-3 px-7 sm:px-10 py-2.5 sm:py-4 rounded-xl bg-brand-navy hover:bg-[#0B6E4F] text-white font-heading font-bold text-xs sm:text-sm uppercase tracking-widest border border-white/20 hover:border-[#C9A227]/70 shadow-2xl hover:shadow-[0_0_25px_rgba(11,110,79,0.4)] transition-all duration-200 group hover:scale-[1.02] active:scale-[0.98]"
             >
               <span>Explore</span>
               <ArrowRight className="w-4 h-4 text-[#C9A227] transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
           </div>
+
+          {/* Mobile Running Picture Showcase: 100% full visibility of the running picture with zero edge cropping */}
+          <div className="block sm:hidden w-full pt-3 pb-1">
+            <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden border border-white/20 shadow-2xl bg-[#070d17]/90 backdrop-blur-md">
+              {SLIDES.map((slide, idx) => {
+                const isActive = idx === currentSlide;
+                return (
+                  <div
+                    key={`mobile-showcase-${slide.label}`}
+                    className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                      isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                    }`}
+                  >
+                    {/* Full uncropped image: 100% visible edge-to-edge */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={slide.src}
+                      alt={slide.label}
+                      className="w-full h-full object-contain object-center block"
+                    />
+                    {/* Interactive slide label & dot indicator bar */}
+                    <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-black/70 backdrop-blur-md border border-white/10 text-white">
+                      <span className="font-heading font-bold text-[9px] uppercase tracking-wider text-[#c4a265] truncate pr-2">
+                        {slide.label}
+                      </span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {SLIDES.map((_, sIdx) => (
+                          <button
+                            key={sIdx}
+                            type="button"
+                            onClick={() => goToSlide(sIdx)}
+                            aria-label={`Slide ${sIdx + 1}`}
+                            className={`h-1.5 rounded-full transition-all ${
+                              sIdx === currentSlide ? 'w-4 bg-[#6fd39a]' : 'w-1.5 bg-white/40'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         {/* 4. Live Verified KPI Ribbon (In document flow, guaranteed no overlap) */}
-        <div className="w-full max-w-4xl mx-auto pt-6 sm:pt-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 text-left">
-            <div className="p-3.5 sm:p-4 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 backdrop-blur-md transition-all shadow-md">
-              <span className="text-xl sm:text-2xl lg:text-3xl font-heading font-black text-white block">
+        <div className="w-full max-w-4xl mx-auto pt-4 sm:pt-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 text-left">
+            <div className="p-2.5 sm:p-4 rounded-xl bg-black/40 sm:bg-white/10 hover:bg-white/15 border border-white/20 backdrop-blur-md transition-all shadow-md">
+              <span className="text-lg sm:text-2xl lg:text-3xl font-heading font-black text-white block">
                 {activeCount} Active
               </span>
-              <span className="text-[11px] sm:text-xs text-white/75 font-medium block pt-0.5">
+              <span className="text-[10px] sm:text-xs text-white/75 font-medium block pt-0.5">
                 Verified Grants &amp; Accelerators
               </span>
             </div>
 
-            <div className="p-3.5 sm:p-4 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 backdrop-blur-md transition-all shadow-md">
-              <span className="text-xl sm:text-2xl lg:text-3xl font-heading font-black text-[#8fd3a6] block">
+            <div className="p-2.5 sm:p-4 rounded-xl bg-black/40 sm:bg-white/10 hover:bg-white/15 border border-white/20 backdrop-blur-md transition-all shadow-md">
+              <span className="text-lg sm:text-2xl lg:text-3xl font-heading font-black text-[#8fd3a6] block">
                 {venturesCount} Ventures
               </span>
-              <span className="text-[11px] sm:text-xs text-white/75 font-medium block pt-0.5">
+              <span className="text-[10px] sm:text-xs text-white/75 font-medium block pt-0.5">
                 Verified Saudi Tech Directory
               </span>
             </div>
 
-            <div className="p-3.5 sm:p-4 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 backdrop-blur-md transition-all shadow-md">
-              <span className="text-xl sm:text-2xl lg:text-3xl font-heading font-black text-[#c4a265] block">
+            <div className="p-2.5 sm:p-4 rounded-xl bg-black/40 sm:bg-white/10 hover:bg-white/15 border border-white/20 backdrop-blur-md transition-all shadow-md">
+              <span className="text-lg sm:text-2xl lg:text-3xl font-heading font-black text-[#c4a265] block">
                 {desksCount} Desks
               </span>
-              <span className="text-[11px] sm:text-xs text-white/75 font-medium block pt-0.5">
+              <span className="text-[10px] sm:text-xs text-white/75 font-medium block pt-0.5">
                 Sovereign Vision 2030 Pillars
               </span>
             </div>
 
-            <div className="p-3.5 sm:p-4 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 backdrop-blur-md transition-all shadow-md">
-              <span className="text-xl sm:text-2xl lg:text-3xl font-heading font-black text-[#3fa796] block">
+            <div className="p-2.5 sm:p-4 rounded-xl bg-black/40 sm:bg-white/10 hover:bg-white/15 border border-white/20 backdrop-blur-md transition-all shadow-md">
+              <span className="text-lg sm:text-2xl lg:text-3xl font-heading font-black text-[#3fa796] block">
                 Zero Speculation
               </span>
-              <span className="text-[11px] sm:text-xs text-white/75 font-medium block pt-0.5">
+              <span className="text-[10px] sm:text-xs text-white/75 font-medium block pt-0.5">
                 Official Ministry Provenance
               </span>
             </div>

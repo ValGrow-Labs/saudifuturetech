@@ -28,8 +28,8 @@ export const OpportunityRadarPreview: React.FC<OpportunityRadarPreviewProps> = (
 
     if (isClosed) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#F1F5F2] text-[#4B5563] border border-[#E2E8E4]">
-          <Clock className="w-3.5 h-3.5 text-[#4B5563]" />
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#F1F5F2] dark:bg-[#132B3D] text-[#4B5563] dark:text-[#94A3B8] border border-[#E2E8E4] dark:border-[#1E3A4C]">
+          <Clock className="w-3.5 h-3.5 text-[#4B5563] dark:text-[#94A3B8]" />
           <span>Cohort Closed</span>
         </span>
       );
@@ -37,8 +37,8 @@ export const OpportunityRadarPreview: React.FC<OpportunityRadarPreviewProps> = (
 
     if (!opp.deadline) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/30">
-          <Clock className="w-3.5 h-3.5 text-[#0B6E4F]" />
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#E8F5EF] dark:bg-[#0B6E4F]/20 text-[#0B6E4F] dark:text-[#19B5A3] border border-[#0B6E4F]/30 dark:border-[#19B5A3]/30">
+          <Clock className="w-3.5 h-3.5 text-[#0B6E4F] dark:text-[#19B5A3]" />
           <span>Rolling Admission</span>
         </span>
       );
@@ -46,7 +46,7 @@ export const OpportunityRadarPreview: React.FC<OpportunityRadarPreviewProps> = (
 
     if (isClosingSoon) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FDF8EC] text-[#9A7B1C] border border-[#C9A227]">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FDF8EC] dark:bg-[#C9A227]/20 text-[#9A7B1C] dark:text-[#F4C542] border border-[#C9A227] dark:border-[#C9A227]/50">
           <Clock className="w-3.5 h-3.5 text-[#C9A227] animate-pulse" />
           <span>Closing Soon</span>
         </span>
@@ -54,8 +54,8 @@ export const OpportunityRadarPreview: React.FC<OpportunityRadarPreviewProps> = (
     }
 
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/30">
-        <Clock className="w-3.5 h-3.5 text-[#0B6E4F]" />
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#E8F5EF] dark:bg-[#0B6E4F]/20 text-[#0B6E4F] dark:text-[#19B5A3] border border-[#0B6E4F]/30 dark:border-[#19B5A3]/30">
+        <Clock className="w-3.5 h-3.5 text-[#0B6E4F] dark:text-[#19B5A3]" />
         <span>Open Admission</span>
       </span>
     );
@@ -64,25 +64,25 @@ export const OpportunityRadarPreview: React.FC<OpportunityRadarPreviewProps> = (
   return (
     <div className="w-full space-y-6">
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-[#E2E8E4]">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-[#E2E8E4] dark:border-[#1E3A4C]">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#0B6E4F]" />
-            <span className="text-xs font-bold uppercase tracking-wider text-[#0B6E4F] font-sans">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#0B6E4F] dark:bg-[#19B5A3]" />
+            <span className="text-xs font-bold uppercase tracking-wider text-[#0B6E4F] dark:text-[#19B5A3] font-sans">
               Verified Opportunity Radar
             </span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-heading font-black text-[#111827] tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-heading font-black text-[#111827] dark:text-[#FAF9F6] tracking-tight">
             Active Founder Grants &amp; Accelerators
           </h2>
-          <p className="text-sm text-[#4B5563]">
+          <p className="text-sm text-[#4B5563] dark:text-[#94A3B8]">
             Verified non-dilutive government grants, sovereign accelerators, and regulatory sandboxes closing soon.
           </p>
         </div>
 
         <Link
           href="/opportunities"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white border border-[#E2E8E4] hover:border-[#0B6E4F]/40 text-xs font-bold text-[#0B6E4F] hover:bg-[#E8F5EF] transition-all font-sans uppercase tracking-wider shrink-0 shadow-2xs"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white dark:bg-[#102433] border border-[#E2E8E4] dark:border-[#1E3A4C] hover:border-[#0B6E4F]/40 dark:hover:border-[#19B5A3]/40 text-xs font-bold text-[#0B6E4F] dark:text-[#19B5A3] hover:bg-[#E8F5EF] dark:hover:bg-[#132B3D] transition-all font-sans uppercase tracking-wider shrink-0 shadow-2xs"
         >
           <span>View All Opportunities ({opportunities.length})</span>
           <ArrowRight className="w-4 h-4" />
@@ -95,19 +95,19 @@ export const OpportunityRadarPreview: React.FC<OpportunityRadarPreviewProps> = (
           return (
             <article
               key={opp.id}
-              className="group bg-white rounded-xl border border-[#E2E8E4] hover:border-[#0B6E4F]/40 hover:shadow-lg transition-all duration-200 p-6 flex flex-col justify-between relative"
+              className="group bg-white dark:bg-[#102433] rounded-xl border border-[#E2E8E4] dark:border-[#1E3A4C] hover:border-[#0B6E4F]/40 dark:hover:border-[#19B5A3]/40 hover:shadow-lg transition-all duration-200 p-6 flex flex-col justify-between relative"
             >
               <div className="space-y-4">
                 {/* Zone 1: Organization & Status Ribbon */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#4B5563]">
-                      <Building2 className="w-3.5 h-3.5 text-[#0A1F2C]" />
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#4B5563] dark:text-[#94A3B8]">
+                      <Building2 className="w-3.5 h-3.5 text-[#0A1F2C] dark:text-[#C9A227]" />
                       <span>{opp.organization}</span>
                     </div>
                     {opp.categoryRel && (
                       <span
-                        className="text-[11px] uppercase font-bold tracking-wider inline-block px-2 py-0.5 rounded-md bg-[#F1F5F2] border border-[#E2E8E4]"
+                        className="text-[11px] uppercase font-bold tracking-wider inline-block px-2 py-0.5 rounded-md bg-[#F1F5F2] dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C]"
                         style={{ color: opp.categoryRel.color }}
                       >
                         {opp.categoryRel.name}
@@ -119,15 +119,15 @@ export const OpportunityRadarPreview: React.FC<OpportunityRadarPreviewProps> = (
 
                 {/* Zone 2: Program Title */}
                 <Link href={`/opportunity/${opp.slug}`} className="block focus:outline-none focus:underline group/title">
-                  <h3 className="font-heading font-black text-xl text-[#111827] group-hover/title:text-[#0B6E4F] leading-snug transition-colors">
+                  <h3 className="font-heading font-black text-xl text-[#111827] dark:text-[#FAF9F6] group-hover/title:text-[#0B6E4F] dark:group-hover/title:text-[#19B5A3] leading-snug transition-colors">
                     {opp.title}
                   </h3>
                 </Link>
 
                 {/* Zone 3: Key Value Offer Box (Support Amount & Terms) */}
-                <div className="p-3.5 rounded-lg bg-[#F1F5F2] border border-[#E2E8E4] space-y-2">
-                  <div className="flex items-center gap-2 text-sm font-bold text-[#111827]">
-                    <div className="w-6 h-6 rounded-md bg-[#E8F5EF] flex items-center justify-center shrink-0 text-[#0B6E4F]">
+                <div className="p-3.5 rounded-lg bg-[#F1F5F2] dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C] space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#111827] dark:text-[#FAF9F6]">
+                    <div className="w-6 h-6 rounded-md bg-[#E8F5EF] dark:bg-[#0B6E4F]/25 flex items-center justify-center shrink-0 text-[#0B6E4F] dark:text-[#19B5A3]">
                       <Coins className="w-3.5 h-3.5" />
                     </div>
                     <span className="leading-tight">{opp.fundingAmount || 'Non-Cash Advisory & Sandbox Framework'}</span>
@@ -135,14 +135,14 @@ export const OpportunityRadarPreview: React.FC<OpportunityRadarPreviewProps> = (
 
                   <div className="flex flex-wrap items-center gap-2 text-xs pt-0.5">
                     {opp.equityTaken && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-bold bg-white text-[#0B6E4F] border border-[#0B6E4F]/30 shadow-2xs">
-                        <Check className="w-3 h-3 text-[#0B6E4F]" />
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-bold bg-white dark:bg-[#102433] text-[#0B6E4F] dark:text-[#19B5A3] border border-[#0B6E4F]/30 dark:border-[#19B5A3]/30 shadow-2xs">
+                        <Check className="w-3 h-3 text-[#0B6E4F] dark:text-[#19B5A3]" />
                         <span>{opp.equityTaken}</span>
                       </span>
                     )}
                     {opp.location && (
-                      <span className="inline-flex items-center gap-1 text-xs text-[#4B5563] bg-white px-2.5 py-0.5 rounded-md border border-[#E2E8E4]">
-                        <MapPin className="w-3 h-3 text-[#4B5563]" />
+                      <span className="inline-flex items-center gap-1 text-xs text-[#4B5563] dark:text-[#94A3B8] bg-white dark:bg-[#102433] px-2.5 py-0.5 rounded-md border border-[#E2E8E4] dark:border-[#1E3A4C]">
+                        <MapPin className="w-3 h-3 text-[#4B5563] dark:text-[#94A3B8]" />
                         <span>{opp.location}</span>
                       </span>
                     )}
@@ -150,18 +150,18 @@ export const OpportunityRadarPreview: React.FC<OpportunityRadarPreviewProps> = (
                 </div>
 
                 {/* Zone 4: Program Summary Description */}
-                <p className="text-sm text-[#374151] leading-relaxed line-clamp-2">
+                <p className="text-sm text-[#374151] dark:text-[#CBD5E1] leading-relaxed line-clamp-2">
                   {opp.description}
                 </p>
               </div>
 
               {/* Zone 5: Card Footer (Clear Provenance + Action Buttons) */}
-              <div className="pt-4 mt-5 border-t border-[#E2E8E4] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                <div className="text-xs text-[#4B5563]">
-                  <span className="block text-[11px] text-[#4B5563] font-semibold truncate max-w-[200px]">
+              <div className="pt-4 mt-5 border-t border-[#E2E8E4] dark:border-[#1E3A4C] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="text-xs text-[#4B5563] dark:text-[#94A3B8]">
+                  <span className="block text-[11px] text-[#4B5563] dark:text-[#CBD5E1] font-semibold truncate max-w-[200px]">
                     Source: {opp.sourceName}
                   </span>
-                  <span className="block text-[10px] text-slate-400 pt-0.5">
+                  <span className="block text-[10px] text-slate-400 dark:text-slate-500 pt-0.5">
                     Audited {formatDate(opp.verifiedAt)}
                   </span>
                 </div>
@@ -169,7 +169,7 @@ export const OpportunityRadarPreview: React.FC<OpportunityRadarPreviewProps> = (
                 <div className="flex items-center gap-2 shrink-0">
                   <Link
                     href={`/opportunity/${opp.slug}`}
-                    className="px-4 py-2 rounded-lg border border-[#E2E8E4] bg-[#F1F5F2] hover:bg-[#E8F5EF] text-[#111827] font-bold transition-colors text-xs"
+                    className="px-4 py-2 rounded-lg border border-[#E2E8E4] dark:border-[#1E3A4C] bg-[#F1F5F2] dark:bg-[#132B3D] hover:bg-[#E8F5EF] dark:hover:bg-[#1A374D] text-[#111827] dark:text-[#FAF9F6] font-bold transition-colors text-xs"
                   >
                     Dossier
                   </Link>

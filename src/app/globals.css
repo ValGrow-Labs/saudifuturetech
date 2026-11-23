@@ -3,15 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --paper: #FBFBF9;
+  color-scheme: light;
+  --paper: #FAF9F6;
   --pure: #FFFFFF;
-  --sand: #F5F5EE;
-  --stone: #EBEBE6;
-  --ink-high: #141517;
+  --sand: #F1F5F2;
+  --stone: #E7EFE9;
+  --ink-high: #111827;
   --ink-body: #2B2E33;
-  --ink-muted: #6B7280;
+  --ink-muted: #4B5563;
   --ink-faint: #9CA3AF;
-  --border-hairline: #E7E7E0;
+  --border-hairline: #E2E8E4;
   --border-medium: #D1D1C7;
   --yellow: #F4C542;
   --yellow-hover: #E0B332;
@@ -19,14 +20,42 @@
 
   /* Backward-compatible variables */
   --surface: #FFFFFF;
-  --elevated: #F5F5EE;
+  --elevated: #F1F5F2;
   --dark: #141517;
   --cloud: #141517;
-  --text-high: #141517;
+  --text-high: #111827;
   --text-body: #2B2E33;
-  --text-muted: #6B7280;
-  --border-subtle: #E7E7E0;
+  --text-muted: #4B5563;
+  --border-subtle: #E2E8E4;
   --border-hover: rgba(244, 197, 66, 0.60);
+}
+
+.dark {
+  color-scheme: dark;
+  --paper: #0A1F2C;
+  --pure: #102433;
+  --sand: #132B3D;
+  --stone: #1A374D;
+  --ink-high: #FAF9F6;
+  --ink-body: #E2E8F0;
+  --ink-muted: #94A3B8;
+  --ink-faint: #64748B;
+  --border-hairline: #1E3A4C;
+  --border-medium: #2A4D66;
+  --yellow: #F4C542;
+  --yellow-hover: #E0B332;
+  --graphite: #07151E;
+
+  /* Backward-compatible variables */
+  --surface: #102433;
+  --elevated: #132B3D;
+  --dark: #0A1F2C;
+  --cloud: #FAF9F6;
+  --text-high: #FAF9F6;
+  --text-body: #E2E8F0;
+  --text-muted: #94A3B8;
+  --border-subtle: #1E3A4C;
+  --border-hover: rgba(201, 162, 39, 0.60);
 }
 
 /* ==============================================================================
@@ -55,7 +84,7 @@ html.lenis body {
 
 @layer base {
   * {
-    border-color: #E7E7E0;
+    border-color: var(--border-hairline);
   }
 
   html {
@@ -64,6 +93,11 @@ html.lenis body {
     overflow-x: hidden;
     max-width: 100vw;
     width: 100%;
+  }
+
+  html.dark {
+    color-scheme: dark;
+    background-color: var(--paper);
   }
 
   body {
@@ -76,6 +110,12 @@ html.lenis body {
     overflow-x: hidden;
     max-width: 100vw;
     width: 100%;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  html.dark body {
+    background-color: var(--paper);
+    color: var(--ink-body);
   }
 
   /* Headings powered by Codec Pro (Geometric Display Typeface from saudimakesfuture.com) */
@@ -84,6 +124,15 @@ html.lenis body {
     color: var(--ink-high);
     letter-spacing: -0.015em;
     font-weight: 700;
+  }
+
+  html.dark h1,
+  html.dark h2,
+  html.dark h3,
+  html.dark h4,
+  html.dark h5,
+  html.dark h6 {
+    color: var(--ink-high);
   }
 
   /* Editorial selection highlight in Sunshine Yellow */

@@ -53,7 +53,7 @@ export default async function LatestPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-[#111827]">
+    <div className="min-h-screen flex flex-col bg-[#FAF9F6] dark:bg-[#0A1F2C] text-[#111827] dark:text-[#FAF9F6] transition-colors duration-200">
       {/* Schema.org Structured Data */}
       <BreadcrumbJsonLd items={breadcrumbs} />
 

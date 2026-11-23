@@ -34,29 +34,29 @@ export default async function InsightsPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-[#111827]">
+    <div className="min-h-screen flex flex-col bg-[#FAF9F6] dark:bg-[#0A1F2C] text-[#111827] dark:text-[#FAF9F6] transition-colors duration-200">
       <BreadcrumbJsonLd items={breadcrumbs} />
       <SiteHeader />
 
       <main className="flex-1 pb-20">
         {/* 1. Masthead */}
-        <div className="bg-[#F1F5F2] border-b border-[#E2E8E4] py-12 sm:py-16">
+        <div className="bg-[#F1F5F2] dark:bg-[#0A1F2C] border-b border-[#E2E8E4] dark:border-[#1E3A4C] py-12 sm:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#E2E8E4] text-xs font-semibold text-[#111827]">
-                <BookOpen className="w-3.5 h-3.5 text-[#0B6E4F]" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C] text-xs font-semibold text-[#111827] dark:text-[#FAF9F6]">
+                <BookOpen className="w-3.5 h-3.5 text-[#0B6E4F] dark:text-[#19B5A3]" />
                 <span>Founder Operating Intelligence &amp; Research</span>
               </div>
 
-              <h1 className="text-3xl sm:text-5xl font-heading font-black tracking-tight text-[#111827] leading-tight">
+              <h1 className="text-3xl sm:text-5xl font-heading font-black tracking-tight text-[#111827] dark:text-[#FAF9F6] leading-tight">
                 Insights &amp; Executive Briefings
               </h1>
 
-              <p className="text-sm sm:text-base text-[#4B5563] leading-relaxed">
+              <p className="text-sm sm:text-base text-[#4B5563] dark:text-[#94A3B8] leading-relaxed">
                 Strategic teardowns, regulatory frameworks, sovereign compute benchmarks, and market analysis designed to help Saudi startup founders make high-conviction architecture and expansion decisions.
               </p>
 
-              <div className="flex flex-wrap items-center gap-6 pt-2 text-xs text-[#4B5563]">
+              <div className="flex flex-wrap items-center gap-6 pt-2 text-xs text-[#4B5563] dark:text-[#94A3B8]">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-[#0B6E4F]" />
                   <span>Institutional Research • Zero Sponsored Filler</span>

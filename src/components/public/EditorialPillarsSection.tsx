@@ -91,25 +91,25 @@ export const EditorialPillarsSection: React.FC<EditorialPillarsSectionProps> = (
   return (
     <section id="sovereign-pillars" aria-label="Sovereign Pillars of Saudi Technology" className="w-full space-y-6 scroll-mt-20">
       {/* 1. Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-[#E2E8E4]">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-[#E2E8E4] dark:border-[#1E3A4C]">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#0B6E4F]" aria-hidden="true" />
-            <span className="text-xs font-bold uppercase tracking-wider text-[#0B6E4F] font-sans">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#0B6E4F] dark:bg-[#19B5A3]" aria-hidden="true" />
+            <span className="text-xs font-bold uppercase tracking-wider text-[#0B6E4F] dark:text-[#19B5A3] font-sans">
               Sovereign Coverage Desks • Vision 2030 Taxonomy
             </span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-heading font-black text-[#111827] tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-heading font-black text-[#111827] dark:text-[#FAF9F6] tracking-tight">
             Six Pillars of National Technology
           </h2>
-          <p className="text-sm text-[#4B5563] font-sans max-w-2xl">
+          <p className="text-sm text-[#4B5563] dark:text-[#94A3B8] font-sans max-w-2xl">
             Authoritative intelligence desks tracking government initiatives, sovereign compute, regulatory sandboxes, and emerging startup activity across the Kingdom.
           </p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white text-[#111827] text-xs font-bold font-sans border border-[#E2E8E4] shadow-2xs">
-            <ShieldCheck className="w-4 h-4 text-[#0B6E4F]" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-[#102433] text-[#111827] dark:text-[#FAF9F6] text-xs font-bold font-sans border border-[#E2E8E4] dark:border-[#1E3A4C] shadow-2xs">
+            <ShieldCheck className="w-4 h-4 text-[#0B6E4F] dark:text-[#19B5A3]" />
             <span>6 Verified Desks</span>
           </span>
         </div>
@@ -123,11 +123,11 @@ export const EditorialPillarsSection: React.FC<EditorialPillarsSectionProps> = (
           return (
             <article
               key={category.slug}
-              className="group bg-white rounded-xl border border-[#E2E8E4] hover:border-[#0B6E4F]/40 hover:shadow-lg transition-all duration-200 flex flex-col justify-between overflow-hidden"
+              className="group bg-white dark:bg-[#102433] rounded-xl border border-[#E2E8E4] dark:border-[#1E3A4C] hover:border-[#0B6E4F]/40 dark:hover:border-[#19B5A3]/40 hover:shadow-lg transition-all duration-200 flex flex-col justify-between overflow-hidden"
             >
               <div>
                 {/* Upper Visual Header */}
-                <div className="relative w-full h-44 sm:h-48 overflow-hidden bg-[#F1F5F2]">
+                <div className="relative w-full h-44 sm:h-48 overflow-hidden bg-[#F1F5F2] dark:bg-[#132B3D]">
                   <Image
                     src={meta.image}
                     alt={meta.imageAlt}
@@ -148,7 +148,7 @@ export const EditorialPillarsSection: React.FC<EditorialPillarsSectionProps> = (
                   </div>
 
                   {/* Top Right Tier Badge */}
-                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/95 text-[#0A1F2C] backdrop-blur-md text-[10px] font-sans font-bold shadow-xs">
+                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/95 dark:bg-[#102433]/95 text-[#0A1F2C] dark:text-[#FAF9F6] backdrop-blur-md text-[10px] font-sans font-bold shadow-xs border border-white/20 dark:border-white/10">
                     <span>{meta.tier}</span>
                   </div>
 
@@ -162,7 +162,7 @@ export const EditorialPillarsSection: React.FC<EditorialPillarsSectionProps> = (
                 {/* Card Body */}
                 <div className="p-5 sm:p-6 space-y-3">
                   {/* Pillar Title */}
-                  <h3 className="text-xl font-heading font-black text-[#111827] group-hover:text-[#0B6E4F] transition-colors tracking-tight leading-snug">
+                  <h3 className="text-xl font-heading font-black text-[#111827] dark:text-[#FAF9F6] group-hover:text-[#0B6E4F] dark:group-hover:text-[#19B5A3] transition-colors tracking-tight leading-snug">
                     <Link
                       href={`/category/${category.slug}`}
                       className="focus:outline-none focus-visible:underline"
@@ -172,25 +172,25 @@ export const EditorialPillarsSection: React.FC<EditorialPillarsSectionProps> = (
                   </h3>
 
                   {/* Description */}
-                  <p className="text-sm text-[#374151] leading-relaxed line-clamp-2">
+                  <p className="text-sm text-[#374151] dark:text-[#CBD5E1] leading-relaxed line-clamp-2">
                     {category.description}
                   </p>
 
                   {/* Intelligence Meta Strip */}
-                  <div className="pt-3 border-t border-[#E2E8E4] grid grid-cols-2 gap-3 text-xs">
+                  <div className="pt-3 border-t border-[#E2E8E4] dark:border-[#1E3A4C] grid grid-cols-2 gap-3 text-xs">
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563] block font-sans">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#94A3B8] block font-sans">
                         Lead Anchor
                       </span>
-                      <span className="font-bold text-[#111827] truncate block pt-0.5">
+                      <span className="font-bold text-[#111827] dark:text-[#FAF9F6] truncate block pt-0.5">
                         {meta.leadFocus}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563] block font-sans">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#94A3B8] block font-sans">
                         Focus Area
                       </span>
-                      <span className="font-bold text-[#0B6E4F] truncate block pt-0.5">
+                      <span className="font-bold text-[#0B6E4F] dark:text-[#19B5A3] truncate block pt-0.5">
                         {meta.focusArea}
                       </span>
                     </div>
@@ -199,13 +199,13 @@ export const EditorialPillarsSection: React.FC<EditorialPillarsSectionProps> = (
               </div>
 
               {/* Action Footer */}
-              <div className="px-5 py-3.5 bg-[#F1F5F2] border-t border-[#E2E8E4] flex items-center justify-between">
-                <span className="text-xs font-bold text-[#4B5563] uppercase tracking-wider font-sans">
+              <div className="px-5 py-3.5 bg-[#F1F5F2] dark:bg-[#132B3D] border-t border-[#E2E8E4] dark:border-[#1E3A4C] flex items-center justify-between">
+                <span className="text-xs font-bold text-[#4B5563] dark:text-[#94A3B8] uppercase tracking-wider font-sans">
                   {category.tags.length} Sub-Sectors
                 </span>
                 <Link
                   href={`/category/${category.slug}`}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-[#0B6E4F] hover:text-[#08533C] transition-colors font-sans uppercase tracking-wider"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-[#0B6E4F] dark:text-[#19B5A3] hover:text-[#08533C] dark:hover:text-emerald-400 transition-colors font-sans uppercase tracking-wider"
                   aria-label={`Explore ${category.name} intelligence desk`}
                 >
                   <span>Explore Desk</span>

@@ -239,21 +239,21 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
   return (
     <div className="space-y-8 font-sans">
       {/* 1. Filter and Search Controls Matrix */}
-      <div className="bg-[#F1F5F2] p-5 sm:p-6 rounded-xl border border-[#E2E8E4] shadow-xs space-y-5">
+      <div className="bg-[#F1F5F2] dark:bg-[#102433] p-5 sm:p-6 rounded-xl border border-[#E2E8E4] dark:border-[#1E3A4C] shadow-xs space-y-5">
         {/* Search Bar */}
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563] dark:text-[#94A3B8]" />
           <input
             type="text"
             placeholder="Search Saudi startups, technology stacks, products, or founders (e.g. Mozn, Tamara, PyTorch, Open Banking)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-11 pr-10 py-3 text-sm bg-white border border-[#E2E8E4] rounded-lg text-[#111827] placeholder:text-[#4B5563]/70 focus:outline-none focus:ring-2 focus:ring-[#0B6E4F]/30 focus:border-[#0B6E4F] transition-all shadow-2xs"
+            className="w-full pl-11 pr-10 py-3 text-sm bg-white dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C] rounded-lg text-[#111827] dark:text-[#FAF9F6] placeholder:text-[#4B5563]/70 dark:placeholder:text-[#94A3B8]/70 focus:outline-none focus:ring-2 focus:ring-[#0B6E4F]/30 focus:border-[#0B6E4F] transition-all shadow-2xs"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#111827] p-1"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4B5563] dark:text-[#94A3B8] hover:text-[#111827] dark:hover:text-white p-1"
               aria-label="Clear search"
             >
               <X className="w-4 h-4" />
@@ -263,12 +263,12 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
 
         {/* Funding Stage Pills Navigation */}
         <div className="space-y-2.5">
-          <div className="flex items-center justify-between text-xs font-bold text-[#4B5563] uppercase tracking-wider">
+          <div className="flex items-center justify-between text-xs font-bold text-[#4B5563] dark:text-[#94A3B8] uppercase tracking-wider">
             <span>Funding Stage</span>
             {isFilteringActive && (
               <button
                 onClick={handleResetFilters}
-                className="text-[#0B6E4F] hover:underline font-bold text-xs capitalize flex items-center gap-1 cursor-pointer"
+                className="text-[#0B6E4F] dark:text-[#19B5A3] hover:underline font-bold text-xs capitalize flex items-center gap-1 cursor-pointer"
               >
                 <span>Reset All Filters</span>
                 <X className="w-3.5 h-3.5" />
@@ -284,7 +284,7 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
                   'px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer',
                   selectedStage === stage.value
                     ? 'bg-[#0B6E4F] text-white shadow-xs font-bold'
-                    : 'bg-white text-[#4B5563] hover:text-[#111827] hover:bg-white/80 border border-[#E2E8E4]'
+                    : 'bg-white dark:bg-[#132B3D] text-[#4B5563] dark:text-[#94A3B8] hover:text-[#111827] dark:hover:text-white hover:bg-white/80 dark:hover:bg-[#1A374D] border border-[#E2E8E4] dark:border-[#1E3A4C]'
                 )}
               >
                 {stage.label}
@@ -294,16 +294,16 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
         </div>
 
         {/* Dropdowns Row: Pillar, City, Model, Sort & CR Verification */}
-        <div className="pt-4 border-t border-[#E2E8E4] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 items-end">
+        <div className="pt-4 border-t border-[#E2E8E4] dark:border-[#1E3A4C] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 items-end">
           {/* Sovereign Pillar Dropdown */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
+            <label className="text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#94A3B8] block">
               Sovereign Pillar
             </label>
             <select
               value={selectedPillar}
               onChange={(e) => setSelectedPillar(e.target.value)}
-              className="w-full text-xs font-medium bg-white border border-[#E2E8E4] text-[#111827] rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] cursor-pointer"
+              className="w-full text-xs font-medium bg-white dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C] text-[#111827] dark:text-[#FAF9F6] rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] cursor-pointer"
             >
               <option value="ALL">All Sovereign Pillars (6 Desks)</option>
               {categories.map((cat) => (
@@ -316,13 +316,13 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
 
           {/* City Dropdown */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
+            <label className="text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#94A3B8] block">
               Headquarters City
             </label>
             <select
               value={selectedCity}
               onChange={(e) => setSelectedCity(e.target.value)}
-              className="w-full text-xs font-medium bg-white border border-[#E2E8E4] text-[#111827] rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] cursor-pointer"
+              className="w-full text-xs font-medium bg-white dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C] text-[#111827] dark:text-[#FAF9F6] rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] cursor-pointer"
             >
               {CITY_FILTERS.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -334,13 +334,13 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
 
           {/* Business Model Dropdown */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
+            <label className="text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#94A3B8] block">
               Business Model
             </label>
             <select
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
-              className="w-full text-xs font-medium bg-white border border-[#E2E8E4] text-[#111827] rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] cursor-pointer"
+              className="w-full text-xs font-medium bg-white dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C] text-[#111827] dark:text-[#FAF9F6] rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] cursor-pointer"
             >
               {MODEL_FILTERS.map((m) => (
                 <option key={m.value} value={m.value}>
@@ -352,13 +352,13 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
 
           {/* Sort Dropdown */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#4B5563] block">
+            <label className="text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#94A3B8] block">
               Sort Order
             </label>
             <select
               value={selectedSort}
               onChange={(e) => setSelectedSort(e.target.value)}
-              className="w-full text-xs font-medium bg-white border border-[#E2E8E4] text-[#111827] rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] cursor-pointer"
+              className="w-full text-xs font-medium bg-white dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C] text-[#111827] dark:text-[#FAF9F6] rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] cursor-pointer"
             >
               <option value="RECENT">Recently Verified</option>
               <option value="NAME">Venture Name (A–Z)</option>
@@ -369,15 +369,15 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
 
           {/* CR Verification Toggle */}
           <div className="h-10 flex items-center justify-start lg:justify-end">
-            <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-bold text-[#111827] select-none bg-white px-3 py-2 rounded-lg border border-[#E2E8E4] hover:border-[#0B6E4F]/40 transition-colors">
+            <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-bold text-[#111827] dark:text-[#FAF9F6] select-none bg-white dark:bg-[#132B3D] px-3 py-2 rounded-lg border border-[#E2E8E4] dark:border-[#1E3A4C] hover:border-[#0B6E4F]/40 transition-colors">
               <input
                 type="checkbox"
                 checked={crOnly}
                 onChange={(e) => setCrOnly(e.target.checked)}
-                className="w-4 h-4 rounded border-[#E2E8E4] text-[#0B6E4F] focus:ring-[#0B6E4F] cursor-pointer accent-[#0B6E4F]"
+                className="w-4 h-4 rounded border-[#E2E8E4] dark:border-[#1E3A4C] text-[#0B6E4F] focus:ring-[#0B6E4F] cursor-pointer accent-[#0B6E4F]"
               />
-              <span className="flex items-center gap-1.5 text-[#111827]">
-                <ShieldCheck className="w-4 h-4 text-[#0B6E4F]" />
+              <span className="flex items-center gap-1.5 text-[#111827] dark:text-[#FAF9F6]">
+                <ShieldCheck className="w-4 h-4 text-[#0B6E4F] dark:text-[#19B5A3]" />
                 <span>CR Audited Only</span>
               </span>
             </label>
@@ -422,7 +422,7 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
               <article
                 key={item.id}
                 data-testid="startup-card"
-                className="group bg-white rounded-xl border border-[#E2E8E4] hover:border-[#0B6E4F]/40 hover:shadow-lg transition-all duration-200 p-6 flex flex-col justify-between"
+                className="group bg-white dark:bg-[#102433] rounded-xl border border-[#E2E8E4] dark:border-[#1E3A4C] hover:border-[#0B6E4F]/40 dark:hover:border-[#19B5A3]/40 hover:shadow-lg transition-all duration-200 p-6 flex flex-col justify-between"
               >
                 <div className="space-y-4">
                   {/* Zone 1: Name, Tagline, CR Badge & Sector */}
@@ -430,28 +430,28 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <Link href={`/startup/${item.slug}`} className="group/name">
-                          <h3 className="font-heading font-black text-xl text-[#111827] group-hover/name:text-[#0B6E4F] transition-colors">
+                          <h3 className="font-heading font-black text-xl text-[#111827] dark:text-[#FAF9F6] group-hover/name:text-[#0B6E4F] dark:group-hover/name:text-[#19B5A3] transition-colors">
                             {item.name}
                           </h3>
                         </Link>
                         {item.crVerified && (
                           <span
                             title="Commercial Registration (CR) Audited via Ministry of Commerce / Wathiq"
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#E8F5EF] text-[#0B6E4F] border border-[#0B6E4F]/25"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#E8F5EF] dark:bg-[#0B6E4F]/20 text-[#0B6E4F] dark:text-[#19B5A3] border border-[#0B6E4F]/25 dark:border-[#19B5A3]/30"
                           >
-                            <ShieldCheck className="w-3 h-3 text-[#0B6E4F]" />
+                            <ShieldCheck className="w-3 h-3 text-[#0B6E4F] dark:text-[#19B5A3]" />
                             <span>CR Audited</span>
                           </span>
                         )}
                       </div>
-                      <p className="text-xs font-semibold text-[#4B5563] line-clamp-1">
+                      <p className="text-xs font-semibold text-[#4B5563] dark:text-[#94A3B8] line-clamp-1">
                         {item.tagline}
                       </p>
                     </div>
 
                     {item.category && (
                       <span
-                        className="text-[11px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-md bg-[#F1F5F2] shrink-0 border border-[#E2E8E4]"
+                        className="text-[11px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-md bg-[#F1F5F2] dark:bg-[#132B3D] shrink-0 border border-[#E2E8E4] dark:border-[#1E3A4C]"
                         style={{ color: item.category.color }}
                       >
                         {item.category.name}
@@ -461,31 +461,31 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
 
                   {/* Zone 2: Key Operational Metrics Ribbon */}
                   <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <span className="px-2.5 py-1 rounded-md bg-[#F1F5F2] text-[#111827] font-bold border border-[#E2E8E4]">
+                    <span className="px-2.5 py-1 rounded-md bg-[#F1F5F2] dark:bg-[#132B3D] text-[#111827] dark:text-[#FAF9F6] font-bold border border-[#E2E8E4] dark:border-[#1E3A4C]">
                       {formatStage(item.stage)}
                     </span>
-                    <span className="px-2.5 py-1 rounded-md bg-[#F1F5F2] text-[#4B5563] font-semibold border border-[#E2E8E4]">
+                    <span className="px-2.5 py-1 rounded-md bg-[#F1F5F2] dark:bg-[#132B3D] text-[#4B5563] dark:text-[#94A3B8] font-semibold border border-[#E2E8E4] dark:border-[#1E3A4C]">
                       {item.businessModel}
                     </span>
-                    <span className="inline-flex items-center gap-1 text-[#4B5563] bg-[#F1F5F2] px-2.5 py-1 rounded-md border border-[#E2E8E4] font-medium">
-                      <MapPin className="w-3.5 h-3.5 text-[#4B5563]" />
+                    <span className="inline-flex items-center gap-1 text-[#4B5563] dark:text-[#94A3B8] bg-[#F1F5F2] dark:bg-[#132B3D] px-2.5 py-1 rounded-md border border-[#E2E8E4] dark:border-[#1E3A4C] font-medium">
+                      <MapPin className="w-3.5 h-3.5 text-[#4B5563] dark:text-[#94A3B8]" />
                       <span>{item.hqCity}</span>
                     </span>
-                    <span className="text-xs text-[#4B5563] bg-[#F1F5F2] px-2.5 py-1 rounded-md border border-[#E2E8E4] font-medium">
+                    <span className="text-xs text-[#4B5563] dark:text-[#94A3B8] bg-[#F1F5F2] dark:bg-[#132B3D] px-2.5 py-1 rounded-md border border-[#E2E8E4] dark:border-[#1E3A4C] font-medium">
                       Est. {item.foundingYear}
                     </span>
                   </div>
 
                   {/* Zone 3: Description */}
-                  <p className="text-sm text-[#374151] leading-relaxed line-clamp-2">
+                  <p className="text-sm text-[#374151] dark:text-[#CBD5E1] leading-relaxed line-clamp-2">
                     {item.description}
                   </p>
 
                   {/* Zone 4: Key Milestone / Verified Traction */}
                   {item.keyMetrics && (
-                    <div className="flex items-start gap-2.5 p-3 rounded-lg bg-[#E8F5EF] border border-[#0B6E4F]/25 text-xs">
-                      <TrendingUp className="w-4 h-4 text-[#0B6E4F] shrink-0 mt-0.5" />
-                      <span className="text-xs font-semibold text-[#111827] leading-snug">
+                    <div className="flex items-start gap-2.5 p-3 rounded-lg bg-[#E8F5EF] dark:bg-[#0B6E4F]/20 border border-[#0B6E4F]/25 dark:border-[#19B5A3]/30 text-xs">
+                      <TrendingUp className="w-4 h-4 text-[#0B6E4F] dark:text-[#19B5A3] shrink-0 mt-0.5" />
+                      <span className="text-xs font-semibold text-[#111827] dark:text-[#FAF9F6] leading-snug">
                         {item.keyMetrics}
                       </span>
                     </div>
@@ -493,23 +493,23 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
 
                   {/* Zone 5: Products & Tech Stack Highlights */}
                   {(productList.length > 0 || techList.length > 0) && (
-                    <div className="space-y-2 pt-1 border-t border-[#E2E8E4]">
+                    <div className="space-y-2 pt-1 border-t border-[#E2E8E4] dark:border-[#1E3A4C]">
                       {productList.length > 0 && (
                         <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] mr-1 flex items-center gap-1">
-                            <Package className="w-3 h-3 text-[#4B5563]" />
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#94A3B8] mr-1 flex items-center gap-1">
+                            <Package className="w-3 h-3 text-[#4B5563] dark:text-[#94A3B8]" />
                             <span>Products:</span>
                           </span>
                           {productList.slice(0, 3).map((prod: string, idx: number) => (
                             <span
                               key={idx}
-                              className="px-2 py-0.5 rounded-md bg-[#F1F5F2] text-[11px] font-medium text-[#111827] border border-[#E2E8E4]"
+                              className="px-2 py-0.5 rounded-md bg-[#F1F5F2] dark:bg-[#132B3D] text-[11px] font-medium text-[#111827] dark:text-[#FAF9F6] border border-[#E2E8E4] dark:border-[#1E3A4C]"
                             >
                               {prod}
                             </span>
                           ))}
                           {productList.length > 3 && (
-                            <span className="text-[11px] text-[#4B5563] font-medium">
+                            <span className="text-[11px] text-[#4B5563] dark:text-[#94A3B8] font-medium">
                               +{productList.length - 3} more
                             </span>
                           )}
@@ -518,20 +518,20 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
 
                       {techList.length > 0 && (
                         <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] mr-1 flex items-center gap-1">
-                            <Code2 className="w-3 h-3 text-[#4B5563]" />
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#94A3B8] mr-1 flex items-center gap-1">
+                            <Code2 className="w-3 h-3 text-[#4B5563] dark:text-[#94A3B8]" />
                             <span>Tech:</span>
                           </span>
                           {techList.slice(0, 4).map((tech: string, idx: number) => (
                             <span
                               key={idx}
-                              className="px-2 py-0.5 rounded-md bg-[#F1F5F2] text-[11px] font-mono text-[#111827] border border-[#E2E8E4]"
+                              className="px-2 py-0.5 rounded-md bg-[#F1F5F2] dark:bg-[#132B3D] text-[11px] font-mono text-[#111827] dark:text-[#FAF9F6] border border-[#E2E8E4] dark:border-[#1E3A4C]"
                             >
                               {tech}
                             </span>
                           ))}
                           {techList.length > 4 && (
-                            <span className="text-[11px] font-mono text-[#4B5563]">
+                            <span className="text-[11px] font-mono text-[#4B5563] dark:text-[#94A3B8]">
                               +{techList.length - 4} more
                             </span>
                           )}
@@ -542,13 +542,13 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
                 </div>
 
                 {/* Zone 6: Card Footer (Clear Action Button) */}
-                <div className="pt-4 mt-5 border-t border-[#E2E8E4] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                  <div className="text-xs text-[#4B5563] space-y-0.5">
-                    <span className="text-[11px] text-slate-400 block">
+                <div className="pt-4 mt-5 border-t border-[#E2E8E4] dark:border-[#1E3A4C] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="text-xs text-[#4B5563] dark:text-[#94A3B8] space-y-0.5">
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500 block">
                       Audited {formatDate(item.verifiedAt)}
                     </span>
                     {item.sourceName && (
-                      <span className="text-[11px] text-[#4B5563] font-medium block truncate max-w-[200px]">
+                      <span className="text-[11px] text-[#4B5563] dark:text-[#94A3B8] font-medium block truncate max-w-[200px]">
                         via {item.sourceName}
                       </span>
                     )}
@@ -558,7 +558,7 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
                       href={item.websiteUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-3.5 py-2 rounded-lg bg-[#F1F5F2] hover:bg-[#E8F5EF] text-[#111827] text-xs font-bold border border-[#E2E8E4] transition-colors"
+                      className="inline-flex items-center gap-1 px-3.5 py-2 rounded-lg bg-[#F1F5F2] dark:bg-[#132B3D] hover:bg-[#E8F5EF] dark:hover:bg-[#1A374D] text-[#111827] dark:text-[#FAF9F6] text-xs font-bold border border-[#E2E8E4] dark:border-[#1E3A4C] transition-colors"
                     >
                       <span>Web</span>
                       <ExternalLink className="w-3 h-3" />

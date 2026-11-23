@@ -84,36 +84,36 @@ export default async function OpportunitiesPage({ searchParams }: PageProps) {
   const activeProgramsCount = opportunities.filter((o) => !o.isExpired && o.status !== OpportunityStatus.CLOSED).length;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-[#111827] font-sans">
+    <div className="min-h-screen flex flex-col bg-[#FAF9F6] dark:bg-[#0A1F2C] text-[#111827] dark:text-[#FAF9F6] font-sans transition-colors duration-200">
       <SiteHeader />
 
       <main className="flex-1 pb-20">
         {/* 1. Page Hero Banner & Institutional Verification Strip */}
-        <div className="bg-[#FAF9F6] border-b border-[#E2E8E4] py-12 sm:py-16">
+        <div className="bg-[#FAF9F6] dark:bg-[#0A1F2C] border-b border-[#E2E8E4] dark:border-[#1E3A4C] py-12 sm:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl space-y-4">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F1F5F2] border border-[#E2E8E4] text-xs font-semibold text-[#0A1F2C]">
-                <Compass className="w-3.5 h-3.5 text-[#0B6E4F]" />
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F1F5F2] dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C] text-xs font-semibold text-[#0A1F2C] dark:text-[#FAF9F6]">
+                <Compass className="w-3.5 h-3.5 text-[#0B6E4F] dark:text-[#19B5A3]" />
                 <span>KSA Founder Capital &amp; Opportunity Hub</span>
               </div>
 
-              <h1 className="text-3xl sm:text-5xl font-heading font-black tracking-tight text-[#111827] leading-tight">
+              <h1 className="text-3xl sm:text-5xl font-heading font-black tracking-tight text-[#111827] dark:text-[#FAF9F6] leading-tight">
                 Saudi Opportunity Hub &amp; Grant Radar
               </h1>
 
-              <p className="text-sm sm:text-base text-[#4B5563] leading-relaxed">
+              <p className="text-sm sm:text-base text-[#4B5563] dark:text-[#94A3B8] leading-relaxed">
                 Discover verified non-dilutive government grants, venture accelerators, innovation vouchers, and regulatory sandboxes across Saudi Arabia. Every opportunity is strictly vetted against official ministry portals with verified application URLs.
               </p>
 
-              <div className="flex flex-wrap items-center gap-6 pt-2 text-xs text-[#4B5563]">
+              <div className="flex flex-wrap items-center gap-6 pt-2 text-xs text-[#4B5563] dark:text-[#94A3B8]">
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#0B6E4F]" />
-                  <span className="font-semibold text-[#111827]">
+                  <span className="w-2 h-2 rounded-full bg-[#0B6E4F] dark:bg-[#19B5A3]" />
+                  <span className="font-semibold text-[#111827] dark:text-[#FAF9F6]">
                     {activeProgramsCount} Active Programs Available Now
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-[#0B6E4F]" />
+                  <ShieldCheck className="w-4 h-4 text-[#0B6E4F] dark:text-[#19B5A3]" />
                   <span>Official Ministerial Provenance • Zero Speculation</span>
                 </div>
                 <div className="flex items-center gap-2">
