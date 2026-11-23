@@ -3,24 +3,6 @@
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {
-  Save,
-  Send,
-  CheckCircle2,
-  ArrowDownCircle,
-  ExternalLink,
-  ArrowLeft,
-  Sparkles,
-  AlertTriangle,
-  Loader2,
-  Clock,
-  Eye,
-  Calendar,
-  MessageSquare,
-  History,
-  X,
-  RotateCcw,
-} from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { AuthenticatedUser } from '@/lib/auth/guard';
 import {
@@ -199,13 +181,13 @@ export function ArticleEditorForm({
         if (result?.error) {
           setErrorMsg(result.error);
         } else if (result?.success) {
-          setSuccessMsg('Story draft saved successfully.');
+          setSuccessMsg('Draft saved.');
           if (isNew && result.articleId) {
             router.push(`/admin/articles/${result.articleId}/edit`);
           }
         }
       } catch {
-        setErrorMsg('An unexpected error occurred while saving.');
+        setErrorMsg("We couldn't save this. Try again.");
       }
     });
   };
@@ -220,7 +202,7 @@ export function ArticleEditorForm({
       if (res.error) {
         setErrorMsg(res.error);
       } else {
-        setSuccessMsg('Story submitted for editorial review.');
+        setSuccessMsg('Submitted for review.');
         router.refresh();
       }
     });
@@ -229,7 +211,7 @@ export function ArticleEditorForm({
   const handleConfirmRequestRevisions = () => {
     if (!initialData?.id) return;
     if (!revisionFeedback.trim()) {
-      setErrorMsg('Editorial feedback is required when requesting revisions.');
+      setErrorMsg('Add a note so the author knows what to change.');
       return;
     }
     setErrorMsg(null);
@@ -240,7 +222,7 @@ export function ArticleEditorForm({
       if (res.error) {
         setErrorMsg(res.error);
       } else {
-        setSuccessMsg('Article returned to author with revision feedback.');
+        setSuccessMsg('Sent back to the author with your notes.');
         setRevisionFeedback('');
         router.refresh();
       }
@@ -249,14 +231,14 @@ export function ArticleEditorForm({
 
   const handlePublishNow = () => {
     if (!initialData?.id) return;
-    if (confirm('Publish this story immediately to the live public site?')) {
+    if (confirm('Publish this article now? It will go live on the site immediately.')) {
       setErrorMsg(null);
       startTransition(async () => {
         const res = await publishArticleAction(initialData.id);
         if (res.error) {
           setErrorMsg(res.error);
         } else {
-          setSuccessMsg('Story published live to saudifuturetech.com!');
+          setSuccessMsg('Published. The article is now live.');
           router.refresh();
         }
       });
@@ -273,7 +255,7 @@ export function ArticleEditorForm({
       if (res.error) {
         setErrorMsg(res.error);
       } else {
-        setSuccessMsg(`Story successfully scheduled for publication.`);
+        setSuccessMsg('Scheduled.');
         router.refresh();
       }
     });
@@ -281,384 +263,325 @@ export function ArticleEditorForm({
 
   const handleUnpublish = () => {
     if (!initialData?.id) return;
-    if (confirm('Revert this article to DRAFT? It will be removed immediately from public access.')) {
+    if (confirm('Move this article back to draft? It will be removed from the public site.')) {
       setErrorMsg(null);
       startTransition(async () => {
         const res = await unpublishArticleAction(initialData.id);
         if (res.error) {
           setErrorMsg(res.error);
         } else {
-          setSuccessMsg('Story reverted to draft.');
+          setSuccessMsg('Moved back to draft.');
           router.refresh();
         }
       });
     }
   };
 
+  const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
+  const showPublish = canPublish && !isNew && currentStatus !== 'PUBLISHED';
+  const showSubmit = !isNew && currentStatus === 'DRAFT';
+  // One filled button per view: Publish if available, then Submit for review, else Save draft.
+  const saveIsPrimary = !showPublish && !showSubmit;
+
   return (
     <div className="space-y-6">
-      {/* Top Header & Workflow Actions Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-sft">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/admin/articles"
-            className="p-1.5 rounded-sm bg-brand-dark hover:bg-brand-surface border border-sft text-sft-text-muted hover:text-brand-cloud transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 text-brand-yellow" />
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 pb-5 border-b border-rule">
+        <div className="min-w-0">
+          <Link href="/admin/articles" className="meta hover:text-ink transition-colors">
+            ← Articles
           </Link>
-          <div>
-            <div className="flex items-center gap-2 mb-0.5">
-              <StatusBadge status={currentStatus as any} />
-              {initialData?.scheduledFor && currentStatus === 'SCHEDULED' && (
-                <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-xs border border-amber-500/30">
-                  Scheduled for {formatDate(initialData.scheduledFor)}
-                </span>
-              )}
-            </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-brand-cloud font-heading tracking-tight">
-              {isNew ? 'Create New Editorial Report' : title || 'Untitled Story'}
-            </h1>
+          <h1 className="mt-2 font-serif text-display-sm text-ink line-clamp-2">
+            {isNew ? 'New article' : title || 'Untitled article'}
+          </h1>
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <StatusBadge status={currentStatus as any} />
+            {initialData?.scheduledFor && currentStatus === 'SCHEDULED' && (
+              <span className="font-sans text-[0.71875rem] text-ink-3 tabular">
+                for {formatDate(initialData.scheduledFor)}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-4 shrink-0">
           {!isNew && initialData?.id && (
-            <Link
-              href={`/admin/articles/${initialData.id}/preview`}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-sm bg-brand-dark hover:bg-brand-surface border border-sft text-brand-cloud text-xs font-heading font-bold transition-colors"
-            >
-              <Eye className="w-3.5 h-3.5 text-brand-yellow" />
-              <span>Preview Canvas</span>
+            <Link href={`/admin/articles/${initialData.id}/preview`} className="row-action">
+              Preview
             </Link>
           )}
-
-          {/* Save Draft */}
           <Button
             type="button"
-            variant="secondary"
-            size="sm"
+            variant={saveIsPrimary ? 'primary' : 'secondary'}
+            size="md"
             disabled={isPending}
             onClick={handleSave}
-            className="font-heading uppercase tracking-wider text-xs flex items-center gap-1.5"
           >
-            {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-            <span>Save Draft</span>
+            {isPending ? 'Saving…' : 'Save draft'}
           </Button>
-
-          {/* Submit for Review (if in DRAFT) */}
-          {!isNew && currentStatus === 'DRAFT' && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isPending}
-              onClick={() => setShowSubmitModal(true)}
-              className="font-heading uppercase tracking-wider text-xs flex items-center gap-1.5 text-amber-400 border-amber-500/40 hover:bg-amber-500/10"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span>Submit for Review</span>
-            </Button>
-          )}
-
-          {/* Request Revisions (Editor/SuperAdmin only when IN_REVIEW) */}
-          {canPublish && !isNew && currentStatus === 'IN_REVIEW' && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isPending}
-              onClick={() => setShowRevisionModal(true)}
-              className="font-heading uppercase tracking-wider text-xs flex items-center gap-1.5 text-rose-400 border-rose-500/40 hover:bg-rose-500/10"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Request Revisions</span>
-            </Button>
-          )}
-
-          {/* Schedule Publication (Editor/SuperAdmin) */}
-          {canPublish && !isNew && (currentStatus === 'DRAFT' || currentStatus === 'IN_REVIEW') && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isPending}
-              onClick={() => setShowScheduleModal(true)}
-              className="font-heading uppercase tracking-wider text-xs flex items-center gap-1.5 text-sky-400 border-sky-500/40 hover:bg-sky-500/10"
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Schedule</span>
-            </Button>
-          )}
-
-          {/* Publish / Unpublish (Editor/SuperAdmin) */}
-          {canPublish && !isNew && (
-            <>
-              {currentStatus === 'PUBLISHED' ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={isPending}
-                  onClick={handleUnpublish}
-                  className="font-heading uppercase tracking-wider text-xs flex items-center gap-1.5 text-zinc-300 border-zinc-600 hover:bg-zinc-700"
-                >
-                  <ArrowDownCircle className="w-3.5 h-3.5" />
-                  <span>Unpublish to Draft</span>
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  variant="primary"
-                  size="sm"
-                  disabled={isPending}
-                  onClick={handlePublishNow}
-                  className="font-heading uppercase tracking-wider text-xs flex items-center gap-1.5 bg-brand-yellow text-brand-graphite hover:bg-brand-yellow/90"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Publish Story</span>
-                </Button>
-              )}
-            </>
-          )}
         </div>
       </div>
 
-      {/* Editor Revision Feedback Alert Box (For Author / Editor awareness) */}
+      {/* Revision notes from an editor */}
       {latestRevision && currentStatus === 'DRAFT' && (
-        <div className="p-4 bg-amber-500/10 border-l-4 border-brand-yellow rounded-r-sm text-xs space-y-1.5">
-          <div className="flex items-center gap-2 text-brand-yellow font-bold font-heading uppercase tracking-wider text-[11px]">
-            <MessageSquare className="w-4 h-4 shrink-0" />
-            <span>Editorial Revision Requested by {latestRevision.userName || 'Editor'}</span>
-            <span className="text-sft-text-muted font-mono font-normal">
-              ({formatDate(latestRevision.createdAt)})
-            </span>
-          </div>
-          <p className="text-brand-cloud font-sans text-xs sm:text-sm leading-relaxed pl-6">
-            &ldquo;{latestRevision.feedback}&rdquo;
+        <div className="border-l-2 border-clay pl-4 py-1 max-w-3xl">
+          <p className="text-[0.8125rem] text-ink">
+            Changes requested by {latestRevision.userName || 'an editor'}
+            <span className="ml-2 font-sans text-[0.6875rem] text-ink-4">{formatDate(latestRevision.createdAt)}</span>
           </p>
-          <p className="text-[11px] text-sft-text-muted pl-6">
-            Please make the requested updates to your analysis, then click <strong>Submit for Review</strong>.
-          </p>
+          <p className="mt-1 font-serif text-[1.0625rem] leading-relaxed text-ink-2">&ldquo;{latestRevision.feedback}&rdquo;</p>
+          <p className="mt-1 text-[0.8125rem] text-ink-3">Make the changes, then submit for review again.</p>
         </div>
       )}
 
-      {/* In-Review Queue Notice for Authors */}
       {isAuthor && currentStatus === 'IN_REVIEW' && (
-        <div className="p-3.5 bg-sky-500/10 border border-sky-500/30 rounded-sm text-xs text-sky-200 flex items-center gap-2.5">
-          <Clock className="w-4 h-4 text-sky-400 shrink-0" />
-          <span>
-            This report is currently in the <strong>Editorial Review Queue</strong> awaiting desk review. You can continue updating your draft if needed.
-          </span>
-        </div>
+        <p className="border-l-2 border-clay pl-3 text-sm text-ink-2">
+          This article is waiting for an editor. You can keep editing while it&rsquo;s in review.
+        </p>
       )}
 
-      {/* Feedback Messages */}
       {errorMsg && (
-        <div className="p-3.5 bg-red-950/40 border border-red-500/40 rounded-sm text-xs text-red-200 flex items-start gap-2.5">
-          <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-          <div>
-            <span className="font-bold font-heading uppercase tracking-wide text-[11px] block">Error</span>
-            <p className="font-sans text-red-300">{errorMsg}</p>
-          </div>
-        </div>
+        <p role="alert" className="border-l-2 border-clay pl-3 text-sm text-ink-2">
+          {errorMsg}
+        </p>
       )}
 
       {successMsg && (
-        <div className="p-3.5 bg-emerald-950/40 border border-emerald-500/40 rounded-sm text-xs text-emerald-200 flex items-start gap-2.5">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-          <div>
-            <span className="font-bold font-heading uppercase tracking-wide text-[11px] block">Success</span>
-            <p className="font-sans text-emerald-300">{successMsg}</p>
-          </div>
-        </div>
+        <p role="status" className="border-l-2 border-moss pl-3 text-sm text-ink-2">
+          {successMsg}
+        </p>
       )}
 
-      {/* Main Grid: Left Column (Content, SEO, Review History) & Right Column (Pillar, Placement, Artwork) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column (8 cols) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 gap-y-6 items-start">
+        {/* Main column */}
         <div className="lg:col-span-8 space-y-6">
-          {/* Title & Slug */}
-          <div className="bg-brand-surface rounded-sm border border-sft p-5 space-y-4">
-            <div className="space-y-1.5">
-              <label htmlFor="title" className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-                Story Headline <span className="text-brand-yellow">*</span>
+          <div>
+            <label htmlFor="title" className="field-label">
+              Headline <span className="text-ink-4">*</span>
+            </label>
+            <input
+              id="title"
+              type="text"
+              value={title}
+              onChange={handleTitleChange}
+              placeholder="What happened, in one line"
+              className="field font-serif !text-[1.5rem] leading-tight !py-2.5"
+              required
+            />
+          </div>
+
+          <div>
+            <div className="flex items-baseline justify-between gap-3">
+              <label htmlFor="slug" className="field-label">
+                Slug <span className="text-ink-4">*</span>
               </label>
+              <button
+                type="button"
+                onClick={() => setAutoSlug(!autoSlug)}
+                className="text-[0.75rem] text-ink-3 hover:text-clay transition-colors"
+              >
+                {autoSlug ? 'From headline · edit manually' : 'Editing manually'}
+              </button>
+            </div>
+            <div className="flex items-stretch">
+              <span className="inline-flex items-center px-3 border border-r-0 border-rule bg-paper-band rounded-l-sm font-sans text-[0.75rem] text-ink-3">
+                /article/
+              </span>
               <input
-                id="title"
+                id="slug"
                 type="text"
-                value={title}
-                onChange={handleTitleChange}
-                placeholder="e.g., Inside Saudi Arabia's Sovereign Compute Blueprint..."
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3.5 py-2.5 text-base sm:text-lg font-bold font-heading text-brand-cloud placeholder-sft-text-muted/60 focus:outline-none focus:border-brand-yellow transition-colors"
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label htmlFor="slug" className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-                  URL Slug <span className="text-brand-yellow">*</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setAutoSlug(!autoSlug)}
-                  className="text-[10px] font-mono text-brand-yellow hover:underline cursor-pointer"
-                >
-                  {autoSlug ? 'Auto-generating from title (Click to unlock)' : 'Manual slug editing'}
-                </button>
-              </div>
-              <div className="flex items-center">
-                <span className="px-3 py-2 bg-brand-dark border border-r-0 border-sft rounded-l-sm text-xs font-mono text-sft-text-muted">
-                  /article/
-                </span>
-                <input
-                  id="slug"
-                  type="text"
-                  value={slug}
-                  onChange={(e) => {
-                    setAutoSlug(false);
-                    setSlug(e.target.value);
-                  }}
-                  className="flex-1 bg-brand-dark border border-sft rounded-r-sm px-3 py-2 text-xs font-mono text-brand-cloud placeholder-sft-text-muted focus:outline-none focus:border-brand-yellow transition-colors"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Standfirst / Excerpt */}
-            <div className="space-y-1.5 pt-2">
-              <label htmlFor="excerpt" className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-                Editorial Standfirst / Subtitle <span className="text-brand-yellow">*</span>
-              </label>
-              <textarea
-                id="excerpt"
-                rows={3}
-                value={excerpt}
-                onChange={(e) => setExcerpt(e.target.value)}
-                placeholder="A high-level 2-3 sentence overview of key findings, strategic context, and technical analysis..."
-                className="w-full bg-brand-dark border border-sft rounded-sm p-3 text-xs sm:text-sm font-sans text-brand-cloud placeholder-sft-text-muted/60 focus:outline-none focus:border-brand-yellow transition-colors leading-relaxed"
+                value={slug}
+                onChange={(e) => {
+                  setAutoSlug(false);
+                  setSlug(e.target.value);
+                }}
+                className="field font-sans !text-[0.8125rem] !rounded-l-none"
                 required
               />
             </div>
           </div>
 
-          {/* Main Body Content Editor */}
-          <div className="bg-brand-surface rounded-sm border border-sft p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <label htmlFor="content" className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-                Full Article Text & Analysis <span className="text-brand-yellow">*</span>
-              </label>
-              <span className="text-[11px] font-mono text-sft-text-muted">
-                ~{calculatedReadingTime} min read ({content.trim().split(/\s+/).filter(Boolean).length} words)
-              </span>
-            </div>
-
+          <div>
+            <label htmlFor="excerpt" className="field-label">
+              Standfirst <span className="text-ink-4">*</span>
+            </label>
             <textarea
-              id="content"
-              rows={18}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Write or paste full editorial report markdown/paragraphs here. Double line breaks represent new paragraphs..."
-              className="w-full bg-brand-dark border border-sft rounded-sm p-4 text-xs sm:text-sm font-mono text-brand-cloud placeholder-sft-text-muted/60 focus:outline-none focus:border-brand-yellow transition-colors leading-relaxed"
+              id="excerpt"
+              rows={3}
+              value={excerpt}
+              onChange={(e) => setExcerpt(e.target.value)}
+              placeholder="Two or three sentences that tell the reader why this matters."
+              className="field font-serif !text-[1.0625rem] !leading-relaxed"
               required
             />
-            <p className="text-[11px] text-sft-text-muted">
-              Tip: Use double line-breaks to separate paragraphs. Headings starting with ## are rendered as architectural section breaks.
+          </div>
+
+          <div>
+            <div className="flex items-baseline justify-between gap-3">
+              <label htmlFor="content" className="field-label">
+                Body <span className="text-ink-4">*</span>
+              </label>
+              <span className="font-sans text-[0.6875rem] text-ink-3 tabular">
+                {wordCount} words · ~{calculatedReadingTime} min read
+              </span>
+            </div>
+            <textarea
+              id="content"
+              rows={22}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Start writing. Leave a blank line between paragraphs."
+              className="field font-serif !text-[1.0625rem] !leading-[1.75] !px-5 !py-4"
+              required
+            />
+            <p className="field-hint">
+              Blank line = new paragraph. Start a line with <code className="font-mono">##</code> for a section heading,{' '}
+              <code className="font-mono">###</code> for a subheading, <code className="font-mono">&gt;</code> for a quote.
             </p>
           </div>
 
-          {/* SEO Metadata Box */}
-          <div className="bg-brand-surface rounded-sm border border-sft p-5 space-y-4">
-            <div className="flex items-center gap-2 text-xs font-bold font-heading text-brand-yellow uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Search Engine Optimization (SEO) Metadata</span>
-            </div>
-
-            <div className="space-y-1.5">
-              <label htmlFor="seoTitle" className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-                SEO Meta Title
-              </label>
-              <input
-                id="seoTitle"
-                type="text"
-                value={seoTitle}
-                onChange={(e) => setSeoTitle(e.target.value)}
-                placeholder={title || 'Leave blank to use story headline'}
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-2 text-xs text-brand-cloud placeholder-sft-text-muted/60 focus:outline-none focus:border-brand-yellow transition-colors"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label htmlFor="seoDescription" className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-                SEO Meta Description
-              </label>
-              <textarea
-                id="seoDescription"
-                rows={2}
-                value={seoDescription}
-                onChange={(e) => setSeoDescription(e.target.value)}
-                placeholder={excerpt || 'Leave blank to use standfirst'}
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-2 text-xs text-brand-cloud placeholder-sft-text-muted/60 focus:outline-none focus:border-brand-yellow transition-colors"
-              />
-            </div>
-          </div>
-
-          {/* Editorial Review History Audit Log */}
           {initialData?.reviewHistory && initialData.reviewHistory.length > 0 && (
-            <div className="bg-brand-surface rounded-sm border border-sft p-5 space-y-4">
-              <div className="flex items-center gap-2 text-xs font-bold font-heading text-brand-yellow uppercase tracking-wider">
-                <History className="w-3.5 h-3.5" />
-                <span>Editorial Review History ({initialData.reviewHistory.length})</span>
+            <section className="pt-2">
+              <div className="flex items-baseline justify-between border-t-2 border-ink pt-3 pb-2">
+                <h2 className="font-serif text-[1.25rem] text-ink">History</h2>
+                <span className="font-sans text-[0.6875rem] text-ink-4 tabular">
+                  {initialData.reviewHistory.length} {initialData.reviewHistory.length === 1 ? 'change' : 'changes'}
+                </span>
               </div>
-
-              <div className="space-y-3 divide-y divide-sft/40">
+              <ul>
                 {initialData.reviewHistory.map((item) => (
-                  <div key={item.id} className="pt-3 first:pt-0 space-y-1 text-xs font-sans">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded-xs bg-brand-dark border border-sft text-brand-cloud font-bold">
-                          {item.previousStatus} &rarr; {item.newStatus}
+                  <li key={item.id} className="py-3 border-b border-rule">
+                    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <StatusBadge status={item.previousStatus as any} />
+                        <span className="text-ink-4 text-xs" aria-hidden>
+                          →
                         </span>
-                        <span className="font-bold text-brand-cloud font-heading">{item.userName || 'System'}</span>
+                        <StatusBadge status={item.newStatus as any} />
+                        <span className="ml-2 text-[0.8125rem] text-ink">{item.userName || 'System'}</span>
                         {item.userRole && (
-                          <span className="text-[10px] text-sft-text-muted uppercase font-mono">
-                            ({item.userRole})
+                          <span className="font-sans text-[0.6875rem] text-ink-4">
+                            {item.userRole.replace('_', ' ').toLowerCase()}
                           </span>
                         )}
                       </div>
-                      <span className="text-[11px] text-sft-text-muted font-mono">{formatDate(item.createdAt)}</span>
+                      <span className="font-sans text-[0.6875rem] text-ink-4 tabular">{formatDate(item.createdAt)}</span>
                     </div>
                     {item.feedback && (
-                      <p className="text-sft-text-body bg-brand-dark/50 p-2.5 rounded-sm border border-sft/60 leading-relaxed font-sans text-xs mt-1">
-                        &ldquo;{item.feedback}&rdquo;
-                      </p>
+                      <p className="mt-1.5 text-[0.875rem] italic text-ink-3 leading-relaxed">&ldquo;{item.feedback}&rdquo;</p>
                     )}
-                  </div>
+                  </li>
                 ))}
-              </div>
-            </div>
+              </ul>
+            </section>
           )}
         </div>
 
-        {/* Right Column (4 cols) */}
-        <div className="lg:col-span-4 space-y-6">
-          {/* Categorization & Byline */}
-          <div className="bg-brand-surface rounded-sm border border-sft p-5 space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-brand-yellow font-heading">
-              Editorial Pillar & Byline
-            </h3>
+        {/* Sidebar */}
+        <aside className="lg:col-span-4 space-y-4">
+          {/* Publishing */}
+          <section className="panel p-5">
+            <h2 className="panel-title">Publishing</h2>
+            <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[0.8125rem]">
+              <dt className="text-ink-3">Status</dt>
+              <dd>
+                <StatusBadge status={currentStatus as any} />
+              </dd>
+              {initialData?.scheduledFor && currentStatus === 'SCHEDULED' && (
+                <>
+                  <dt className="text-ink-3">Goes live</dt>
+                  <dd className="font-sans text-[0.75rem] text-ink tabular">{formatDate(initialData.scheduledFor)}</dd>
+                </>
+              )}
+              <dt className="text-ink-3">Length</dt>
+              <dd className="font-sans text-[0.75rem] text-ink-2 tabular">~{calculatedReadingTime} min read</dd>
+            </dl>
 
-            {/* Category Dropdown */}
-            <div className="space-y-1.5">
-              <label htmlFor="categoryId" className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-                Category Pillar <span className="text-brand-yellow">*</span>
+            {isNew ? (
+              <p className="mt-4 pt-4 border-t border-rule text-[0.8125rem] text-ink-3 leading-relaxed">
+                Save the draft first. Then you can submit it for review, schedule it or publish it.
+              </p>
+            ) : (
+              <div className="mt-4 pt-4 border-t border-rule flex flex-col gap-2">
+                {showPublish && (
+                  <Button type="button" variant="primary" size="md" disabled={isPending} onClick={handlePublishNow} className="w-full">
+                    Publish now
+                  </Button>
+                )}
+
+                {showSubmit && (
+                  <Button
+                    type="button"
+                    variant={showPublish ? 'outline' : 'primary'}
+                    size="md"
+                    disabled={isPending}
+                    onClick={() => setShowSubmitModal(true)}
+                    className="w-full"
+                  >
+                    Submit for review
+                  </Button>
+                )}
+
+                {canPublish && (currentStatus === 'DRAFT' || currentStatus === 'IN_REVIEW') && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="md"
+                    disabled={isPending}
+                    onClick={() => setShowScheduleModal(true)}
+                    className="w-full"
+                  >
+                    Schedule…
+                  </Button>
+                )}
+
+                {canPublish && currentStatus === 'IN_REVIEW' && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="md"
+                    disabled={isPending}
+                    onClick={() => setShowRevisionModal(true)}
+                    className="w-full"
+                  >
+                    Request changes…
+                  </Button>
+                )}
+
+                {canPublish && currentStatus === 'PUBLISHED' && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="md"
+                    disabled={isPending}
+                    onClick={handleUnpublish}
+                    className="w-full !text-clay hover:!border-clay"
+                  >
+                    Unpublish
+                  </Button>
+                )}
+
+                {!canPublish && !showSubmit && (
+                  <p className="text-[0.8125rem] text-ink-3 leading-relaxed">
+                    An editor publishes or schedules this article.
+                  </p>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* Section & author */}
+          <section className="panel p-5 space-y-4">
+            <h2 className="panel-title">Section &amp; author</h2>
+            <div>
+              <label htmlFor="categoryId" className="field-label">
+                Section
               </label>
               <select
                 id="categoryId"
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-2 text-xs text-brand-cloud focus:outline-none focus:border-brand-yellow transition-colors"
+                className="field"
                 required
               >
                 {categories.map((cat) => (
@@ -669,22 +592,23 @@ export function ArticleEditorForm({
               </select>
             </div>
 
-            {/* Author Byline */}
-            <div className="space-y-1.5">
-              <label htmlFor="authorId" className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-                Author Byline <span className="text-brand-yellow">*</span>
+            <div>
+              <label htmlFor="authorId" className="field-label">
+                Author
               </label>
               {currentUser.role === 'AUTHOR' ? (
-                <div className="p-2.5 bg-brand-dark border border-sft rounded-sm text-xs text-brand-cloud">
-                  <div className="font-bold">{authors.find((a) => a.id === authorId)?.name || currentUser.name}</div>
-                  <div className="text-[10px] text-brand-yellow font-mono mt-0.5">Locked to your verified Author profile</div>
-                </div>
+                <>
+                  <p id="authorId" className="text-sm text-ink py-1">
+                    {authors.find((a) => a.id === authorId)?.name || currentUser.name}
+                  </p>
+                  <p className="field-hint !mt-0.5">Authors publish under their own byline.</p>
+                </>
               ) : (
                 <select
                   id="authorId"
                   value={authorId}
                   onChange={(e) => setAuthorId(e.target.value)}
-                  className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-2 text-xs text-brand-cloud focus:outline-none focus:border-brand-yellow transition-colors"
+                  className="field"
                   required
                 >
                   {authors.map((author) => (
@@ -695,89 +619,89 @@ export function ArticleEditorForm({
                 </select>
               )}
             </div>
+          </section>
 
-            {/* Taxonomy Tags */}
-            <div className="space-y-1.5">
-              <label htmlFor="tags" className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-                Taxonomy Tags (Comma-separated)
+          {/* Tags */}
+          <section className="panel p-5">
+            <h2 className="panel-title">Tags</h2>
+            <div className="mt-3">
+              <label htmlFor="tags" className="field-label">
+                Tags
               </label>
               <input
                 id="tags"
                 type="text"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
-                placeholder="e.g. AI, Sovereign Cloud, Vision 2030"
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-2 text-xs text-brand-cloud placeholder-sft-text-muted focus:outline-none focus:border-brand-yellow transition-colors"
+                placeholder="AI, Cloud, Fintech"
+                className="field"
               />
+              <p className="field-hint">Separate with commas.</p>
             </div>
-          </div>
+          </section>
 
-          {/* Editorial Curation Toggles */}
-          <div className="bg-brand-surface rounded-sm border border-sft p-5 space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-brand-yellow font-heading">
-              Placement Flags
-            </h3>
+          {/* Placement */}
+          <section className="panel p-5">
+            <h2 className="panel-title">Placement</h2>
+            <div className="mt-3 space-y-2.5">
+              <label className="flex items-start gap-2.5 text-sm text-ink-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={featured}
+                  onChange={(e) => setFeatured(e.target.checked)}
+                  className="mt-0.5 accent-[#A63D24]"
+                />
+                <span>
+                  Lead story
+                  <span className="block text-[0.75rem] text-ink-3">Top of the homepage</span>
+                </span>
+              </label>
+              <label className="flex items-start gap-2.5 text-sm text-ink-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isEditorsPick}
+                  onChange={(e) => setIsEditorsPick(e.target.checked)}
+                  className="mt-0.5 accent-[#A63D24]"
+                />
+                <span>Editor&rsquo;s pick</span>
+              </label>
+              <label className="flex items-start gap-2.5 text-sm text-ink-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isTrending}
+                  onChange={(e) => setIsTrending(e.target.checked)}
+                  className="mt-0.5 accent-[#A63D24]"
+                />
+                <span>Trending</span>
+              </label>
+            </div>
+          </section>
 
-            <label className="flex items-center gap-2.5 text-xs text-brand-cloud cursor-pointer">
-              <input
-                type="checkbox"
-                checked={featured}
-                onChange={(e) => setFeatured(e.target.checked)}
-                className="rounded-xs border-sft bg-brand-dark text-brand-yellow focus:ring-0 focus:ring-offset-0"
-              />
-              <span className="font-heading font-bold">Featured Lead Story (Homepage Hero)</span>
-            </label>
-
-            <label className="flex items-center gap-2.5 text-xs text-brand-cloud cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isEditorsPick}
-                onChange={(e) => setIsEditorsPick(e.target.checked)}
-                className="rounded-xs border-sft bg-brand-dark text-brand-yellow focus:ring-0 focus:ring-offset-0"
-              />
-              <span className="font-heading font-bold">Editor’s Pick Badge</span>
-            </label>
-
-            <label className="flex items-center gap-2.5 text-xs text-brand-cloud cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isTrending}
-                onChange={(e) => setIsTrending(e.target.checked)}
-                className="rounded-xs border-sft bg-brand-dark text-brand-yellow focus:ring-0 focus:ring-offset-0"
-              />
-              <span className="font-heading font-bold">Trending Analysis</span>
-            </label>
-          </div>
-
-          {/* Media & Artwork */}
-          <div className="bg-brand-surface rounded-sm border border-sft p-5 space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-brand-yellow font-heading">
-              Hero Artwork & Photography
-            </h3>
-
-            <div className="space-y-1.5">
-              <label htmlFor="coverImage" className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-                Cover Image URL <span className="text-brand-yellow">*</span>
+          {/* Cover image */}
+          <section className="panel p-5 space-y-4">
+            <h2 className="panel-title">Cover image</h2>
+            <div>
+              <label htmlFor="coverImage" className="field-label">
+                Cover image URL <span className="text-ink-4">*</span>
               </label>
               <input
                 id="coverImage"
                 type="url"
                 value={coverImage}
                 onChange={(e) => setCoverImage(e.target.value)}
-                placeholder="https://..."
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-2 text-xs text-brand-cloud placeholder-sft-text-muted focus:outline-none focus:border-brand-yellow transition-colors font-mono"
+                placeholder="https://"
+                className="field font-sans !text-[0.75rem]"
                 required
               />
             </div>
 
-            {/* Thumbnail Preview */}
             {coverImage && (
-              <div className="relative aspect-[16/9] w-full rounded-sm overflow-hidden border border-sft bg-brand-dark">
+              <div className="relative aspect-[16/9] w-full overflow-hidden bg-paper-band">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={coverImage}
                   alt={coverImageAlt || 'Cover preview'}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover img-warm"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src =
                       'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80';
@@ -786,184 +710,223 @@ export function ArticleEditorForm({
               </div>
             )}
 
-            <div className="space-y-1.5">
-              <label htmlFor="coverImageAlt" className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-                Alt Text (Accessibility)
+            <div>
+              <label htmlFor="coverImageAlt" className="field-label">
+                Alt text
               </label>
               <input
                 id="coverImageAlt"
                 type="text"
                 value={coverImageAlt}
                 onChange={(e) => setCoverImageAlt(e.target.value)}
-                placeholder="Description of visual elements..."
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-2 text-xs text-brand-cloud placeholder-sft-text-muted focus:outline-none focus:border-brand-yellow transition-colors"
+                placeholder="What the image shows"
+                className="field"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label htmlFor="coverImageCaption" className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-                Photo Caption
+            <div>
+              <label htmlFor="coverImageCaption" className="field-label">
+                Caption
               </label>
               <input
                 id="coverImageCaption"
                 type="text"
                 value={coverImageCaption}
                 onChange={(e) => setCoverImageCaption(e.target.value)}
-                placeholder="e.g. Server rack topology inside King Abdulaziz City..."
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-2 text-xs text-brand-cloud placeholder-sft-text-muted focus:outline-none focus:border-brand-yellow transition-colors"
+                className="field"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label htmlFor="imageCredit" className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-                Photo Attribution / Credit
+            <div>
+              <label htmlFor="imageCredit" className="field-label">
+                Credit
               </label>
               <input
                 id="imageCredit"
                 type="text"
                 value={imageCredit}
                 onChange={(e) => setImageCredit(e.target.value)}
-                placeholder="e.g. SPA / Saudi Future Tech"
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-2 text-xs text-brand-cloud placeholder-sft-text-muted focus:outline-none focus:border-brand-yellow transition-colors"
+                placeholder="Photographer / agency"
+                className="field"
               />
             </div>
-          </div>
-        </div>
+          </section>
+
+          {/* SEO */}
+          <section className="panel p-5 space-y-4">
+            <h2 className="panel-title">Search &amp; sharing</h2>
+            <div>
+              <label htmlFor="seoTitle" className="field-label">
+                SEO title
+              </label>
+              <input
+                id="seoTitle"
+                type="text"
+                value={seoTitle}
+                onChange={(e) => setSeoTitle(e.target.value)}
+                placeholder={title || 'Uses the headline if blank'}
+                className="field"
+              />
+              <p className="field-hint">
+                <span className="font-sans tabular">{seoTitle.length}</span> characters · aim for under 60
+              </p>
+            </div>
+
+            <div>
+              <label htmlFor="seoDescription" className="field-label">
+                SEO description
+              </label>
+              <textarea
+                id="seoDescription"
+                rows={3}
+                value={seoDescription}
+                onChange={(e) => setSeoDescription(e.target.value)}
+                placeholder={excerpt || 'Uses the standfirst if blank'}
+                className="field"
+              />
+              <p className="field-hint">
+                <span className="font-sans tabular">{seoDescription.length}</span> characters · aim for under 160
+              </p>
+            </div>
+          </section>
+        </aside>
       </div>
 
-      {/* Modal: Author Submit for Review Dialog */}
+      {/* Submit for review */}
       {showSubmitModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs font-sans">
-          <div className="bg-brand-surface border border-brand-yellow/40 rounded-sm p-6 max-w-md w-full space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-sft pb-3">
-              <h3 className="text-sm font-bold uppercase font-heading text-brand-yellow">
-                Submit Story for Editorial Review
-              </h3>
-              <button onClick={() => setShowSubmitModal(false)} className="text-sft-text-muted hover:text-brand-cloud">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <p className="text-xs text-sft-text-muted leading-relaxed">
-              Your article will be placed into the Section Editor queue for evaluation and approval. You may include an optional note for the editing desk:
-            </p>
+        <EditorDialog title="Submit for review" onClose={() => setShowSubmitModal(false)}>
+          <p className="text-sm text-ink-3 leading-relaxed">
+            An editor will read it and either publish it or send it back with notes.
+          </p>
+          <div>
+            <label htmlFor="submit-notes" className="field-label">
+              Note for the editor <span className="font-normal text-ink-4">(optional)</span>
+            </label>
             <textarea
+              id="submit-notes"
               rows={3}
               value={authorSubmitNotes}
               onChange={(e) => setAuthorSubmitNotes(e.target.value)}
-              placeholder="e.g. Ready for review. Source attribution verified with Ministry of Communications."
-              className="w-full bg-brand-dark border border-sft rounded-sm p-2.5 text-xs text-brand-cloud focus:border-brand-yellow focus:outline-none"
+              placeholder="Anything they should check first"
+              className="field"
             />
-            <div className="flex justify-end gap-2 pt-2 border-t border-sft">
-              <Button variant="outline" size="sm" onClick={() => setShowSubmitModal(false)} className="text-xs">
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                disabled={isPending}
-                onClick={handleConfirmSubmitForReview}
-                className="text-xs font-heading uppercase"
-              >
-                {isPending ? 'Submitting...' : 'Confirm Submission'}
-              </Button>
-            </div>
           </div>
-        </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="ghost" size="sm" onClick={() => setShowSubmitModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" size="sm" disabled={isPending} onClick={handleConfirmSubmitForReview}>
+              {isPending ? 'Submitting…' : 'Submit for review'}
+            </Button>
+          </div>
+        </EditorDialog>
       )}
 
-      {/* Modal: Request Revisions Dialog (Editor) */}
+      {/* Request changes */}
       {showRevisionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs font-sans">
-          <div className="bg-brand-surface border border-rose-500/40 rounded-sm p-6 max-w-md w-full space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-sft pb-3">
-              <h3 className="text-sm font-bold uppercase font-heading text-rose-400">
-                Request Revisions from Author
-              </h3>
-              <button onClick={() => setShowRevisionModal(false)} className="text-sft-text-muted hover:text-brand-cloud">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <p className="text-xs text-sft-text-muted leading-relaxed">
-              The article will return to <strong>DRAFT</strong> status. The author will see your feedback immediately at the top of their editor screen:
-            </p>
+        <EditorDialog title="Request changes" onClose={() => setShowRevisionModal(false)}>
+          <p className="text-sm text-ink-3 leading-relaxed">
+            The article goes back to draft. The author sees your note at the top of the editor.
+          </p>
+          <div>
+            <label htmlFor="revision-notes" className="field-label">
+              What needs to change
+            </label>
             <textarea
+              id="revision-notes"
               rows={4}
               required
               value={revisionFeedback}
               onChange={(e) => setRevisionFeedback(e.target.value)}
-              placeholder="e.g. Please verify the compute budget figure cited in Section 2, and add the missing photo attribution."
-              className="w-full bg-brand-dark border border-sft rounded-sm p-2.5 text-xs text-brand-cloud focus:border-brand-yellow focus:outline-none"
+              placeholder="Check the figure in section two and add a photo credit."
+              className="field"
             />
-            <div className="flex justify-end gap-2 pt-2 border-t border-sft">
-              <Button variant="outline" size="sm" onClick={() => setShowRevisionModal(false)} className="text-xs">
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                disabled={isPending || !revisionFeedback.trim()}
-                onClick={handleConfirmRequestRevisions}
-                className="text-xs font-heading uppercase bg-rose-500 hover:bg-rose-600 text-white"
-              >
-                {isPending ? 'Sending...' : 'Send Revision Request'}
-              </Button>
-            </div>
           </div>
-        </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="ghost" size="sm" onClick={() => setShowRevisionModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={isPending || !revisionFeedback.trim()}
+              onClick={handleConfirmRequestRevisions}
+            >
+              {isPending ? 'Sending…' : 'Send back to author'}
+            </Button>
+          </div>
+        </EditorDialog>
       )}
 
-      {/* Modal: Schedule Publication Dialog (Editor) */}
+      {/* Schedule */}
       {showScheduleModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs font-sans">
-          <div className="bg-brand-surface border border-sky-500/40 rounded-sm p-6 max-w-md w-full space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-sft pb-3">
-              <h3 className="text-sm font-bold uppercase font-heading text-sky-400">
-                Schedule Article Publication
-              </h3>
-              <button onClick={() => setShowScheduleModal(false)} className="text-sft-text-muted hover:text-brand-cloud">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="space-y-2">
-              <label className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-                Future Publication Date & Time (UTC / Local)
-              </label>
-              <input
-                type="datetime-local"
-                value={scheduleDateTime}
-                onChange={(e) => setScheduleDateTime(e.target.value)}
-                className="w-full bg-brand-dark border border-sft rounded-sm p-2 text-xs font-mono text-brand-cloud focus:border-brand-yellow focus:outline-none"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="block text-xs font-bold uppercase tracking-widest text-sft-text-muted font-heading">
-                Optional Editorial Notes
-              </label>
-              <input
-                type="text"
-                value={scheduleNotes}
-                onChange={(e) => setScheduleNotes(e.target.value)}
-                placeholder="e.g. Embargoed until SPA press release at 09:00 UTC."
-                className="w-full bg-brand-dark border border-sft rounded-sm p-2 text-xs text-brand-cloud focus:border-brand-yellow focus:outline-none"
-              />
-            </div>
-            <div className="flex justify-end gap-2 pt-2 border-t border-sft">
-              <Button variant="outline" size="sm" onClick={() => setShowScheduleModal(false)} className="text-xs">
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                disabled={isPending}
-                onClick={handleConfirmSchedule}
-                className="text-xs font-heading uppercase bg-sky-500 hover:bg-sky-600 text-white"
-              >
-                {isPending ? 'Scheduling...' : 'Confirm Schedule'}
-              </Button>
-            </div>
+        <EditorDialog title="Schedule" onClose={() => setShowScheduleModal(false)}>
+          <div>
+            <label htmlFor="schedule-at" className="field-label">
+              Publish on
+            </label>
+            <input
+              id="schedule-at"
+              type="datetime-local"
+              value={scheduleDateTime}
+              onChange={(e) => setScheduleDateTime(e.target.value)}
+              className="field font-sans"
+            />
+            <p className="field-hint">Your local time. The scheduler publishes it when the time arrives.</p>
           </div>
-        </div>
+          <div>
+            <label htmlFor="schedule-notes" className="field-label">
+              Note <span className="font-normal text-ink-4">(optional)</span>
+            </label>
+            <input
+              id="schedule-notes"
+              type="text"
+              value={scheduleNotes}
+              onChange={(e) => setScheduleNotes(e.target.value)}
+              placeholder="Embargoed until 09:00"
+              className="field"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="ghost" size="sm" onClick={() => setShowScheduleModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" size="sm" disabled={isPending} onClick={handleConfirmSchedule}>
+              {isPending ? 'Scheduling…' : 'Schedule'}
+            </Button>
+          </div>
+        </EditorDialog>
       )}
+    </div>
+  );
+}
+
+function EditorDialog({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={title}>
+      <div className="absolute inset-0 bg-ink/40" onClick={onClose} aria-hidden="true" />
+      <div className="relative bg-paper-sheet border border-rule shadow-lift rounded-sm p-6 max-w-md w-full space-y-4">
+        <div className="flex items-baseline justify-between gap-4">
+          <h3 className="font-serif text-[1.375rem] text-ink">{title}</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-ink-3 hover:text-ink text-xl leading-none"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        {children}
+      </div>
     </div>
   );
 }

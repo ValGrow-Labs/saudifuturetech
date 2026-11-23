@@ -1,27 +1,29 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import { Mail, CheckCircle2, ShieldCheck, Cpu, Globe2, Building2, Layers } from 'lucide-react';
+import Link from 'next/link';
 import { SiteHeader } from '@/components/public/SiteHeader';
 import { SiteFooter } from '@/components/public/SiteFooter';
 import { MainContainer } from '@/components/public/MainContainer';
 import { NewsletterForm } from '@/components/public/NewsletterForm';
-import { SITE_NAME } from '@/lib/constants';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { getCanonicalUrl, DEFAULT_SEO } from '@/lib/seo/config';
 import { BreadcrumbJsonLd } from '@/lib/seo/json-ld';
 
 const newsletterCanonical = getCanonicalUrl('/newsletter');
 
+const TITLE = `The Sunday Brief newsletter | ${DEFAULT_SEO.siteName}`;
+const DESCRIPTION =
+  'A free weekly email on technology in Saudi Arabia: what changed, which grants close in the next fortnight, and who raised money.';
+
 export const metadata: Metadata = {
-  title: `Executive Intelligence Briefing | ${DEFAULT_SEO.siteName}`,
-  description:
-    'Subscribe to the weekly Saudi Future Tech Executive Briefing for curated intelligence on foundation models, cognitive giga-projects, and sovereign venture investments.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: {
     canonical: newsletterCanonical,
   },
   openGraph: {
-    title: `Executive Intelligence Briefing | ${DEFAULT_SEO.siteName}`,
-    description:
-      'Subscribe to the weekly Saudi Future Tech Executive Briefing for curated intelligence on foundation models, cognitive giga-projects, and sovereign venture investments.',
+    title: TITLE,
+    description: DESCRIPTION,
     type: 'website',
     url: newsletterCanonical,
     siteName: DEFAULT_SEO.siteName,
@@ -29,109 +31,108 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: `Executive Intelligence Briefing | ${DEFAULT_SEO.siteName}`,
-    description:
-      'Subscribe to the weekly Saudi Future Tech Executive Briefing for curated intelligence on foundation models, cognitive giga-projects, and sovereign venture investments.',
+    title: TITLE,
+    description: DESCRIPTION,
     site: DEFAULT_SEO.social.twitter,
   },
 };
 
+const WHAT_YOU_GET = [
+  ['The week', 'The stories that mattered, each in a paragraph, with a link if you want more.'],
+  ['Closing soon', 'Grants, accelerators and programmes with deadlines in the next two weeks.'],
+  ['Money', 'Funding rounds announced that week, with the investors named.'],
+  ['The register', 'Startups and investors we added or updated in the directory.'],
+];
+
+const SAMPLE_OUTLINE = [
+  ['01', 'Opening note', 'A few lines from the editor on the week’s main thread.'],
+  ['02', 'The week', 'Four to six short items across AI, government platforms, security, cities, finance and energy.'],
+  ['03', 'Closing soon', 'A dated list of deadlines, nearest first, each linked to the issuing body’s page.'],
+  ['04', 'Money', 'Rounds announced, by company, stage and lead investor, as disclosed.'],
+  ['05', 'One long read', 'Our longest piece of the week, or one worth going back to.'],
+];
+
 export default function NewsletterPage() {
-  const briefingPillars = [
-    {
-      icon: Cpu,
-      title: 'Foundation Models & Sovereign Compute',
-      description: 'Technical teardowns of ALLaM, Arabic LLM benchmarks, and sovereign GPU cluster deployments across the Kingdom.',
-    },
-    {
-      icon: Building2,
-      title: 'Cognitive Infrastructure & Giga-Projects',
-      description: 'First-hand architectural analysis of THE LINE sensory fabrics, OXAGON automated logistics, and Red Sea microgrids.',
-    },
-    {
-      icon: Layers,
-      title: 'FinTech & Regulatory Sandbox Evolution',
-      description: 'Deep dives into SAMA open banking directives, instant cross-border settlement rails, and venture financing.',
-    },
-    {
-      icon: Globe2,
-      title: 'Clean Energy & Desalination Microgrids',
-      description: 'Field telemetry from utility-scale solar arrays, green hydrogen electrolysis, and quantum desalination pilots.',
-    },
+  const breadcrumbs = [
+    { label: 'Home', href: '/' },
+    { label: 'Newsletter', current: true },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-editorial-paper text-ink-body font-sans">
-      {/* Schema.org Structured Data */}
-      <BreadcrumbJsonLd
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Executive Intelligence Briefing', current: true },
-        ]}
-      />
+    <>
+      <BreadcrumbJsonLd items={breadcrumbs} />
 
       <SiteHeader />
 
-      <main className="flex-1 py-12 sm:py-16 space-y-16">
-        <MainContainer>
-          {/* Hero Section */}
-          <div className="max-w-3xl mx-auto text-center space-y-6">
-            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-ink-high bg-editorial-sand px-3 py-1 rounded-xs border border-editorial-hairline font-sans">
-              <Mail className="w-3.5 h-3.5" />
-              <span>Weekly Executive Intelligence</span>
-            </div>
+      <main id="main" className="flex-1">
+        <MainContainer className="pt-8 md:pt-10 pb-24">
+          <Breadcrumbs items={breadcrumbs} />
 
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif font-black text-ink-high tracking-tight leading-tight">
-              Curated Technology Intelligence for Vision 2030 Leaders
-            </h1>
-
-            <p className="text-base sm:text-lg text-ink-body font-sans leading-relaxed max-w-2xl mx-auto">
-              Delivered every Tuesday morning to technology executives, startup founders, sovereign fund investors, and enterprise architects shaping Saudi Arabia’s technological transformation.
-            </p>
-
-            {/* Subscription Form Card */}
-            <div className="p-6 sm:p-8 bg-editorial-pure rounded-xs border border-editorial-hairline shadow-xs max-w-xl mx-auto text-center">
+          <section className="mt-10 md:mt-12 grid gap-10 lg:grid-cols-12 lg:gap-x-10 lg:items-end">
+            <header className="lg:col-span-7">
+              <p className="kicker mb-3">The Sunday Brief · Sundays, 7am Riyadh</p>
+              <h1 className="font-serif text-display-lg text-ink">
+                The week in Saudi tech, <em className="italic">in one email.</em>
+              </h1>
+              <p className="mt-5 max-w-xl text-[1.0625rem] leading-relaxed text-ink-3">
+                What changed, which grants close in the next fortnight, and who raised money. Written by our editors for
+                founders, operators and investors. Free.
+              </p>
+            </header>
+            <div className="lg:col-span-5">
               <NewsletterForm variant="standalone" />
             </div>
-          </div>
+          </section>
 
-          {/* Editorial Pillars Grid */}
-          <div className="pt-16 max-w-5xl mx-auto space-y-8">
-            <div className="text-center space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-ink-muted font-sans">
-                Editorial Breadth
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-serif font-black text-ink-high">
-                What the Executive Briefing Covers
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {briefingPillars.map((pillar) => {
-                const Icon = pillar.icon;
-                return (
-                  <div
-                    key={pillar.title}
-                    className="p-6 bg-editorial-pure rounded-xs border border-editorial-hairline space-y-3 hover:shadow-xs transition-editorial"
-                  >
-                    <div className="w-9 h-9 rounded-xs bg-editorial-sand border border-editorial-hairline flex items-center justify-center text-brand-gold">
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <h3 className="font-serif font-bold text-lg text-ink-high">
-                      {pillar.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-ink-body leading-relaxed font-sans">
-                      {pillar.description}
-                    </p>
+          <div className="mt-20 md:mt-24 grid gap-16 lg:grid-cols-12 lg:gap-x-10">
+            <section aria-labelledby="what-you-get" className="lg:col-span-5">
+              <div className="border-t-2 border-ink pt-4">
+                <h2 id="what-you-get" className="font-serif text-display-sm md:text-display-md text-ink">
+                  What you get
+                </h2>
+                <p className="mt-2 text-[0.9375rem] text-ink-3">Every Sunday morning, in your inbox.</p>
+              </div>
+              <dl className="mt-6 border-t border-ink">
+                {WHAT_YOU_GET.map(([term, desc]) => (
+                  <div key={term} className="border-b border-rule py-4">
+                    <dt className="font-serif text-[1.25rem] text-ink">{term}</dt>
+                    <dd className="mt-1 text-[0.9375rem] leading-relaxed text-ink-2">{desc}</dd>
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </dl>
+            </section>
+
+            <section aria-labelledby="sample-issue" className="lg:col-span-7 lg:border-l lg:border-rule lg:pl-10">
+              <div className="border-t-2 border-ink pt-4">
+                <h2 id="sample-issue" className="font-serif text-display-sm md:text-display-md text-ink">
+                  How an issue is laid out
+                </h2>
+                <p className="mt-2 text-[0.9375rem] text-ink-3">The running order, from top to bottom.</p>
+              </div>
+              <ol className="mt-6 border-t border-ink">
+                {SAMPLE_OUTLINE.map(([n, title, desc]) => (
+                  <li key={n} className="grid grid-cols-[2.75rem_minmax(0,1fr)] border-b border-rule py-4">
+                    <span className="font-sans tabular text-sm text-ink-4 pt-1">{n}</span>
+                    <div>
+                      <p className="font-serif text-[1.25rem] text-ink">{title}</p>
+                      <p className="mt-1 text-[0.9375rem] leading-relaxed text-ink-2">{desc}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+              <p className="mt-6 text-[0.8125rem] leading-relaxed text-ink-3">
+                We use your address only to send the newsletter. Every issue has a one-click unsubscribe link. See the{' '}
+                <Link href="/privacy" className="text-ink underline underline-offset-2 hover:text-clay">
+                  privacy policy
+                </Link>
+                .
+              </p>
+            </section>
           </div>
         </MainContainer>
       </main>
 
       <SiteFooter />
-    </div>
+    </>
   );
 }

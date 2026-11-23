@@ -4,32 +4,16 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/public/SiteHeader';
 import { SiteFooter } from '@/components/public/SiteFooter';
+import { MainContainer } from '@/components/public/MainContainer';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
-import { 
-  getOpportunityBySlug, 
-  getAllOpportunitySlugs, 
-  getRelatedOpportunities 
+import {
+  getOpportunityBySlug,
+  getAllOpportunitySlugs,
+  getRelatedOpportunities,
 } from '@/lib/founder-intelligence';
-import { formatDate, cn } from '@/lib/utils';
-import { 
-  Building2, 
-  ShieldCheck, 
-  Coins, 
-  Calendar, 
-  Clock, 
-  ExternalLink, 
-  CheckCircle2, 
-  FileText, 
-  Layers, 
-  ArrowRight,
-  ArrowUpRight,
-  Compass,
-  Sparkles,
-  ListChecks,
-  AlertTriangle,
-  UserCheck
-} from 'lucide-react';
-import { OpportunityCategory, OpportunityStatus } from '@prisma/client';
+import { cn } from '@/lib/utils';
+import { deadlineInfo, opportunityTypeLabel } from '@/lib/labels';
+import { OpportunityCategory } from '@prisma/client';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -48,23 +32,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!opp) {
     return {
-      title: 'Opportunity Not Found | Saudi Future Tech',
+      title: 'Programme not found | Saudi Future Tech',
     };
   }
 
-  const categoryLabel = opp.category === OpportunityCategory.GRANT 
-    ? 'Non-Dilutive Grant' 
-    : opp.category === OpportunityCategory.ACCELERATOR 
-    ? 'Seed Accelerator' 
-    : opp.category === OpportunityCategory.GOVERNMENT_PROGRAM 
-    ? 'Regulatory Sandbox' 
-    : 'Founder Opportunity';
+  const categoryLabel = opportunityTypeLabel(opp.category);
 
   return {
-    title: `${opp.title} — ${categoryLabel} Dossier | Saudi Future Tech`,
+    title: `${opp.title} — ${categoryLabel} | Saudi Future Tech`,
     description: opp.description.slice(0, 160),
     openGraph: {
-      title: `${opp.title} — Verified Saudi Founder Opportunity`,
+      title: `${opp.title} — ${opp.organization}`,
       description: opp.description.slice(0, 160),
       type: 'article',
       locale: 'en_US',
@@ -86,58 +64,39 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
   }
 
   const related = await getRelatedOpportunities(opp.categoryId, opp.id, 3);
-  const criteriaList = Array.isArray(opp.eligibilityCriteria)
-    ? (opp.eligibilityCriteria as string[])
-    : [];
-  const benefitsList = Array.isArray(opp.benefits)
-    ? (opp.benefits as string[])
-    : [];
-  const requirementsList = Array.isArray(opp.requirements)
-    ? (opp.requirements as string[])
-    : [];
+  const criteriaList = Array.isArray(opp.eligibilityCriteria) ? (opp.eligibilityCriteria as string[]) : [];
+  const benefitsList = Array.isArray(opp.benefits) ? (opp.benefits as string[]) : [];
+  const requirementsList = Array.isArray(opp.requirements) ? (opp.requirements as string[]) : [];
 
+  const typeLabel = opportunityTypeLabel(opp.category);
   const breadcrumbs = [
     { label: 'Home', href: '/' },
     { label: 'Opportunities', href: '/opportunities' },
     { label: opp.title, current: true },
   ];
 
-  // Calculate deadline urgency & expiration
-  let deadlineLabel = 'Rolling Admission';
-  let isClosingSoon = false;
-  let isExpired = opp.isExpired;
+  const d = deadlineInfo(opp.deadline, opp.effectiveStatus);
+  const isExpired = opp.isExpired || d.closed;
 
-  if (opp.deadline) {
-    const diffTime = new Date(opp.deadline).getTime() - Date.now();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    if (diffDays <= 0) {
-      deadlineLabel = 'Cohort Closed';
-      isExpired = true;
-    } else {
-      deadlineLabel = `${formatDate(opp.deadline)} (${diffDays} ${diffDays === 1 ? 'day' : 'days'} left)`;
-      if (diffDays <= 14) isClosingSoon = true;
-    }
-  }
-
-  // Determine Program Type Label
+  // Plain description of each programme type (label doubles as serviceType in JSON-LD).
   const getProgramTypeDetails = (cat: OpportunityCategory) => {
     switch (cat) {
       case OpportunityCategory.GRANT:
-        return { label: 'Non-Dilutive Grant', isCash: true, desc: 'Direct non-repayable founder capital. 0% equity taken.' };
+        return { label: 'Grant', desc: 'Money you don’t pay back and that takes no equity.' };
       case OpportunityCategory.ACCELERATOR:
-        return { label: 'Venture Accelerator', isCash: true, desc: 'Cohort-based scaling program with investment and mentorship.' };
+        return { label: 'Accelerator', desc: 'A fixed-length cohort with mentoring and, often, investment.' };
       case OpportunityCategory.INCUBATOR:
-        return { label: 'Technology Incubator', isCash: false, desc: 'Physical space, prototyping lab access, and technical coaching.' };
+        return { label: 'Incubator', desc: 'Workspace, lab access and coaching for early teams.' };
       case OpportunityCategory.SUBSIDY:
-        return { label: 'Innovation Subsidy / Voucher', isCash: true, desc: 'Government-subsidized service vouchers for IP, legal, and engineering.' };
+        return { label: 'Subsidy', desc: 'Co-funding or vouchers towards services such as IP, legal or engineering work.' };
       case OpportunityCategory.GOVERNMENT_PROGRAM:
-        return { label: 'Regulatory Sandbox / Gov Framework', isCash: false, desc: 'Live operational exemption and regulatory supervision.' };
+        return { label: 'Government programme', desc: 'A regulatory or government scheme, such as a sandbox.' };
       case OpportunityCategory.SUBSIDIZED_PERK:
-        return { label: 'Sovereign Compute & Cloud Credits', isCash: false, desc: 'High-performance computing GPU tokens and cloud infrastructure.' };
+        return { label: 'Credits and perks', desc: 'Compute, cloud or software credits rather than cash.' };
       case OpportunityCategory.HACKATHON:
-        return { label: 'National Tech Hackathon & Challenge', isCash: true, desc: 'Competitive prize challenge and prototype demonstration.' };
+        return { label: 'Hackathon', desc: 'A competition with prizes for working prototypes.' };
       default:
-        return { label: 'Founder Program', isCash: false, desc: 'Verified initiative for technology entrepreneurs.' };
+        return { label: 'Programme', desc: '' };
     }
   };
 
@@ -159,391 +118,202 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-[#111827] font-sans">
+    <>
       <SiteHeader />
 
-      {/* JSON-LD Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <main className="flex-1 pb-24">
-        {/* 1. Header Banner & Dossier Masthead */}
-        <div className="bg-[#F1F5F2] border-b border-[#E0E7E3] py-8 sm:py-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-            <Breadcrumbs items={breadcrumbs} />
+      <main id="main" className="flex-1">
+        <MainContainer className="pt-8 md:pt-10 pb-24">
+          <Breadcrumbs items={breadcrumbs} />
 
-            <div className="space-y-3.5 max-w-4xl">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-xs font-semibold text-[#0A1F2C] border border-[#E0E7E3]">
-                  <Building2 className="w-3.5 h-3.5 text-brand-navy" />
-                  <span>{opp.organization}</span>
-                </span>
+          <header className="mt-8 max-w-4xl">
+            <p className="kicker mb-3">{typeLabel}</p>
+            <h1 className="font-serif text-display-lg text-ink">{opp.title}</h1>
+            <p className="mt-4 max-w-2xl font-serif text-[1.25rem] leading-relaxed text-ink-3">
+              {opp.eligibilitySummary || opp.description}
+            </p>
+            <p className="meta mt-5">
+              Run by {opp.organization}
+              {opp.categoryRel && <> · {opp.categoryRel.name}</>}
+            </p>
+          </header>
 
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-editorial-sand text-xs font-semibold text-ink-high border border-editorial-hairline">
-                  <Layers className="w-3.5 h-3.5 text-brand-teal" />
-                  <span>{programType.label}</span>
-                </span>
-
-                {opp.categoryRel && (
-                  <span
-                    className="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full"
-                    style={{ 
-                      backgroundColor: `${opp.categoryRel.color}15`,
-                      color: opp.categoryRel.color,
-                      border: `1px solid ${opp.categoryRel.color}30`
-                    }}
-                  >
-                    {opp.categoryRel.name}
-                  </span>
-                )}
-
-                <span className="inline-flex items-center gap-1 text-xs text-[#0B6E4F] font-bold">
-                  <ShieldCheck className="w-4 h-4 text-[#0B6E4F]" />
-                  <span>Verified Official Program</span>
-                </span>
-              </div>
-
-              <h1 className="text-3xl sm:text-5xl font-heading font-black tracking-tight text-ink-high leading-tight">
-                {opp.title}
-              </h1>
-
-              <p className="text-sm sm:text-base text-ink-muted leading-relaxed">
-                {opp.eligibilitySummary || opp.description}
-              </p>
-            </div>
-
-            {/* 4-Stat Metric Strip */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4">
-              <div className="p-4 rounded-lg bg-editorial-sand/50 border border-editorial-hairline">
-                <span className="text-[10px] uppercase font-bold text-ink-muted block tracking-wider">
-                  Support Value
-                </span>
-                <span className="text-sm sm:text-base font-heading font-black text-[#0B6E4F] block pt-1">
-                  {opp.fundingAmount || 'Zero-Cost Participation'}
-                </span>
-                <span className="text-[10px] text-ink-faint block pt-0.5">
-                  {programType.isCash ? 'Cash Capital' : 'Non-Cash Infrastructure / Regulatory'}
-                </span>
-              </div>
-
-              <div className="p-4 rounded-lg bg-editorial-sand/50 border border-editorial-hairline">
-                <span className="text-[10px] uppercase font-bold text-ink-muted block tracking-wider">
-                  Equity Requirement
-                </span>
-                <span className="text-sm sm:text-base font-heading font-black text-ink-high block pt-1">
-                  {opp.equityTaken || '0% (Non-Dilutive)'}
-                </span>
-                <span className="text-[10px] text-ink-faint block pt-0.5">
-                  Cap Table Impact
-                </span>
-              </div>
-
-              <div className="p-4 rounded-lg bg-editorial-sand/50 border border-editorial-hairline">
-                <span className="text-[10px] uppercase font-bold text-ink-muted block tracking-wider">
-                  Application Deadline
-                </span>
-                <span className={cn(
-                  'text-sm sm:text-base font-heading font-bold block pt-1',
-                  isExpired ? 'text-gray-600' : isClosingSoon ? 'text-amber-800' : 'text-ink-high'
-                )}>
-                  {deadlineLabel}
-                </span>
-                <span className="text-[10px] text-ink-faint block pt-0.5">
-                  {opp.deadline ? 'Official Cohort Window' : 'Continuous Rolling Review'}
-                </span>
-              </div>
-
-              <div className="p-4 rounded-lg bg-editorial-sand/50 border border-editorial-hairline">
-                <span className="text-[10px] uppercase font-bold text-ink-muted block tracking-wider">
-                  Program Location
-                </span>
-                <span className="text-sm sm:text-base font-heading font-bold text-ink-high block pt-1">
-                  {opp.location || 'Riyadh, KSA'}
-                </span>
-                <span className="text-[10px] text-ink-faint block pt-0.5">
-                  Kingdom Jurisdiction
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 2. Main Content Split */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Left Column: Dossier Details (8 Cols) */}
-            <div className="lg:col-span-8 space-y-10">
-              {/* Expired Cohort Notice if applicable */}
-              {isExpired && (
-                <div className="p-4 bg-amber-50 border border-amber-300 rounded-lg text-amber-900 text-xs sm:text-sm flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-bold block">Application Window Expired</span>
-                    <p className="pt-0.5 text-xs text-amber-800 leading-relaxed">
-                      The official application deadline for this cohort has passed. Saudi Future Tech preserves this dossier for historical funding intelligence. Check the official portal below for upcoming cohorts.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Section 1: Program Overview */}
-              <section className="bg-editorial-pure rounded-lg border border-editorial-hairline p-6 sm:p-8 space-y-4">
-                <h2 className="text-xl font-heading font-bold text-ink-high flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-brand-teal" />
-                  <span>Program Overview &amp; Mandate</span>
-                </h2>
-                <div className="p-3.5 bg-brand-sand/30 rounded-xs border-l-4 border-brand-teal text-xs text-ink-body font-medium">
-                  {programType.desc}
-                </div>
-                <p className="text-sm text-ink-body leading-relaxed whitespace-pre-line">
-                  {opp.description}
-                </p>
-              </section>
-
-              {/* Section 2: Verified Benefits Package */}
-              {benefitsList.length > 0 && (
-                <section className="bg-editorial-pure rounded-lg border border-editorial-hairline p-6 sm:p-8 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-heading font-bold text-ink-high flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-brand-desertGold" />
-                      <span>Verified Founder Benefits Package</span>
-                    </h2>
-                    <span className="text-xs text-brand-desertGold font-bold uppercase tracking-wider">
-                      {benefitsList.length} Verified Perks
+          <div className="mt-10 grid gap-12 border-t-2 border-ink pt-8 lg:grid-cols-12 lg:gap-10">
+            {/* Key facts */}
+            <aside className="lg:col-span-4 lg:order-last lg:border-l lg:border-rule lg:pl-10">
+              <div className="lg:sticky lg:top-24">
+                <h2 className="meta mb-3">Key facts</h2>
+                <dl className="text-sm">
+                  <Fact label="Deadline">
+                    <span className="font-sans tabular text-ink">{d.date}</span>
+                    <span className={cn('block font-sans text-[0.75rem] mt-0.5', d.urgent ? 'text-clay' : 'text-ink-3')}>
+                      {d.urgent && (
+                        <span className="live-dot inline-block w-1.5 h-1.5 rounded-full bg-clay mr-1.5 align-middle" />
+                      )}
+                      {d.note}
                     </span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    {benefitsList.map((benefit, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-start gap-3 p-3.5 rounded-md bg-editorial-sand/30 border border-editorial-hairline"
-                      >
-                        <span className="w-5 h-5 rounded-full bg-brand-desertGold/15 text-brand-desertGold flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
-                          ✦
-                        </span>
-                        <span className="text-xs sm:text-sm text-ink-high leading-relaxed">
-                          {benefit}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Section 3: Founder Eligibility Checklist */}
-              {criteriaList.length > 0 && (
-                <section className="bg-editorial-pure rounded-lg border border-editorial-hairline p-6 sm:p-8 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-heading font-bold text-ink-high flex items-center gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-[#0B6E4F]" />
-                      <span>Mandatory Founder Eligibility Checklist</span>
-                    </h2>
-                    <span className="text-xs text-[#0B6E4F] font-bold uppercase tracking-wider">
-                      {criteriaList.length} Mandatory Criteria
-                    </span>
-                  </div>
-
-                  {opp.eligibilitySummary && (
-                    <div className="p-3.5 rounded-md bg-brand-sand/40 border-l-4 border-brand-oasis text-xs text-ink-high font-medium">
-                      {opp.eligibilitySummary}
-                    </div>
-                  )}
-
-                  <div className="space-y-3 pt-1">
-                    {criteriaList.map((criterion, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-start gap-3 p-3.5 rounded-md bg-editorial-sand/30 border border-editorial-hairline"
-                      >
-                        <div className="w-5 h-5 rounded-full bg-brand-oasis/15 text-[#0B6E4F] flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
-                          ✓
-                        </div>
-                        <span className="text-xs sm:text-sm text-ink-high leading-relaxed">
-                          {criterion}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Section 4: Application Requirements Checklist */}
-              {requirementsList.length > 0 && (
-                <section className="bg-editorial-pure rounded-lg border border-editorial-hairline p-6 sm:p-8 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-heading font-bold text-ink-high flex items-center gap-2">
-                      <ListChecks className="w-5 h-5 text-brand-navy" />
-                      <span>Application Requirements &amp; Materials</span>
-                    </h2>
-                    <span className="text-xs text-brand-navy font-bold uppercase tracking-wider">
-                      {requirementsList.length} Requirements
-                    </span>
-                  </div>
-                  <div className="space-y-2.5">
-                    {requirementsList.map((req, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-start gap-3 p-3 rounded-md bg-editorial-sand/20 border border-editorial-hairline text-xs sm:text-sm text-ink-body"
-                      >
-                        <span className="font-mono font-bold text-brand-navy text-xs mt-0.5">0{idx + 1}.</span>
-                        <span>{req}</span>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Section 5: Official Provenance & Editorial Trust Guarantee */}
-              <section className="bg-brand-sand/40 rounded-lg border border-editorial-hairline p-6 sm:p-8 space-y-4">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-ink-muted">
-                  <ShieldCheck className="w-4 h-4 text-[#0B6E4F]" />
-                  <span>Official Authority Verification &amp; Data Provenance</span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-ink-body pt-1">
-                  <div>
-                    <span className="text-ink-muted block font-medium">Issuing Government / Enterprise Entity:</span>
-                    <span className="font-bold text-ink-high text-sm">{opp.organization}</span>
-                  </div>
-                  <div>
-                    <span className="text-ink-muted block font-medium">Verified Source Name:</span>
-                    <span className="font-bold text-ink-high text-sm">{opp.sourceName}</span>
-                  </div>
-                  <div>
-                    <span className="text-ink-muted block font-medium">Last Editorial Verification:</span>
-                    <span className="font-bold text-[#0B6E4F] text-sm">{formatDate(opp.verifiedAt)}</span>
-                  </div>
-                  <div>
-                    <span className="text-ink-muted block font-medium">Verified Editorial Desk:</span>
-                    <span className="font-bold text-ink-high text-sm flex items-center gap-1">
-                      <UserCheck className="w-3.5 h-3.5 text-[#0B6E4F]" />
-                      <span>{opp.verifiedBy || 'Saudi Future Tech Intelligence Team'}</span>
-                    </span>
-                  </div>
-                </div>
-
-                {opp.sourceUrl && (
-                  <div className="pt-2 border-t border-editorial-hairline flex items-center justify-between text-xs">
-                    <span className="text-ink-muted">Official Source Verification Portal:</span>
-                    <a
-                      href={opp.sourceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-bold text-brand-navy hover:underline inline-flex items-center gap-1"
-                    >
-                      <span>{opp.sourceUrl}</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
-                )}
-              </section>
-            </div>
-
-            {/* Right Column: Sticky Action Rail (4 Cols) */}
-            <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-20">
-              {/* Application Action Card */}
-              <div className="bg-white rounded-lg border border-[#E2E8E4] p-6 space-y-5 shadow-sm">
-                <div className="space-y-1">
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-[#0B6E4F] block">
-                    Direct Ministry Route
-                  </span>
-                  <h3 className="text-lg font-heading font-black text-[#111827]">
-                    {isExpired ? 'Application Closed' : 'Apply on Official Portal'}
-                  </h3>
-                  <p className="text-xs text-[#4B5563] leading-relaxed">
-                    Saudi Future Tech routes founders directly to the verified ministerial portal. Zero intermediate broker fees or lead forms.
-                  </p>
-                </div>
+                  </Fact>
+                  <Fact label="Value">{opp.fundingAmount || '—'}</Fact>
+                  <Fact label="Equity">{opp.equityTaken || '—'}</Fact>
+                  <Fact label="Type">{typeLabel}</Fact>
+                  <Fact label="Location">{opp.location || '—'}</Fact>
+                  <Fact label="Source">
+                    {opp.sourceUrl ? (
+                      <a href={opp.sourceUrl} target="_blank" rel="noopener noreferrer" className="link-rule text-ink">
+                        {opp.sourceName} ↗
+                      </a>
+                    ) : (
+                      opp.sourceName
+                    )}
+                  </Fact>
+                  <Fact label="Last checked">
+                    <span className="font-sans tabular">{gbDate(opp.verifiedAt)}</span>
+                    {opp.verifiedBy && (
+                      <span className="block text-ink-3 text-[0.8125rem] mt-0.5">by {opp.verifiedBy}</span>
+                    )}
+                  </Fact>
+                </dl>
 
                 <a
                   href={opp.applicationUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={cn(
-                    'w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-md font-heading font-bold text-xs uppercase tracking-wider transition-all shadow-xs',
-                    isExpired
-                      ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      : 'bg-[#0B6E4F] hover:bg-[#08533C] text-white'
-                  )}
+                  className={cn('mt-6 w-full', isExpired ? 'btn-quiet justify-center' : 'btn-primary')}
                 >
-                  <span>{isExpired ? 'Visit Portal (Past Cohort)' : 'Proceed to Official Application'}</span>
-                  <ExternalLink className="w-4 h-4" />
+                  {isExpired ? 'Visit the programme site' : 'Apply on the official site'} <span aria-hidden>↗</span>
                 </a>
-
-                {opp.sourceUrl && (
-                  <a
-                    href={opp.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-md border border-[#E2E8E4] text-xs font-semibold text-[#4B5563] hover:text-[#111827] hover:bg-[#F1F5F2] transition-colors"
-                  >
-                    <span>View Official Source Document</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                )}
-
-                <div className="pt-2 border-t border-editorial-hairline space-y-2 text-xs text-ink-muted">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-ink-faint block">
-                    Pre-Application Materials
-                  </span>
-                  <div className="space-y-1.5 text-[11px]">
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-navy" />
-                      <span>Valid Commercial Registration (CR) or MISA License</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-navy" />
-                      <span>Investor Pitch Deck &amp; Market Sizing</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-navy" />
-                      <span>Functional Software Architecture Demo</span>
-                    </div>
-                  </div>
-                </div>
+                <p className="mt-3 text-[0.8125rem] leading-relaxed text-ink-3">
+                  The link goes straight to {opp.organization}. We don’t take a fee or collect your details.
+                </p>
               </div>
+            </aside>
 
-              {/* Related Opportunities in same pillar */}
-              {related.length > 0 && (
-                <div className="bg-editorial-pure rounded-lg border border-editorial-hairline p-5 space-y-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-ink-muted">
-                    Related Programs in {opp.categoryRel?.name || 'KSA'}
-                  </h4>
-                  <div className="space-y-3">
-                    {related.map((rel) => (
-                      <Link
-                        key={rel.id}
-                        href={`/opportunity/${rel.slug}`}
-                        className="group block p-3 rounded-md bg-editorial-sand/40 hover:bg-editorial-sand border border-editorial-hairline transition-all space-y-1"
-                      >
-                        <span className="text-[10px] font-bold text-ink-muted block uppercase">
-                          {rel.organization}
-                        </span>
-                        <h5 className="font-heading font-bold text-xs text-ink-high group-hover:text-brand-navy line-clamp-1">
-                          {rel.title}
-                        </h5>
-                        <div className="flex items-center justify-between text-[10px] text-ink-muted pt-1">
-                          <span className="text-[#0B6E4F] font-semibold">
-                            {rel.fundingAmount || 'Grant'}
-                          </span>
-                          <span className="text-brand-navy font-medium group-hover:underline flex items-center gap-0.5">
-                            <span>View Dossier</span>
-                            <ArrowUpRight className="w-3 h-3" />
-                          </span>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
+            {/* Body */}
+            <article className="lg:col-span-8 space-y-12">
+              {isExpired && (
+                <p className="border-l-2 border-clay pl-4 text-[0.9375rem] leading-relaxed text-ink-2">
+                  <span className="text-ink">Applications for this round have closed.</span> We keep the listing for
+                  reference. Check the programme’s own site for the next round.
+                </p>
               )}
-            </div>
+
+              <section>
+                <h2 className="font-serif text-display-sm text-ink">About the programme</h2>
+                {programType.desc && (
+                  <p className="meta mt-2">
+                    {programType.label}: {programType.desc}
+                  </p>
+                )}
+                <p className="mt-4 max-w-measure text-[1.0625rem] leading-relaxed text-ink-2 whitespace-pre-line">
+                  {opp.description}
+                </p>
+              </section>
+
+              {benefitsList.length > 0 && (
+                <section>
+                  <ListHeading title="What you get" count={benefitsList.length} />
+                  <NumberedList items={benefitsList} />
+                </section>
+              )}
+
+              {criteriaList.length > 0 && (
+                <section>
+                  <ListHeading title="Who can apply" count={criteriaList.length} />
+                  <NumberedList items={criteriaList} />
+                </section>
+              )}
+
+              {requirementsList.length > 0 && (
+                <section>
+                  <ListHeading title="What to prepare" count={requirementsList.length} />
+                  <NumberedList items={requirementsList} />
+                </section>
+              )}
+            </article>
           </div>
-        </div>
+
+          {related.length > 0 && (
+            <section aria-labelledby="related" className="mt-20 md:mt-28">
+              <div className="border-t-2 border-ink pt-4 mb-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <h2 id="related" className="font-serif text-display-sm text-ink">
+                  More in {opp.categoryRel?.name || 'this section'}
+                </h2>
+                <Link href="/opportunities" className="group shrink-0 inline-flex items-center gap-2 text-sm text-ink">
+                  <span className="link-rule">All opportunities</span>
+                  <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+                </Link>
+              </div>
+              <ul>
+                {related.map((rel) => {
+                  const rd = deadlineInfo(rel.deadline, rel.effectiveStatus);
+                  return (
+                    <li key={rel.id} className="border-b border-rule">
+                      <Link
+                        href={`/opportunity/${rel.slug}`}
+                        className="group grid gap-x-6 gap-y-1 py-4 md:grid-cols-[8.5rem_minmax(0,1fr)_14rem] md:items-baseline -mx-3 px-3 transition-colors hover:bg-paper-sheet/60"
+                      >
+                        <span className={cn('font-sans tabular text-sm', rd.urgent ? 'text-clay' : 'text-ink-3')}>
+                          {rd.date}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block font-serif text-[1.125rem] leading-snug text-ink headline-link">
+                            {rel.title}
+                          </span>
+                          <span className="block text-sm text-ink-3 mt-0.5">{rel.organization}</span>
+                        </span>
+                        <span className="text-sm text-ink-2 leading-snug">{rel.fundingAmount || '—'}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+        </MainContainer>
       </main>
 
       <SiteFooter />
+    </>
+  );
+}
+
+function gbDate(date: Date | string) {
+  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(date));
+}
+
+function Fact({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-[7rem_minmax(0,1fr)] gap-4 border-b border-rule py-3 first:border-t">
+      <dt className="meta pt-0.5">{label}</dt>
+      <dd className="text-ink-2 leading-snug break-words">{children}</dd>
     </div>
+  );
+}
+
+function ListHeading({ title, count }: { title: string; count: number }) {
+  return (
+    <div className="flex items-baseline justify-between gap-4 mb-3">
+      <h2 className="font-serif text-display-sm text-ink">{title}</h2>
+      <span className="meta">
+        {count} {count === 1 ? 'item' : 'items'}
+      </span>
+    </div>
+  );
+}
+
+function NumberedList({ items }: { items: string[] }) {
+  return (
+    <ol className="border-t border-ink">
+      {items.map((t, i) => (
+        <li
+          key={i}
+          className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-3 border-b border-rule py-3 text-[0.9375rem] leading-relaxed text-ink-2"
+        >
+          <span className="font-sans tabular text-[0.75rem] text-ink-4 pt-1">{String(i + 1).padStart(2, '0')}</span>
+          <span>{t}</span>
+        </li>
+      ))}
+    </ol>
   );
 }

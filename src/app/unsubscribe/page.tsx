@@ -6,8 +6,8 @@ import { MainContainer } from '@/components/public/MainContainer';
 import { UnsubscribeClient } from '@/components/public/UnsubscribeClient';
 
 export const metadata: Metadata = {
-  title: 'Unsubscribe from Newsletter | Saudi Future Tech',
-  description: 'Manage your subscription preferences for the Saudi Future Tech Executive Briefing.',
+  title: 'Unsubscribe | Saudi Future Tech',
+  description: 'Stop receiving the Saudi Future Tech Sunday Brief.',
   robots: {
     index: false,
     follow: false,
@@ -24,19 +24,18 @@ export default async function UnsubscribePage({ searchParams }: UnsubscribePageP
   const { token } = await searchParams;
 
   return (
-    <div className="min-h-screen flex flex-col bg-editorial-paper text-ink-body font-sans selection:bg-brand-yellow/30">
+    <>
       <SiteHeader />
 
-      <main className="flex-1 py-16 sm:py-24 flex items-center justify-center">
-        <MainContainer>
-          <Suspense fallback={<div className="text-center text-xs text-ink-muted font-serif italic">Loading preferences...</div>}>
+      <main id="main" className="flex-1">
+        <MainContainer className="pt-14 md:pt-20 pb-28">
+          <Suspense fallback={<p className="meta">Loading…</p>}>
             <UnsubscribeClient token={token} />
           </Suspense>
         </MainContainer>
       </main>
 
       <SiteFooter />
-    </div>
+    </>
   );
 }
-

@@ -3,27 +3,22 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Clock, Calendar, ArrowRight, Filter, Search } from 'lucide-react';
 import { ArticleDetail } from '@/types';
 import { CategoryWithTags } from '@/lib/constants';
 import { CategoryBadge } from '@/components/public/CategoryBadge';
-import { formatDate, formatReadingTime } from '@/lib/utils';
+import { cn, formatDate, formatReadingTime } from '@/lib/utils';
 
 interface LatestArticlesClientProps {
   initialArticles: ArticleDetail[];
   categories: CategoryWithTags[];
 }
 
-export const LatestArticlesClient: React.FC<LatestArticlesClientProps> = ({
-  initialArticles,
-  categories,
-}) => {
+export const LatestArticlesClient: React.FC<LatestArticlesClientProps> = ({ initialArticles, categories }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchFilter, setSearchFilter] = useState<string>('');
 
   const filteredArticles = initialArticles.filter((article) => {
-    const matchesCategory =
-      selectedCategory === 'all' || article.category.slug === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || article.category.slug === selectedCategory;
     const matchesSearch =
       !searchFilter.trim() ||
       article.title.toLowerCase().includes(searchFilter.toLowerCase().trim()) ||
@@ -32,198 +27,132 @@ export const LatestArticlesClient: React.FC<LatestArticlesClientProps> = ({
     return matchesCategory && matchesSearch;
   });
 
+  const selectedName = categories.find((c) => c.slug === selectedCategory)?.name;
+
+  const tab = (active: boolean) =>
+    cn(
+      'shrink-0 -mb-px border-b-2 py-3 text-sm transition-colors cursor-pointer whitespace-nowrap',
+      active ? 'border-ink text-ink' : 'border-transparent text-ink-3 hover:text-ink',
+    );
+
   return (
-    <div className="space-y-8">
-      {/* Filter and Search Controls Bar */}
-      <div className="bg-[#F1F5F2] p-4 sm:p-5 rounded-lg border border-[#E2E8E4] space-y-4 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          {/* Category Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] font-sans flex items-center gap-1 mr-1 shrink-0">
-              <Filter className="w-3.5 h-3.5 text-[#111827]" />
-              Filter:
-            </span>
-
+    <div>
+      {/* Filters: section tabs on the left, a text filter on the right */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-rule">
+        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto [scrollbar-width:none]">
+          <div role="tablist" aria-label="Filter by section" className="flex gap-6">
             <button
+              type="button"
+              role="tab"
+              aria-selected={selectedCategory === 'all'}
               onClick={() => setSelectedCategory('all')}
-              className={`text-xs px-3 py-1.5 rounded-full font-sans font-bold uppercase tracking-wider shrink-0 transition-all cursor-pointer ${
-                selectedCategory === 'all'
-                  ? 'bg-[#0B6E4F] text-white shadow-xs'
-                  : 'bg-white text-[#4B5563] hover:text-[#111827] hover:bg-[#E8F5EF] border border-[#E2E8E4]'
-              }`}
+              className={tab(selectedCategory === 'all')}
             >
-              All Stories ({initialArticles.length})
+              All <span className="font-sans text-[0.75rem] text-ink-4 tabular">{initialArticles.length}</span>
             </button>
-
             {categories.map((cat) => {
               const count = initialArticles.filter((a) => a.category.slug === cat.slug).length;
+              const active = selectedCategory === cat.slug;
               return (
                 <button
                   key={cat.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
                   onClick={() => setSelectedCategory(cat.slug)}
-                  className={`text-xs px-3 py-1.5 rounded-full font-sans font-bold uppercase tracking-wider shrink-0 transition-all flex items-center gap-1.5 cursor-pointer ${
-                    selectedCategory === cat.slug
-                      ? 'bg-[#0B6E4F] text-white shadow-xs'
-                      : 'bg-white text-[#4B5563] hover:text-[#111827] hover:bg-[#E8F5EF] border border-[#E2E8E4]'
-                  }`}
+                  className={tab(active)}
                 >
-                  <span
-                    className="w-1.5 h-1.5 rounded-full shrink-0"
-                    style={{ backgroundColor: selectedCategory === cat.slug ? '#FFFFFF' : cat.color }}
-                  />
-                  <span>{cat.name}</span>
-                  <span className="text-[10px] opacity-75">({count})</span>
+                  {cat.name} <span className="font-sans text-[0.75rem] text-ink-4 tabular">{count}</span>
                 </button>
               );
             })}
           </div>
-
-          {/* Inline Quick Search Field */}
-          <div className="relative shrink-0 md:w-64">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
-            <input
-              type="text"
-              value={searchFilter}
-              onChange={(e) => setSearchFilter(e.target.value)}
-              placeholder="Search in stream..."
-              className="w-full bg-white border border-[#E2E8E4] text-[#111827] text-xs rounded-md pl-8 pr-3 py-2 placeholder:text-[#4B5563] focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] focus:border-[#0B6E4F] font-sans"
-            />
-          </div>
         </div>
+
+        <label className="relative mb-3 flex items-center gap-2 border-b-2 border-ink focus-within:border-clay lg:w-72 shrink-0 transition-colors">
+          <span className="sr-only">Filter by headline, summary or writer</span>
+          <svg aria-hidden viewBox="0 0 24 24" className="w-4 h-4 text-ink-3" fill="none" stroke="currentColor" strokeWidth={1.25}>
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.5-3.5" />
+          </svg>
+          <input
+            type="text"
+            value={searchFilter}
+            onChange={(e) => setSearchFilter(e.target.value)}
+            placeholder="Filter by headline or writer"
+            className="w-full bg-transparent py-2 text-[0.9375rem] text-ink focus:outline-none"
+          />
+        </label>
       </div>
 
-      {/* Stream Count Indicator */}
-      <div className="flex items-center justify-between text-xs text-[#4B5563] font-sans border-b border-[#E2E8E4] pb-3">
-        <span>
-          Showing <span className="text-[#111827] font-semibold">{filteredArticles.length}</span> reports
-          {selectedCategory !== 'all' && (
-            <span> in <span className="text-[#111827] font-semibold">{categories.find((c) => c.slug === selectedCategory)?.name}</span></span>
-          )}
-        </span>
-        <span className="font-sans uppercase tracking-wider text-[11px] text-[#C9A227] font-bold">
-          Chronological Feed
-        </span>
-      </div>
+      <p className="meta mt-4" aria-live="polite">
+        {filteredArticles.length} {filteredArticles.length === 1 ? 'story' : 'stories'}
+        {selectedName && <> in {selectedName}</>}
+        {searchFilter.trim() && <> matching “{searchFilter.trim()}”</>} · newest first
+      </p>
 
-      {/* Articles Stream */}
       {filteredArticles.length === 0 ? (
-        <div className="p-12 text-center bg-white rounded-lg border border-[#E2E8E4] space-y-3">
-          <p className="text-base text-[#111827] font-serif font-bold">
-            No matching dispatches found
-          </p>
-          <p className="text-xs text-[#4B5563] max-w-sm mx-auto font-sans">
-            No articles match the current filter criteria. Try resetting your filter to view all coverage.
-          </p>
+        <div className="py-16 max-w-xl">
+          <p className="font-serif text-display-sm text-ink">Nothing matches that filter.</p>
           <button
+            type="button"
             onClick={() => {
               setSelectedCategory('all');
               setSearchFilter('');
             }}
-            className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 bg-[#0B6E4F] text-white rounded-md text-xs font-bold font-sans uppercase tracking-wider hover:bg-[#08533C] transition-colors cursor-pointer"
+            className="group mt-4 inline-flex items-center gap-2 text-sm text-ink cursor-pointer"
           >
-            Reset Filters
+            <span className="link-rule">Show every story</span>
+            <span aria-hidden>→</span>
           </button>
         </div>
       ) : (
-        <div className="space-y-6">
+        <ul className="mt-2">
           {filteredArticles.map((article) => (
-            <article
-              key={article.id}
-              className="group bg-white rounded-lg border border-[#E2E8E4] overflow-hidden hover:border-[#0B6E4F]/50 hover:shadow-md transition-all"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-0">
-                {/* Thumbnail Visual */}
-                <div className="relative aspect-[16/9] md:aspect-auto md:col-span-4 lg:col-span-3 bg-[#F1F5F2] overflow-hidden min-h-[180px]">
-                  <Link href={`/article/${article.slug}`} className="block h-full w-full">
+            <li key={article.id} className="group border-b border-rule">
+              <article className="grid grid-cols-[1fr_6.5rem] sm:grid-cols-[6.5rem_1fr_10rem] lg:grid-cols-[8rem_1fr_13rem] gap-x-6 lg:gap-x-10 gap-y-2 py-7">
+                <div className="hidden sm:block pt-1">
+                  <time dateTime={article.publishedAt} className="meta block">
+                    {formatDate(article.publishedAt)}
+                  </time>
+                  {(article.isFeatured || article.isEditorsPick) && (
+                    <p className="meta mt-1 text-ink-4">{article.isFeatured ? 'Lead story' : 'Editors’ pick'}</p>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <CategoryBadge category={article.category} />
+                  <h2 className="mt-1.5 font-serif text-[1.3125rem] md:text-[1.5rem] leading-snug text-ink">
+                    <Link href={`/article/${article.slug}`} className="headline-link">
+                      {article.title}
+                    </Link>
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-[0.9375rem] leading-relaxed text-ink-3 line-clamp-2">{article.excerpt}</p>
+                  <p className="meta mt-3">
+                    <span className="text-ink-2">{article.author.displayName}</span>
+                    <span className="sm:hidden"> · {formatDate(article.publishedAt)}</span> ·{' '}
+                    {formatReadingTime(article.readingTimeMinutes)}
+                  </p>
+                </div>
+                {article.coverImageUrl && (
+                  <Link
+                    href={`/article/${article.slug}`}
+                    tabIndex={-1}
+                    aria-hidden
+                    className="relative block aspect-square sm:aspect-[4/3] overflow-hidden bg-paper-band self-start"
+                  >
                     <Image
                       src={article.coverImageUrl}
-                      alt={article.coverImageAlt}
+                      alt=""
                       fill
-                      sizes="(max-width: 768px) 100vw, 300px"
-                      className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                      sizes="(max-width: 640px) 104px, 208px"
+                      className="object-cover img-warm"
                     />
                   </Link>
-                  <div className="absolute top-2.5 left-2.5">
-                    <CategoryBadge category={article.category} size="sm" />
-                  </div>
-                </div>
-
-                {/* Content Details */}
-                <div className="p-5 sm:p-6 md:col-span-8 lg:col-span-9 flex flex-col justify-between space-y-4">
-                  <div className="space-y-2.5">
-                    <div className="flex flex-wrap items-center gap-2.5 text-[11px] text-[#4B5563] font-sans">
-                      <span className="flex items-center gap-1 font-medium">
-                        <Calendar className="w-3 h-3 text-[#C9A227]" />
-                        {formatDate(article.publishedAt)}
-                      </span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {formatReadingTime(article.readingTimeMinutes)}
-                      </span>
-                      {article.isFeatured && (
-                        <>
-                          <span>•</span>
-                          <span className="text-[10px] uppercase font-bold text-[#C9A227] tracking-wider font-sans">
-                            Lead Feature
-                          </span>
-                        </>
-                      )}
-                      {article.isEditorsPick && (
-                        <>
-                          <span>•</span>
-                          <span className="text-[10px] uppercase font-bold text-[#0B6E4F] tracking-wider font-sans">
-                            Editor’s Choice
-                          </span>
-                        </>
-                      )}
-                    </div>
-
-                    <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#111827] group-hover:text-[#0B6E4F] transition-colors leading-snug">
-                      <Link href={`/article/${article.slug}`}>
-                        {article.title}
-                      </Link>
-                    </h2>
-
-                    <p className="text-xs sm:text-sm text-[#4B5563] font-sans leading-relaxed line-clamp-2 sm:line-clamp-3">
-                      {article.excerpt}
-                    </p>
-                  </div>
-
-                  <div className="pt-3 border-t border-[#E2E8E4] flex flex-wrap items-center justify-between gap-3 text-xs">
-                    <div className="flex items-center gap-2.5">
-                      {article.author.avatarUrl && (
-                        <div className="relative w-6 h-6 rounded-full overflow-hidden bg-[#F1F5F2] border border-[#E2E8E4] shrink-0">
-                          <Image
-                            src={article.author.avatarUrl}
-                            alt={article.author.displayName}
-                            fill
-                            sizes="24px"
-                            className="object-cover"
-                          />
-                        </div>
-                      )}
-                      <span className="font-semibold text-[#111827] font-sans text-[11px]">
-                        {article.author.displayName}
-                      </span>
-                      <span className="text-[#4B5563] text-[11px] hidden sm:inline font-sans">
-                        • {article.author.title}
-                      </span>
-                    </div>
-
-                    <Link
-                      href={`/article/${article.slug}`}
-                      className="text-xs font-bold text-[#0B6E4F] hover:text-[#08533C] transition-colors inline-flex items-center gap-1 font-sans uppercase tracking-wider"
-                    >
-                      <span>Read Full Report</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </article>
+                )}
+              </article>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );

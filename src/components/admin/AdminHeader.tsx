@@ -1,10 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Menu, User, ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
 import { Breadcrumbs, BreadcrumbItem } from '@/components/ui/Breadcrumbs';
 import { AuthenticatedUser } from '@/lib/auth/guard';
-import { cn } from '@/lib/utils';
 
 interface AdminHeaderProps {
   user?: AuthenticatedUser | null;
@@ -12,63 +11,56 @@ interface AdminHeaderProps {
   onToggleMobileSidebar?: () => void;
 }
 
+const ROLE_LABEL: Record<string, string> = { SUPER_ADMIN: 'Super admin', EDITOR: 'Editor', AUTHOR: 'Author' };
+
 export const AdminHeader: React.FC<AdminHeaderProps> = ({
   user,
   breadcrumbs = [{ label: 'Admin', href: '/admin' }],
   onToggleMobileSidebar,
-}) => {
-  return (
-    <header className="sticky top-0 z-30 w-full bg-editorial-paper/95 backdrop-blur-md border-b border-editorial-hairline px-4 sm:px-6 py-3">
-      <div className="flex items-center justify-between gap-4">
-        {/* Left: Mobile Toggle & Breadcrumbs */}
-        <div className="flex items-center gap-3 min-w-0">
-          {onToggleMobileSidebar && (
-            <button
-              onClick={onToggleMobileSidebar}
-              className="lg:hidden p-1.5 rounded-none text-ink-body hover:text-ink-high hover:bg-editorial-sand transition-editorial border border-editorial-hairline shrink-0"
-              aria-label="Open sidebar"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-          )}
-
-          <div className="truncate">
-            <Breadcrumbs items={breadcrumbs} />
-          </div>
-        </div>
-
-        {/* Right: Security & Admin User Capsule */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-none bg-editorial-pure border border-editorial-hairline text-[11px] font-sans text-ink-muted shadow-xs">
-            <ShieldCheck className="w-3.5 h-3.5 text-ink-high" />
-            <span>Encrypted Session</span>
-          </div>
-
-          {/* User Profile Capsule */}
-          <div className="flex items-center gap-2 pl-2 border-l border-editorial-hairline">
-            <div className="w-7 h-7 rounded-none bg-editorial-sand border border-editorial-hairline flex items-center justify-center text-ink-high shrink-0 font-bold font-serif text-xs">
-              {user?.name ? user.name.charAt(0).toUpperCase() : <User className="w-3.5 h-3.5" />}
-            </div>
-            <div className="text-left">
-              <span className="text-xs font-bold text-ink-high block font-serif leading-tight truncate max-w-[140px] sm:max-w-[200px]">
-                {user?.name || 'Authorized Staff'}
-              </span>
-              <span
-                className={cn(
-                  'text-[10px] block font-sans font-medium tracking-wide uppercase',
-                  user?.role === 'SUPER_ADMIN'
-                    ? 'text-amber-800 font-semibold'
-                    : user?.role === 'EDITOR'
-                    ? 'text-sky-800'
-                    : 'text-emerald-800'
-                )}
-              >
-                {user?.role ? user.role.replace('_', ' ') : 'Staff'}
-              </span>
-            </div>
-          </div>
+}) => (
+  <header className="sticky top-0 z-header bg-paper/95 backdrop-blur-[6px] border-b border-rule">
+    <div className="h-14 px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-4">
+      <div className="flex items-center gap-3 min-w-0">
+        {onToggleMobileSidebar && (
+          <button
+            type="button"
+            onClick={onToggleMobileSidebar}
+            className="lg:hidden h-9 w-9 -ml-2 inline-flex flex-col items-center justify-center gap-[5px]"
+            aria-label="Open menu"
+          >
+            <span className="block h-px w-5 bg-ink" />
+            <span className="block h-px w-5 bg-ink" />
+          </button>
+        )}
+        <div className="truncate">
+          <Breadcrumbs items={breadcrumbs} />
         </div>
       </div>
-    </header>
-  );
-};
+
+      <div className="flex items-center gap-5 shrink-0">
+        <Link
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden sm:inline text-[0.8125rem] text-ink-3 hover:text-ink transition-colors"
+        >
+          View site ↗
+        </Link>
+        {user && (
+          <div className="flex items-center gap-2.5 pl-5 border-l border-rule">
+            <span
+              className="h-7 w-7 rounded-sm bg-ink text-paper-sheet font-serif text-sm flex items-center justify-center"
+              aria-hidden
+            >
+              {user.name?.charAt(0).toUpperCase() ?? '·'}
+            </span>
+            <span className="hidden sm:block leading-tight">
+              <span className="block text-[0.8125rem] text-ink truncate max-w-[12rem]">{user.name}</span>
+              <span className="block font-sans text-[0.6875rem] text-ink-3">{ROLE_LABEL[user.role] ?? user.role}</span>
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  </header>
+);

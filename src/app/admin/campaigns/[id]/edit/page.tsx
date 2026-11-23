@@ -34,7 +34,7 @@ export default async function EditCampaignPage({ params }: EditCampaignPageProps
   };
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="space-y-6">
       <CampaignEditorForm isNew={false} initialData={initialData} />
     </div>
   );

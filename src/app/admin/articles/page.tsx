@@ -1,16 +1,5 @@
 import React from 'react';
 import Link from 'next/link';
-import {
-  Plus,
-  Search,
-  Filter,
-  FileText,
-  Clock,
-  CheckCircle2,
-  Layers,
-  Sparkles,
-  Calendar,
-} from 'lucide-react';
 import { PageHeading } from '@/components/ui/PageHeading';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/StatusBadge';
@@ -102,49 +91,29 @@ export default async function AdminArticlesPage({ searchParams }: AdminArticlesP
   });
 
   const tabs = [
-    { label: 'All Stories', key: 'ALL', count: totalCount, icon: FileText },
-    { label: 'Published', key: 'PUBLISHED', count: publishedCount, icon: CheckCircle2 },
-    { label: 'In Review Queue', key: 'IN_REVIEW', count: inReviewCount, icon: Clock },
-    { label: 'Scheduled', key: 'SCHEDULED', count: scheduledCount, icon: Calendar },
-    { label: 'Drafts', key: 'DRAFT', count: draftCount, icon: Layers },
+    { label: 'All', key: 'ALL', count: totalCount },
+    { label: 'Published', key: 'PUBLISHED', count: publishedCount },
+    { label: 'In review', key: 'IN_REVIEW', count: inReviewCount },
+    { label: 'Scheduled', key: 'SCHEDULED', count: scheduledCount },
+    { label: 'Drafts', key: 'DRAFT', count: draftCount },
   ];
 
+  const hasFilters = Boolean(searchQuery || categoryFilter);
+
   return (
-    <div className="space-y-6 font-sans">
-      {/* Header with Title and Create Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-editorial-hairline">
-        <div>
-          <div className="text-[10px] uppercase font-bold tracking-widest text-ink-muted font-sans mb-1">
-            Content Management System
-          </div>
-          <PageHeading
-            title="Articles & Editorial Reports"
-            description="Manage publication status, review submissions, and draft technology coverage across Vision 2030 sectors."
-            size="lg"
-          />
-        </div>
+    <div className="space-y-6">
+      <PageHeading title="Articles" description="Every article in the CMS, newest edits first.">
+        {canPublishArticle(currentUser) && <TriggerSchedulerButton variant="outline" size="md" />}
+        <Link href="/admin/articles/new">
+          <Button variant="primary" size="md">
+            New article
+          </Button>
+        </Link>
+      </PageHeading>
 
-        <div className="flex items-center gap-3">
-          {canPublishArticle(currentUser) && (
-            <TriggerSchedulerButton variant="outline" size="md" />
-          )}
-          <Link href="/admin/articles/new">
-            <Button
-              variant="primary"
-              size="md"
-              className="font-sans uppercase tracking-wider text-xs flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create New Article</span>
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto border-b border-editorial-hairline pb-2">
+      {/* Status tabs */}
+      <nav aria-label="Filter by status" className="flex items-end gap-6 overflow-x-auto border-b border-rule">
         {tabs.map((tab) => {
-          const Icon = tab.icon;
           const isActive = activeStatus === tab.key;
           const href =
             tab.key === 'ALL'
@@ -155,48 +124,44 @@ export default async function AdminArticlesPage({ searchParams }: AdminArticlesP
             <Link
               key={tab.key}
               href={href}
-              className={`flex items-center gap-2 px-3 py-2 rounded-none text-xs font-sans font-bold transition-editorial shrink-0 ${
-                isActive
-                  ? 'bg-editorial-pure text-ink-high border-b-2 border-ink-high shadow-xs'
-                  : 'text-ink-body hover:text-ink-high hover:bg-editorial-sand/60'
+              aria-current={isActive ? 'page' : undefined}
+              className={`relative -mb-px shrink-0 pb-2.5 pt-1 text-sm whitespace-nowrap border-b-2 transition-colors ${
+                isActive ? 'border-clay text-ink' : 'border-transparent text-ink-3 hover:text-ink'
               }`}
             >
-              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-ink-high' : 'text-ink-muted'}`} />
-              <span>{tab.label}</span>
-              <span
-                className={`ml-1 px-1.5 py-0.5 rounded-none text-[10px] font-mono ${
-                  isActive ? 'bg-editorial-sand text-ink-high border border-editorial-hairline' : 'bg-editorial-sand/40 text-ink-muted'
-                }`}
-              >
+              {tab.label}
+              <span className={`ml-1.5 font-sans text-[0.71875rem] tabular ${isActive ? 'text-ink-3' : 'text-ink-4'}`}>
                 {tab.count}
               </span>
             </Link>
           );
         })}
-      </div>
+      </nav>
 
-      {/* Search & Category Filter Bar */}
-      <form method="GET" action="/admin/articles" className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+      {/* Search & section filter */}
+      <form method="GET" action="/admin/articles" className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
         {activeStatus !== 'ALL' && <input type="hidden" name="status" value={activeStatus} />}
 
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-ink-muted absolute left-3 top-1/2 -translate-y-1/2" />
+        <div className="flex-1">
+          <label htmlFor="article-search" className="sr-only">
+            Search
+          </label>
           <input
-            type="text"
+            id="article-search"
+            type="search"
             name="q"
             defaultValue={searchQuery}
-            placeholder="Search headline, slug, or keywords..."
-            className="w-full bg-editorial-pure border border-editorial-hairline rounded-none pl-9 pr-3 py-2 text-xs text-ink-high placeholder-ink-muted/60 focus:outline-none focus:border-ink-high transition-editorial font-sans shadow-xs"
+            placeholder="Search headline, slug or standfirst"
+            className="field"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <select
-            name="category"
-            defaultValue={categoryFilter}
-            className="bg-editorial-pure border border-editorial-hairline rounded-none px-3 py-2 text-xs text-ink-high focus:outline-none focus:border-ink-high transition-editorial font-sans shadow-xs"
-          >
-            <option value="">All Pillars</option>
+          <label htmlFor="article-category" className="sr-only">
+            Section
+          </label>
+          <select id="article-category" name="category" defaultValue={categoryFilter} className="field sm:w-48">
+            <option value="">All sections</option>
             {categories.map((c) => (
               <option key={c.id} value={c.slug}>
                 {c.name}
@@ -204,14 +169,14 @@ export default async function AdminArticlesPage({ searchParams }: AdminArticlesP
             ))}
           </select>
 
-          <Button type="submit" variant="secondary" size="sm" className="font-sans uppercase tracking-wider text-xs">
+          <Button type="submit" variant="outline" size="md">
             Filter
           </Button>
 
-          {(searchQuery || categoryFilter) && (
+          {hasFilters && (
             <Link
               href={`/admin/articles${activeStatus !== 'ALL' ? `?status=${activeStatus}` : ''}`}
-              className="text-xs text-ink-muted hover:text-ink-high px-2 py-1 font-sans font-medium"
+              className="row-action px-1"
             >
               Clear
             </Link>
@@ -219,130 +184,109 @@ export default async function AdminArticlesPage({ searchParams }: AdminArticlesP
         </div>
       </form>
 
-      {/* Articles Table */}
       {articles.length === 0 ? (
         <EmptyState
-          title="No articles match criteria"
-          description="Try clearing your search query or selecting a different status filter tab."
-          actionLabel="View All Articles"
+          title="No articles match"
+          description={
+            hasFilters
+              ? 'Nothing matches this search in the current tab. Clear the filters or try another word.'
+              : 'There are no articles with this status yet.'
+          }
+          actionLabel={hasFilters ? 'Clear filters' : 'See all articles'}
           actionHref="/admin/articles"
         />
       ) : (
-        <div className="bg-editorial-pure rounded-none border border-editorial-hairline overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-editorial-hairline bg-editorial-sand text-ink-muted font-sans uppercase tracking-wider text-[11px]">
-                  <th className="py-3 px-4 font-bold">Story Headline</th>
-                  <th className="py-3 px-4 font-bold">Category</th>
-                  <th className="py-3 px-4 font-bold">Author Byline</th>
-                  <th className="py-3 px-4 font-bold">Status</th>
-                  <th className="py-3 px-4 font-bold">Flags</th>
-                  <th className="py-3 px-4 font-bold">Published / Updated</th>
-                  <th className="py-3 px-4 font-bold text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-editorial-hairline">
-                {articles.map((article) => {
-                  const userCanEdit = canEditArticle(currentUser, article);
-                  const userCanPublish = canPublishArticle(currentUser);
-                  const userCanDelete = canDeleteArticle(currentUser, article);
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <table className="data-table min-w-[60rem]">
+            <thead>
+              <tr>
+                <th>Headline</th>
+                <th>Section</th>
+                <th>Author</th>
+                <th>Status</th>
+                <th>Flags</th>
+                <th>Date</th>
+                <th className="text-right">
+                  <span className="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {articles.map((article) => {
+                const userCanEdit = canEditArticle(currentUser, article);
+                const userCanPublish = canPublishArticle(currentUser);
+                const userCanDelete = canDeleteArticle(currentUser, article);
+                const flags = [
+                  article.featured && 'Lead',
+                  article.isEditorsPick && 'Pick',
+                  article.isTrending && 'Trending',
+                ].filter(Boolean) as string[];
 
-                  return (
-                    <tr
-                      key={article.id}
-                      className="hover:bg-editorial-sand/40 transition-editorial text-ink-body"
-                    >
-                      <td className="py-3 px-4 max-w-sm sm:max-w-md">
-                        <div className="font-bold font-serif line-clamp-1 hover:text-amber-800 transition-colors">
-                          <Link href={`/admin/articles/${article.id}/edit`}>
-                            {article.title}
-                          </Link>
-                        </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[11px] text-ink-muted font-mono truncate max-w-[200px]">
-                            /{article.slug}
-                          </span>
-                          {article.sampleContent && (
-                            <span className="text-[9px] font-mono px-1 rounded-none bg-editorial-sand text-ink-muted border border-editorial-hairline">
-                              DEMO
-                            </span>
-                          )}
-                        </div>
-                      </td>
-
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-none bg-editorial-sand border border-editorial-hairline text-[11px] font-sans font-medium text-ink-body">
-                          {article.category.name}
+                return (
+                  <tr key={article.id}>
+                    <td className="max-w-[26rem]">
+                      <Link
+                        href={`/admin/articles/${article.id}/edit`}
+                        className="font-serif text-[1rem] leading-snug text-ink hover:text-clay transition-colors line-clamp-2"
+                      >
+                        {article.title}
+                      </Link>
+                      <div className="mt-0.5 flex items-center gap-2">
+                        <span className="font-sans text-[0.6875rem] text-ink-4 truncate max-w-[18rem]">
+                          /{article.slug}
                         </span>
-                      </td>
-
-                      <td className="py-3 px-4 whitespace-nowrap font-medium text-ink-body font-sans">
-                        {article.author.name}
-                        {currentUser.authorId === article.authorId && (
-                          <span className="ml-1.5 text-[9px] uppercase font-mono px-1 py-0.2 rounded-none bg-amber-100 text-amber-800 border border-amber-300">
-                            You
-                          </span>
+                        {article.sampleContent && (
+                          <span className="font-sans text-[0.6875rem] text-ink-3">Sample</span>
                         )}
-                      </td>
+                      </div>
+                    </td>
 
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <StatusBadge status={article.status as any} />
-                      </td>
+                    <td className="whitespace-nowrap text-[0.8125rem]">{article.category.name}</td>
 
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="flex items-center gap-1">
-                          {article.featured && (
-                            <span className="text-[9px] uppercase font-bold font-sans px-1 py-0.5 rounded-none bg-brand-yellow text-ink-high border border-ink-high/20">
-                              Featured
-                            </span>
-                          )}
-                          {article.isEditorsPick && (
-                            <span className="text-[9px] uppercase font-bold font-sans px-1 py-0.5 rounded-none bg-amber-50 text-amber-800 border border-amber-300">
-                              Pick
-                            </span>
-                          )}
-                          {article.isTrending && (
-                            <span className="text-[9px] uppercase font-bold font-sans px-1 py-0.5 rounded-none bg-purple-50 text-purple-800 border border-purple-300">
-                              Trending
-                            </span>
-                          )}
-                          {!article.featured && !article.isEditorsPick && !article.isTrending && (
-                            <span className="text-ink-muted text-[11px]">—</span>
-                          )}
-                        </div>
-                      </td>
+                    <td className="whitespace-nowrap text-[0.8125rem]">
+                      {article.author.name}
+                      {currentUser.authorId === article.authorId && (
+                        <span className="ml-1.5 font-sans text-[0.6875rem] text-ink-4">(you)</span>
+                      )}
+                    </td>
 
-                      <td className="py-3 px-4 whitespace-nowrap text-ink-muted font-mono text-[11px]">
-                        {article.status === 'SCHEDULED' && article.scheduledFor ? (
-                          <div className="text-amber-800 font-bold flex items-center gap-1">
-                            <Calendar className="w-3 h-3 text-amber-700" />
-                            <span>{formatDate(article.scheduledFor)}</span>
-                          </div>
-                        ) : (
-                          <div>{formatDate(article.publishedAt || article.updatedAt)}</div>
-                        )}
-                        <div className="text-[10px] text-ink-muted/70">
-                          {article.status === 'SCHEDULED' ? 'Scheduled drop' : `${article.readingTime} min read`}
-                        </div>
-                      </td>
+                    <td className="whitespace-nowrap">
+                      <StatusBadge status={article.status as any} />
+                    </td>
 
-                      <td className="py-3 px-4 whitespace-nowrap text-right">
-                        <ArticleRowActions
-                          articleId={article.id}
-                          slug={article.slug}
-                          status={article.status}
-                          canPublish={userCanPublish}
-                          canEdit={userCanEdit}
-                          canDelete={userCanDelete}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                    <td className="whitespace-nowrap font-sans text-[0.71875rem] text-ink-2">
+                      {flags.length > 0 ? flags.join(' · ') : <span className="text-ink-4">—</span>}
+                    </td>
+
+                    <td className="whitespace-nowrap font-sans text-[0.71875rem] tabular">
+                      {article.status === 'SCHEDULED' && article.scheduledFor ? (
+                        <>
+                          <div className="text-ink">{formatDate(article.scheduledFor)}</div>
+                          <div className="text-ink-4">Scheduled</div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-ink-2">{formatDate(article.publishedAt || article.updatedAt)}</div>
+                          <div className="text-ink-4">{article.readingTime} min read</div>
+                        </>
+                      )}
+                    </td>
+
+                    <td className="text-right">
+                      <ArticleRowActions
+                        articleId={article.id}
+                        slug={article.slug}
+                        status={article.status}
+                        canPublish={userCanPublish}
+                        canEdit={userCanEdit}
+                        canDelete={userCanDelete}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

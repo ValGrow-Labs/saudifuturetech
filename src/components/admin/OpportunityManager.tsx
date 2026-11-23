@@ -2,29 +2,13 @@
 
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { 
-  Building2, 
-  Coins, 
-  Calendar, 
-  Clock, 
-  ShieldCheck, 
-  ExternalLink, 
-  Check, 
-  Trash2, 
-  AlertCircle,
-  Loader2,
-  RefreshCw,
-  Plus,
-  Edit2,
-  X,
-  Eye,
-  CheckCircle2,
-  UserCheck
-} from 'lucide-react';
 import { formatDate, cn } from '@/lib/utils';
-import { 
-  verifyOpportunityAction, 
-  updateOpportunityStatusAction, 
+import { opportunityTypeLabel, deadlineInfo, shortEquity } from '@/lib/labels';
+import { PageHeading } from '@/components/ui/PageHeading';
+import { Button } from '@/components/ui/Button';
+import {
+  verifyOpportunityAction,
+  updateOpportunityStatusAction,
   deleteOpportunityAction,
   toggleOpportunityPublishAction,
   saveOpportunityAction,
@@ -32,6 +16,7 @@ import {
 } from '@/actions/founder-admin';
 import { OpportunityCategory, OpportunityStatus } from '@prisma/client';
 
+import { StatusDot, Note, DOT_BG, type Tone } from '@/components/ui/StatusDot';
 interface CategoryOption {
   id: string;
   name: string;
@@ -167,11 +152,11 @@ export const OpportunityManager: React.FC<OpportunityManagerProps> = ({ opportun
     startTransition(async () => {
       const res = await saveOpportunityAction(editingId, submissionData);
       if (res.success) {
-        setActiveMessage(editingId ? `Successfully updated "${formData.title}".` : `Successfully created "${formData.title}".`);
+        setActiveMessage(editingId ? `Saved "${formData.title}".` : `Created "${formData.title}".`);
         setErrorMessage(null);
         setIsModalOpen(false);
       } else {
-        setErrorMessage(res.error || 'Failed to save opportunity.');
+        setErrorMessage(res.error || "We couldn't save this opportunity. Try again.");
       }
     });
   };
@@ -180,10 +165,10 @@ export const OpportunityManager: React.FC<OpportunityManagerProps> = ({ opportun
     startTransition(async () => {
       const res = await verifyOpportunityAction(id);
       if (res.success) {
-        setActiveMessage(`Verified: "${title}" with current editorial timestamp.`);
+        setActiveMessage(`Marked "${title}" as checked today.`);
         setErrorMessage(null);
       } else {
-        setErrorMessage(res.error || 'Failed to verify.');
+        setErrorMessage(res.error || "We couldn't update the check date. Try again.");
       }
     });
   };
@@ -192,10 +177,10 @@ export const OpportunityManager: React.FC<OpportunityManagerProps> = ({ opportun
     startTransition(async () => {
       const res = await toggleOpportunityPublishAction(id);
       if (res.success) {
-        setActiveMessage(`Toggled publication state for "${title}".`);
+        setActiveMessage(`Changed visibility of "${title}".`);
         setErrorMessage(null);
       } else {
-        setErrorMessage(res.error || 'Failed to toggle publication status.');
+        setErrorMessage(res.error || "We couldn't change visibility. Try again.");
       }
     });
   };
@@ -204,23 +189,23 @@ export const OpportunityManager: React.FC<OpportunityManagerProps> = ({ opportun
     startTransition(async () => {
       const res = await updateOpportunityStatusAction(id, status);
       if (res.success) {
-        setActiveMessage(`Updated status to ${status}.`);
+        setActiveMessage(`Status changed to ${STATUS_META[status]?.label ?? status}.`);
         setErrorMessage(null);
       } else {
-        setErrorMessage(res.error || 'Failed to update status.');
+        setErrorMessage(res.error || "We couldn't change the status. Try again.");
       }
     });
   };
 
   const handleDelete = (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to permanently delete "${title}"? This action cannot be undone.`)) return;
+    if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
     startTransition(async () => {
       const res = await deleteOpportunityAction(id);
       if (res.success) {
         setActiveMessage(`Deleted "${title}".`);
         setErrorMessage(null);
       } else {
-        setErrorMessage(res.error || 'Failed to delete.');
+        setErrorMessage(res.error || "We couldn't delete this. Try again.");
       }
     });
   };
@@ -242,552 +227,529 @@ export const OpportunityManager: React.FC<OpportunityManagerProps> = ({ opportun
     return matchesSearch && matchesCategory && matchesStatus && matchesPublish;
   });
 
+  const typeOptions: OpportunityCategory[] = [
+    OpportunityCategory.GRANT,
+    OpportunityCategory.ACCELERATOR,
+    OpportunityCategory.INCUBATOR,
+    OpportunityCategory.SUBSIDY,
+    OpportunityCategory.GOVERNMENT_PROGRAM,
+    OpportunityCategory.SUBSIDIZED_PERK,
+    OpportunityCategory.HACKATHON,
+  ];
+
   return (
-    <div className="space-y-6 font-sans">
-      {/* Toast Alert Feedback */}
+    <div className="space-y-6">
+      <PageHeading
+        title="Opportunities"
+        description="Grants, accelerators, subsidies and programmes listed in the directory."
+      >
+        <Button type="button" onClick={openCreateModal}>
+          Add opportunity
+        </Button>
+      </PageHeading>
+
       {activeMessage && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-md flex items-center justify-between animate-in fade-in">
-          <span className="font-medium">{activeMessage}</span>
-          <button onClick={() => setActiveMessage(null)} className="text-emerald-700 font-bold ml-2 cursor-pointer">✕</button>
-        </div>
+        <Note tone="success" onDismiss={() => setActiveMessage(null)}>
+          {activeMessage}
+        </Note>
       )}
-      {errorMessage && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-800 text-xs rounded-md flex items-center justify-between animate-in fade-in">
-          <span className="font-medium">{errorMessage}</span>
-          <button onClick={() => setErrorMessage(null)} className="text-red-700 font-bold ml-2 cursor-pointer">✕</button>
-        </div>
+      {errorMessage && !isModalOpen && (
+        <Note tone="error" onDismiss={() => setErrorMessage(null)}>
+          {errorMessage}
+        </Note>
       )}
 
-      {/* Filter and Top Action Bar */}
-      <div className="bg-editorial-pure rounded-lg border border-editorial-hairline p-4 space-y-4 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          {/* Search Bar */}
-          <div className="relative flex-1 max-w-md">
-            <input
-              type="text"
-              placeholder="Search by program title or organization..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-3 pr-8 py-2 text-xs bg-editorial-sand/40 border border-editorial-hairline rounded-md text-ink-high placeholder:text-ink-muted focus:outline-none focus:ring-1 focus:ring-brand-oasis"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-muted hover:text-ink-high text-xs"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-
-          {/* New Opportunity Button */}
-          <button
-            onClick={openCreateModal}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-brand-navy text-white text-xs font-bold uppercase tracking-wider hover:bg-brand-navy/90 shadow-xs cursor-pointer shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add New Opportunity</span>
-          </button>
+      {/* Filters */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))] gap-3">
+        <div>
+          <label htmlFor="opp-search" className="field-label">
+            Search
+          </label>
+          <input
+            id="opp-search"
+            type="search"
+            placeholder="Title or organisation"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="field"
+          />
         </div>
-
-        {/* Dropdown Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-editorial-hairline text-xs">
-          <div>
-            <label className="text-[10px] font-bold uppercase text-ink-muted block mb-1">Category Type</label>
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full bg-editorial-sand/40 border border-editorial-hairline rounded-md px-2.5 py-1.5 text-xs text-ink-high"
-            >
-              <option value="ALL">All Categories</option>
-              <option value="GRANT">Grants</option>
-              <option value="ACCELERATOR">Accelerators</option>
-              <option value="INCUBATOR">Incubators</option>
-              <option value="SUBSIDY">Subsidies</option>
-              <option value="GOVERNMENT_PROGRAM">Regulatory Sandboxes</option>
-              <option value="SUBSIDIZED_PERK">Compute Credits</option>
-              <option value="HACKATHON">Hackathons</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="text-[10px] font-bold uppercase text-ink-muted block mb-1">Cohort Status</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full bg-editorial-sand/40 border border-editorial-hairline rounded-md px-2.5 py-1.5 text-xs text-ink-high"
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="OPEN">Open</option>
-              <option value="CLOSING_SOON">Closing Soon</option>
-              <option value="ROLLING">Rolling</option>
-              <option value="CLOSED">Closed</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="text-[10px] font-bold uppercase text-ink-muted block mb-1">Publication State</label>
-            <select
-              value={publishFilter}
-              onChange={(e) => setPublishFilter(e.target.value)}
-              className="w-full bg-editorial-sand/40 border border-editorial-hairline rounded-md px-2.5 py-1.5 text-xs text-ink-high"
-            >
-              <option value="ALL">All Records</option>
-              <option value="PUBLISHED">Published Only</option>
-              <option value="UNPUBLISHED">Draft / Unpublished</option>
-            </select>
-          </div>
+        <div>
+          <label htmlFor="opp-type" className="field-label">
+            Type
+          </label>
+          <select id="opp-type" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="field">
+            <option value="ALL">All types</option>
+            {typeOptions.map((t) => (
+              <option key={t} value={t}>
+                {opportunityTypeLabel(t)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="opp-status" className="field-label">
+            Status
+          </label>
+          <select id="opp-status" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="field">
+            <option value="ALL">All statuses</option>
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s} value={s}>
+                {STATUS_META[s].label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="opp-published" className="field-label">
+            Visibility
+          </label>
+          <select id="opp-published" value={publishFilter} onChange={(e) => setPublishFilter(e.target.value)} className="field">
+            <option value="ALL">Published and drafts</option>
+            <option value="PUBLISHED">Published</option>
+            <option value="UNPUBLISHED">Drafts</option>
+          </select>
         </div>
       </div>
 
-      {/* Main Table Card */}
-      <div className="bg-editorial-pure rounded-lg border border-editorial-hairline overflow-hidden shadow-xs">
-        <div className="p-4 border-b border-editorial-hairline flex items-center justify-between bg-editorial-sand/30">
-          <span className="text-xs font-bold uppercase tracking-wider text-ink-high">
-            Verified Opportunities ({filteredList.length} of {opportunities.length})
-          </span>
-          {isPending && (
-            <span className="flex items-center gap-1.5 text-xs text-brand-navy font-medium">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              <span>Saving updates...</span>
-            </span>
-          )}
-        </div>
+      <div className="flex items-center justify-between gap-4">
+        <p className="meta">
+          {filteredList.length} of {opportunities.length} opportunities
+        </p>
+        {isPending && <p className="meta">Saving…</p>}
+      </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-ink-body">
-            <thead className="bg-editorial-sand/60 text-ink-muted uppercase font-bold tracking-wider text-[10px] border-b border-editorial-hairline">
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="data-table min-w-[960px]">
+          <thead>
+            <tr>
+              <th>Opportunity</th>
+              <th>Type</th>
+              <th>Funding</th>
+              <th>Deadline</th>
+              <th>Last checked</th>
+              <th>Status</th>
+              <th className="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredList.length === 0 ? (
               <tr>
-                <th className="py-3 px-4">Program &amp; Issuing Org</th>
-                <th className="py-3 px-4">Category &amp; Pillar</th>
-                <th className="py-3 px-4">Terms &amp; Capital</th>
-                <th className="py-3 px-4">Deadline</th>
-                <th className="py-3 px-4">Verification Audit</th>
-                <th className="py-3 px-4">Status &amp; Publish</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <td colSpan={7} className="py-10">
+                  <p className="font-serif text-lg text-ink">No opportunities match these filters.</p>
+                  <p className="mt-1 text-sm text-ink-3">Clear the search or choose a different status.</p>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-editorial-hairline font-sans">
-              {filteredList.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-8 text-center text-ink-muted">
-                    No opportunities match your search or filters.
-                  </td>
-                </tr>
-              ) : (
-                filteredList.map((opp) => (
-                  <tr key={opp.id} className="hover:bg-editorial-sand/20 transition-colors">
-                    {/* Program & Org */}
-                    <td className="py-3 px-4 max-w-xs">
-                      <div className="space-y-0.5">
-                        <Link
-                          href={`/opportunity/${opp.slug}`}
-                          target="_blank"
-                          className="font-bold text-ink-high hover:text-brand-navy hover:underline line-clamp-1 inline-flex items-center gap-1"
-                        >
-                          <span>{opp.title}</span>
-                          <ExternalLink className="w-2.5 h-2.5 text-ink-muted" />
-                        </Link>
-                        <div className="text-[11px] text-ink-muted flex items-center gap-1">
-                          <Building2 className="w-3 h-3 text-ink-faint" />
-                          <span>{opp.organization}</span>
-                        </div>
-                      </div>
+            ) : (
+              filteredList.map((opp) => {
+                const dl = deadlineInfo(opp.deadline, opp.status);
+                return (
+                  <tr key={opp.id}>
+                    <td className="min-w-[220px] max-w-xs">
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(opp)}
+                        className="font-serif text-[1.0625rem] leading-snug text-ink text-left hover:text-clay transition-colors"
+                      >
+                        {opp.title}
+                      </button>
+                      <p className="mt-0.5 text-[0.8125rem] text-ink-3">{opp.organization}</p>
                     </td>
 
-                    {/* Category & Pillar */}
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      <div className="space-y-1">
-                        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-editorial-sand border border-editorial-hairline text-ink-high">
-                          {opp.category}
-                        </span>
-                        {opp.categoryRel && (
-                          <div className="text-[10px] text-brand-oasis font-medium">
-                            {opp.categoryRel.name}
-                          </div>
-                        )}
-                      </div>
+                    <td className="whitespace-nowrap">
+                      <p className="whitespace-nowrap text-ink-2">{opportunityTypeLabel(opp.category)}</p>
+                      {opp.categoryRel && <p className="mt-0.5 text-[0.8125rem] text-ink-3">{opp.categoryRel.name}</p>}
                     </td>
 
-                    {/* Terms & Capital */}
-                    <td className="py-3 px-4 max-w-[180px]">
-                      <div className="space-y-0.5">
-                        <span className="font-semibold text-brand-oasis block truncate">
-                          {opp.fundingAmount || 'Non-Cash'}
-                        </span>
-                        <span className="text-[10px] text-ink-muted block truncate">
-                          {opp.equityTaken || '0%'}
-                        </span>
-                      </div>
+                    <td className="max-w-[180px]">
+                      <p className="whitespace-nowrap font-sans tabular text-[0.8125rem] text-ink truncate">{opp.fundingAmount || '—'}</p>
+                      <p className="mt-0.5 font-sans tabular text-[0.75rem] text-ink-3 truncate">
+                        Equity {shortEquity(opp.equityTaken)}
+                      </p>
                     </td>
 
-                    {/* Deadline */}
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5 text-ink-body">
-                        <Calendar className="w-3.5 h-3.5 text-ink-muted" />
-                        <span>{opp.deadline ? formatDate(opp.deadline) : 'Rolling'}</span>
-                      </div>
+                    <td className="whitespace-nowrap">
+                      <p className="whitespace-nowrap font-sans tabular text-[0.8125rem] text-ink">{dl.date}</p>
+                      <p className={cn('mt-0.5 whitespace-nowrap font-sans tabular text-[0.75rem]', dl.urgent ? 'text-clay' : 'text-ink-3')}>
+                        {opp.deadline ? dl.note : 'Rolling'}
+                      </p>
                     </td>
 
-                    {/* Verification Audit */}
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1 text-[11px] text-brand-oasis font-semibold">
-                          <ShieldCheck className="w-3.5 h-3.5" />
-                          <span>Verified {formatDate(opp.verifiedAt)}</span>
-                        </div>
-                        {opp.verifiedBy && (
-                          <div className="text-[10px] text-ink-faint truncate max-w-[140px]">
-                            By {opp.verifiedBy}
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => handleVerify(opp.id, opp.title)}
-                          disabled={isPending}
-                          className="text-[10px] text-brand-navy hover:underline font-bold flex items-center gap-1 cursor-pointer"
-                        >
-                          <RefreshCw className="w-2.5 h-2.5" />
-                          <span>Verify Now</span>
-                        </button>
-                      </div>
+                    <td className="whitespace-nowrap">
+                      <p className="whitespace-nowrap font-sans tabular text-[0.8125rem] text-ink-2">
+                        {opp.verifiedAt ? formatDate(opp.verifiedAt) : '—'}
+                      </p>
+                      {opp.verifiedBy && (
+                        <p className="mt-0.5 text-[0.75rem] text-ink-3 truncate max-w-[150px]">by {opp.verifiedBy}</p>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleVerify(opp.id, opp.title)}
+                        disabled={isPending}
+                        className="row-action mt-1 disabled:opacity-50"
+                      >
+                        Mark checked
+                      </button>
                     </td>
 
-                    {/* Status & Publish */}
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      <div className="space-y-1.5">
-                        {/* Status Dropdown */}
+                    <td className="whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={cn('w-1.5 h-1.5 rounded-full shrink-0', DOT_BG[STATUS_META[opp.status as OpportunityStatus]?.tone ?? 'ink'])}
+                          aria-hidden="true"
+                        />
                         <select
+                          aria-label={`Status for ${opp.title}`}
                           value={opp.status}
                           onChange={(e) => handleStatusChange(opp.id, e.target.value as OpportunityStatus)}
                           disabled={isPending}
-                          className="text-[10px] bg-white border border-editorial-hairline rounded px-1.5 py-0.5 text-ink-high font-medium"
+                          className="field !w-auto !py-1 !pl-2 !text-[0.8125rem]"
                         >
-                          <option value="OPEN">OPEN</option>
-                          <option value="CLOSING_SOON">CLOSING_SOON</option>
-                          <option value="ROLLING">ROLLING</option>
-                          <option value="CLOSED">CLOSED</option>
+                          {STATUS_OPTIONS.map((s) => (
+                            <option key={s} value={s}>
+                              {STATUS_META[s].label}
+                            </option>
+                          ))}
                         </select>
-
-                        {/* Publish State */}
-                        <div>
-                          <button
-                            type="button"
-                            onClick={() => handleTogglePublish(opp.id, opp.title)}
-                            disabled={isPending}
-                            className={cn(
-                              'text-[10px] font-bold px-2 py-0.5 rounded-full border transition-colors cursor-pointer block',
-                              opp.isPublished
-                                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
-                                : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
-                            )}
-                          >
-                            {opp.isPublished ? '● Published' : '○ Draft (Unpublished)'}
-                          </button>
-                        </div>
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => handleTogglePublish(opp.id, opp.title)}
+                        disabled={isPending}
+                        title={opp.isPublished ? 'Click to unpublish' : 'Click to publish'}
+                        className="mt-2 disabled:opacity-50 hover:opacity-70 transition-opacity"
+                      >
+                        <StatusDot tone={opp.isPublished ? 'moss' : 'ink'}>
+                          {opp.isPublished ? 'Published' : 'Draft'}
+                        </StatusDot>
+                      </button>
                     </td>
 
-                    {/* Actions */}
-                    <td className="py-3 px-4 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Link
-                          href={`/opportunity/${opp.slug}`}
-                          target="_blank"
-                          title="View Live Dossier"
-                          className="p-1.5 rounded-md hover:bg-editorial-sand text-ink-muted hover:text-ink-high transition-colors"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </Link>
-                        <button
-                          type="button"
-                          onClick={() => openEditModal(opp)}
-                          title="Edit Opportunity"
-                          className="p-1.5 rounded-md hover:bg-editorial-sand text-ink-muted hover:text-ink-high transition-colors cursor-pointer"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
+                    <td className="text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-4">
+                        <button type="button" onClick={() => openEditModal(opp)} className="row-action">
+                          Edit
                         </button>
+                        <Link href={`/opportunity/${opp.slug}`} target="_blank" className="row-action">
+                          View ↗
+                        </Link>
                         <button
                           type="button"
                           onClick={() => handleDelete(opp.id, opp.title)}
                           disabled={isPending}
-                          title="Delete Opportunity"
-                          className="p-1.5 rounded-md hover:bg-red-50 text-red-600 transition-colors cursor-pointer"
+                          className="row-action-danger disabled:opacity-50"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          Delete
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {/* ==================================================================== */}
-      {/* EDIT / CREATE OPPORTUNITY MODAL                                      */}
-      {/* ==================================================================== */}
+      {/* Create / edit modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-high/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-editorial-pure rounded-lg border border-editorial-hairline shadow-2xl max-w-2xl w-full p-6 space-y-5 animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto font-sans">
-            <div className="flex items-center justify-between pb-3 border-b border-editorial-hairline">
-              <h3 className="font-heading font-black text-lg text-ink-high">
-                {editingId ? 'Edit Opportunity Dossier' : 'Add New Verified Opportunity'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="text-ink-muted hover:text-ink-high p-1"
-              >
-                <X className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-ink/40">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="opp-modal-title"
+            className="bg-paper-sheet border border-rule shadow-lift rounded-sm max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-rule">
+              <h2 id="opp-modal-title" className="font-serif text-[1.5rem] leading-tight text-ink">
+                {editingId ? 'Edit opportunity' : 'Add opportunity'}
+              </h2>
+              <button type="button" onClick={() => setIsModalOpen(false)} className="row-action">
+                Close
               </button>
             </div>
 
-            <form onSubmit={handleModalSubmit} className="space-y-4 text-xs">
-              {/* Row 1: Title & Organization */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">Program Title *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="e.g. NTDP MVPLab Grant"
-                    className="w-full p-2 bg-white border border-editorial-hairline rounded-md text-ink-high"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">Issuing Authority / Org *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.organization}
-                    onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
-                    placeholder="e.g. NTDP, The Garage, SAMA"
-                    className="w-full p-2 bg-white border border-editorial-hairline rounded-md text-ink-high"
-                  />
-                </div>
-              </div>
+            <form onSubmit={handleModalSubmit} className="p-6 space-y-5">
+              {errorMessage && (
+                <Note tone="error" onDismiss={() => setErrorMessage(null)}>
+                  {errorMessage}
+                </Note>
+              )}
 
-              {/* Row 2: Category & Sovereign Pillar */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">Category Classification *</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value as OpportunityCategory })}
-                    className="w-full p-2 bg-white border border-editorial-hairline rounded-md text-ink-high"
-                  >
-                    <option value="GRANT">Non-Dilutive Grant</option>
-                    <option value="ACCELERATOR">Seed Accelerator</option>
-                    <option value="INCUBATOR">Incubator</option>
-                    <option value="SUBSIDY">Innovation Subsidy / Voucher</option>
-                    <option value="GOVERNMENT_PROGRAM">Regulatory Sandbox / Gov</option>
-                    <option value="SUBSIDIZED_PERK">Compute / Cloud Credits</option>
-                    <option value="HACKATHON">Hackathon / Challenge</option>
-                  </select>
+              <section className="panel p-5 space-y-4">
+                <h3 className="panel-title">Basics</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="opp-title" className="field-label">
+                      Title
+                    </label>
+                    <input
+                      id="opp-title"
+                      type="text"
+                      required
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="NTDP MVPLab Grant"
+                      className="field"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="opp-org" className="field-label">
+                      Organisation
+                    </label>
+                    <input
+                      id="opp-org"
+                      type="text"
+                      required
+                      value={formData.organization}
+                      onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
+                      placeholder="NTDP, The Garage, SAMA"
+                      className="field"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="opp-category" className="field-label">
+                      Type
+                    </label>
+                    <select
+                      id="opp-category"
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value as OpportunityCategory })}
+                      className="field"
+                    >
+                      {typeOptions.map((t) => (
+                        <option key={t} value={t}>
+                          {opportunityTypeLabel(t)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="opp-section" className="field-label">
+                      Section
+                    </label>
+                    <select
+                      id="opp-section"
+                      value={formData.categoryId || ''}
+                      onChange={(e) => setFormData({ ...formData, categoryId: e.target.value || null })}
+                      className="field"
+                    >
+                      <option value="">None</option>
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">Sovereign Tech Pillar</label>
-                  <select
-                    value={formData.categoryId || ''}
-                    onChange={(e) => setFormData({ ...formData, categoryId: e.target.value || null })}
-                    className="w-full p-2 bg-white border border-editorial-hairline rounded-md text-ink-high"
-                  >
-                    <option value="">None / General</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label htmlFor="opp-funding" className="field-label">
+                      Funding amount
+                    </label>
+                    <input
+                      id="opp-funding"
+                      type="text"
+                      value={formData.fundingAmount || ''}
+                      onChange={(e) => setFormData({ ...formData, fundingAmount: e.target.value })}
+                      placeholder="Up to SAR 150,000"
+                      className="field"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="opp-equity" className="field-label">
+                      Equity taken
+                    </label>
+                    <input
+                      id="opp-equity"
+                      type="text"
+                      value={formData.equityTaken || ''}
+                      onChange={(e) => setFormData({ ...formData, equityTaken: e.target.value })}
+                      placeholder="0% (Non-Dilutive)"
+                      className="field"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="opp-location" className="field-label">
+                      Location
+                    </label>
+                    <input
+                      id="opp-location"
+                      type="text"
+                      value={formData.location || ''}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      placeholder="Riyadh, KSA (Hybrid)"
+                      className="field"
+                    />
+                  </div>
                 </div>
-              </div>
+              </section>
 
-              {/* Row 3: Support Value & Equity Taken */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <section className="panel p-5 space-y-4">
+                <h3 className="panel-title">Description and eligibility</h3>
                 <div>
-                  <label className="font-bold text-ink-high block mb-1">Funding Amount / Value</label>
-                  <input
-                    type="text"
-                    value={formData.fundingAmount || ''}
-                    onChange={(e) => setFormData({ ...formData, fundingAmount: e.target.value })}
-                    placeholder="e.g. Up to SAR 150,000"
-                    className="w-full p-2 bg-white border border-editorial-hairline rounded-md text-ink-high"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">Equity Required</label>
-                  <input
-                    type="text"
-                    value={formData.equityTaken || ''}
-                    onChange={(e) => setFormData({ ...formData, equityTaken: e.target.value })}
-                    placeholder="e.g. 0% (Non-Dilutive)"
-                    className="w-full p-2 bg-white border border-editorial-hairline rounded-md text-ink-high"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">Program Location</label>
-                  <input
-                    type="text"
-                    value={formData.location || ''}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    placeholder="e.g. Riyadh, KSA (Hybrid)"
-                    className="w-full p-2 bg-white border border-editorial-hairline rounded-md text-ink-high"
-                  />
-                </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="font-bold text-ink-high block mb-1">Program Description &amp; Scope *</label>
-                <textarea
-                  required
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Detailed editorial description of the initiative..."
-                  className="w-full p-2 bg-white border border-editorial-hairline rounded-md text-ink-high"
-                />
-              </div>
-
-              {/* Eligibility Summary */}
-              <div>
-                <label className="font-bold text-ink-high block mb-1">Eligibility Headline Summary</label>
-                <input
-                  type="text"
-                  value={formData.eligibilitySummary || ''}
-                  onChange={(e) => setFormData({ ...formData, eligibilitySummary: e.target.value })}
-                  placeholder="e.g. Pre-seed Saudi tech ventures developing proprietary software with commercial registration."
-                  className="w-full p-2 bg-white border border-editorial-hairline rounded-md text-ink-high"
-                />
-              </div>
-
-              {/* Multiline Checklists */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">Eligibility Criteria (1 per line)</label>
+                  <label htmlFor="opp-description" className="field-label">
+                    Description
+                  </label>
                   <textarea
-                    rows={4}
-                    value={criteriaText}
-                    onChange={(e) => setCriteriaText(e.target.value)}
-                    placeholder="Saudi Commercial Registration (CR)&#10;Working MVP&#10;At least 1 Saudi founder"
-                    className="w-full p-2 bg-white border border-editorial-hairline rounded-md text-ink-high font-mono text-[11px]"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">Verified Benefits (1 per line)</label>
-                  <textarea
-                    rows={4}
-                    value={benefitsText}
-                    onChange={(e) => setBenefitsText(e.target.value)}
-                    placeholder="SAR 150K zero-equity grant&#10;KACST lab access&#10;Mentorship from top VCs"
-                    className="w-full p-2 bg-white border border-editorial-hairline rounded-md text-ink-high font-mono text-[11px]"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">Requirements (1 per line)</label>
-                  <textarea
-                    rows={4}
-                    value={requirementsText}
-                    onChange={(e) => setRequirementsText(e.target.value)}
-                    placeholder="Pitch deck with TAM/SAM&#10;Software Architecture&#10;Incorporation papers"
-                    className="w-full p-2 bg-white border border-editorial-hairline rounded-md text-ink-high font-mono text-[11px]"
-                  />
-                </div>
-              </div>
-
-              {/* Application URLs & Verification Sources */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-editorial-hairline">
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">Official Application URL *</label>
-                  <input
-                    type="url"
+                    id="opp-description"
                     required
-                    value={formData.applicationUrl}
-                    onChange={(e) => setFormData({ ...formData, applicationUrl: e.target.value })}
-                    placeholder="https://official-portal.gov.sa/apply"
-                    className="w-full p-2 bg-white border border-editorial-hairline rounded-md text-ink-high"
+                    rows={4}
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="What the programme offers and who runs it."
+                    className="field"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-ink-high block mb-1">Official Source Name *</label>
+                  <label htmlFor="opp-elig-summary" className="field-label">
+                    Eligibility summary
+                  </label>
                   <input
+                    id="opp-elig-summary"
                     type="text"
-                    required
-                    value={formData.sourceName}
-                    onChange={(e) => setFormData({ ...formData, sourceName: e.target.value })}
-                    placeholder="e.g. NTDP Official Portal"
-                    className="w-full p-2 bg-white border border-editorial-hairline rounded-md text-ink-high"
+                    value={formData.eligibilitySummary || ''}
+                    onChange={(e) => setFormData({ ...formData, eligibilitySummary: e.target.value })}
+                    placeholder="Pre-seed Saudi tech companies with a commercial registration."
+                    className="field"
                   />
                 </div>
-              </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label htmlFor="opp-criteria" className="field-label">
+                      Eligibility criteria
+                    </label>
+                    <textarea
+                      id="opp-criteria"
+                      rows={5}
+                      value={criteriaText}
+                      onChange={(e) => setCriteriaText(e.target.value)}
+                      placeholder={'Saudi commercial registration\nWorking MVP\nAt least one Saudi founder'}
+                      className="field font-sans text-[0.8125rem]"
+                    />
+                    <p className="field-hint">One per line.</p>
+                  </div>
+                  <div>
+                    <label htmlFor="opp-benefits" className="field-label">
+                      Benefits
+                    </label>
+                    <textarea
+                      id="opp-benefits"
+                      rows={5}
+                      value={benefitsText}
+                      onChange={(e) => setBenefitsText(e.target.value)}
+                      placeholder={'SAR 150K grant, no equity\nKACST lab access\nMentoring'}
+                      className="field font-sans text-[0.8125rem]"
+                    />
+                    <p className="field-hint">One per line.</p>
+                  </div>
+                  <div>
+                    <label htmlFor="opp-requirements" className="field-label">
+                      Requirements
+                    </label>
+                    <textarea
+                      id="opp-requirements"
+                      rows={5}
+                      value={requirementsText}
+                      onChange={(e) => setRequirementsText(e.target.value)}
+                      placeholder={'Pitch deck\nArchitecture overview\nIncorporation papers'}
+                      className="field font-sans text-[0.8125rem]"
+                    />
+                    <p className="field-hint">One per line.</p>
+                  </div>
+                </div>
+              </section>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">Official Source URL (Required for public verification) *</label>
-                  <input
-                    type="url"
-                    value={formData.sourceUrl || ''}
-                    onChange={(e) => setFormData({ ...formData, sourceUrl: e.target.value })}
-                    placeholder="https://ntdp.gov.sa/initiatives/mvplab"
-                    className="w-full p-2 bg-white border border-editorial-hairline rounded-md text-ink-high"
-                  />
+              <section className="panel p-5 space-y-4">
+                <h3 className="panel-title">Applying and source</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="opp-apply-url" className="field-label">
+                      Application URL
+                    </label>
+                    <input
+                      id="opp-apply-url"
+                      type="url"
+                      required
+                      value={formData.applicationUrl}
+                      onChange={(e) => setFormData({ ...formData, applicationUrl: e.target.value })}
+                      placeholder="https://example.gov.sa/apply"
+                      className="field"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="opp-deadline" className="field-label">
+                      Deadline
+                    </label>
+                    <input
+                      id="opp-deadline"
+                      type="date"
+                      value={formData.deadline || ''}
+                      onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+                      className="field font-sans tabular"
+                    />
+                    <p className="field-hint">Leave blank for rolling applications.</p>
+                  </div>
+                  <div>
+                    <label htmlFor="opp-source-name" className="field-label">
+                      Source
+                    </label>
+                    <input
+                      id="opp-source-name"
+                      type="text"
+                      required
+                      value={formData.sourceName}
+                      onChange={(e) => setFormData({ ...formData, sourceName: e.target.value })}
+                      placeholder="NTDP official site"
+                      className="field"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="opp-source-url" className="field-label">
+                      Source URL
+                    </label>
+                    <input
+                      id="opp-source-url"
+                      type="url"
+                      value={formData.sourceUrl || ''}
+                      onChange={(e) => setFormData({ ...formData, sourceUrl: e.target.value })}
+                      placeholder="https://ntdp.gov.sa/initiatives/mvplab"
+                      className="field"
+                    />
+                    <p className="field-hint">Shown to readers as the source link.</p>
+                  </div>
                 </div>
-                <div>
-                  <label className="font-bold text-ink-high block mb-1">Application Deadline (Leave blank for rolling)</label>
-                  <input
-                    type="date"
-                    value={formData.deadline || ''}
-                    onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                    className="w-full p-2 bg-white border border-editorial-hairline rounded-md text-ink-high"
-                  />
-                </div>
-              </div>
-
-              {/* Checkboxes & Status */}
-              <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-editorial-hairline">
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                <div className="flex flex-wrap gap-x-6 gap-y-2 pt-1">
+                  <label className="inline-flex items-center gap-2 text-sm text-ink-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formData.isPublished}
                       onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                      className="rounded"
+                      className="accent-[#A63D24]"
                     />
-                    <span className="font-bold text-ink-high">Published to Public Hub</span>
+                    Published
                   </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="inline-flex items-center gap-2 text-sm text-ink-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formData.isFeatured}
                       onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
-                      className="rounded"
+                      className="accent-[#A63D24]"
                     />
-                    <span className="font-medium text-ink-muted">Feature on Homepage</span>
+                    Feature on homepage
                   </label>
                 </div>
+              </section>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 border border-editorial-hairline text-ink-muted hover:text-ink-high rounded-md font-semibold"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isPending}
-                    className="px-5 py-2 bg-brand-navy text-white rounded-md font-bold uppercase tracking-wider hover:bg-brand-navy/90 flex items-center gap-2 shadow-xs disabled:opacity-50"
-                  >
-                    {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>{editingId ? 'Save Changes' : 'Create Opportunity'}</span>
-                  </button>
-                </div>
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? 'Saving…' : editingId ? 'Save changes' : 'Create opportunity'}
+                </Button>
               </div>
             </form>
           </div>
@@ -795,4 +757,18 @@ export const OpportunityManager: React.FC<OpportunityManagerProps> = ({ opportun
       )}
     </div>
   );
+};
+
+const STATUS_OPTIONS: OpportunityStatus[] = [
+  OpportunityStatus.OPEN,
+  OpportunityStatus.CLOSING_SOON,
+  OpportunityStatus.ROLLING,
+  OpportunityStatus.CLOSED,
+];
+
+const STATUS_META: Record<OpportunityStatus, { label: string; tone: Tone }> = {
+  OPEN: { label: 'Open', tone: 'moss' },
+  CLOSING_SOON: { label: 'Closing soon', tone: 'clay' },
+  ROLLING: { label: 'Rolling', tone: 'moss' },
+  CLOSED: { label: 'Closed', tone: 'ink' },
 };

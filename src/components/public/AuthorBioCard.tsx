@@ -1,113 +1,99 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, MapPin } from 'lucide-react';
 import { AuthorItem } from '@/types';
 import { cn } from '@/lib/utils';
-
-const TwitterIcon = ({ className = 'w-3 h-3' }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-  </svg>
-);
-
-const LinkedinIcon = ({ className = 'w-3 h-3' }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
-  </svg>
-);
 
 interface AuthorBioCardProps {
   author: AuthorItem;
   className?: string;
+  /** Render as the header of the author's own page (h1, larger portrait, no archive link). */
   isProfileHeader?: boolean;
 }
 
-export const AuthorBioCard: React.FC<AuthorBioCardProps> = ({
-  author,
-  className,
-  isProfileHeader = false,
-}) => {
+function AuthorLinks({ author }: { author: AuthorItem }) {
+  const handle = author.twitterHandle?.replace(/^@/, '');
+  if (!handle && !author.linkedinUrl) return null;
   return (
-    <div
-      className={cn(
-        'bg-editorial-sand rounded-xs border border-editorial-hairline p-6 sm:p-8',
-        className
+    <p className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink">
+      {handle && (
+        <a href={`https://x.com/${handle}`} target="_blank" rel="noopener noreferrer" className="group">
+          <span className="link-rule">@{handle} on X</span> <span aria-hidden className="text-ink-4">↗</span>
+        </a>
       )}
-    >
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-        {/* Avatar */}
-        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-editorial-pure border-2 border-editorial-hairline shrink-0">
-          <Image
-            src={author.avatarUrl}
-            alt={author.displayName}
-            fill
-            sizes="80px"
-            className="object-cover"
-          />
-        </div>
+      {author.linkedinUrl && (
+        <a href={author.linkedinUrl} target="_blank" rel="noopener noreferrer" className="group">
+          <span className="link-rule">LinkedIn</span> <span aria-hidden className="text-ink-4">↗</span>
+        </a>
+      )}
+    </p>
+  );
+}
 
-        {/* Content */}
-        <div className="space-y-2 flex-1">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-ink-muted font-sans block">
-                {isProfileHeader ? 'Editorial Contributor' : 'About the Author'}
-              </span>
-              <h3 className="text-xl sm:text-2xl font-serif font-bold text-ink-high">
-                {author.displayName}
-              </h3>
-              <p className="text-xs text-ink-muted font-sans">{author.title}</p>
-            </div>
-
-            {author.location && (
-              <span className="inline-flex items-center gap-1 text-[11px] text-ink-muted bg-editorial-pure px-2.5 py-1 rounded-xs border border-editorial-hairline">
-                <MapPin className="w-3 h-3 text-brand-gold" />
-                <span>{author.location}</span>
-              </span>
-            )}
+/** A note about the writer: portrait, name, role, a short bio. Ruled, not boxed. */
+export const AuthorBioCard: React.FC<AuthorBioCardProps> = ({ author, className, isProfileHeader = false }) => {
+  if (isProfileHeader) {
+    return (
+      <header className={cn('grid gap-8 md:grid-cols-12 md:items-end', className)}>
+        <div className="md:col-span-8 lg:col-span-7">
+          <p className="kicker mb-3">Contributor</p>
+          <h1 className="font-serif text-display-lg text-ink">{author.displayName}</h1>
+          <p className="meta mt-4">
+            {author.title}
+            {author.location && <> · {author.location}</>}
+          </p>
+          {author.bio && <p className="standfirst mt-6 max-w-2xl">{author.bio}</p>}
+          <div className="mt-6">
+            <AuthorLinks author={author} />
           </div>
-
-          {author.bio && (
-            <p className="text-xs sm:text-sm text-ink-body font-sans leading-relaxed pt-1">
-              {author.bio}
-            </p>
-          )}
-
-          {/* Social Links & Byline Link */}
-          <div className="pt-3 border-t border-editorial-hairline flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-3 text-ink-muted">
-              {author.twitterHandle && (
-                <span className="inline-flex items-center gap-1 hover:text-ink-high transition-editorial">
-                  <TwitterIcon className="w-3 h-3" />
-                  <span>{author.twitterHandle}</span>
-                </span>
-              )}
-              {author.linkedinUrl && (
-                <a
-                  href={author.linkedinUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 hover:text-ink-high transition-editorial"
-                >
-                  <LinkedinIcon className="w-3 h-3" />
-                  <span>Verified Profile</span>
-                </a>
-              )}
+        </div>
+        {author.avatarUrl && (
+          <div className="order-first md:order-none md:col-span-4 lg:col-span-3 lg:col-start-10 md:border-l md:border-rule md:pl-8">
+            <div className="relative aspect-[4/5] w-24 md:w-full max-w-[14rem] overflow-hidden bg-paper-band">
+              <Image src={author.avatarUrl} alt={author.displayName} fill sizes="224px" className="object-cover img-warm" />
             </div>
+          </div>
+        )}
+      </header>
+    );
+  }
 
-            {!isProfileHeader && (
-              <Link
-                href={`/author/${author.slug}`}
-                className="inline-flex items-center gap-1 text-xs font-bold text-ink-high hover:text-brand-gold font-sans uppercase tracking-wider"
-              >
-                <span>View Author Archive</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            )}
+  return (
+    <aside aria-label="About the writer" className={cn('border-t border-ink pt-5', className)}>
+      <div className="grid grid-cols-[4rem_1fr] sm:grid-cols-[5rem_1fr] gap-5">
+        {author.avatarUrl ? (
+          <Link
+            href={`/author/${author.slug}`}
+            tabIndex={-1}
+            aria-hidden
+            className="relative block aspect-square overflow-hidden bg-paper-band"
+          >
+            <Image src={author.avatarUrl} alt="" fill sizes="80px" className="object-cover img-warm" />
+          </Link>
+        ) : (
+          <span aria-hidden />
+        )}
+        <div className="min-w-0">
+          <p className="meta uppercase tracking-[0.04em]">About the writer</p>
+          <h3 className="mt-1.5 font-serif text-[1.375rem] leading-tight text-ink">
+            <Link href={`/author/${author.slug}`} className="headline-link">
+              {author.displayName}
+            </Link>
+          </h3>
+          <p className="meta mt-1">
+            {author.title}
+            {author.location && <> · {author.location}</>}
+          </p>
+          {author.bio && <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-2">{author.bio}</p>}
+          <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3">
+            <AuthorLinks author={author} />
+            <Link href={`/author/${author.slug}`} className="group inline-flex items-center gap-2 text-sm text-ink">
+              <span className="link-rule">Everything by {author.displayName.split(' ')[0]}</span>
+              <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+            </Link>
           </div>
         </div>
       </div>
-    </div>
+    </aside>
   );
 };

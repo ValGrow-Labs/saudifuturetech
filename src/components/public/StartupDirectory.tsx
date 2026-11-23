@@ -3,21 +3,8 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { 
-  Search, 
-  Building2, 
-  MapPin, 
-  ExternalLink, 
-  ShieldCheck, 
-  X, 
-  Code2, 
-  TrendingUp,
-  Package,
-  ArrowRight,
-  Sparkles,
-  Calendar
-} from 'lucide-react';
-import { cn, formatDate } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { stageLabel, businessModelLabel } from '@/lib/labels';
 
 export interface StartupItem {
   id: string;
@@ -75,17 +62,17 @@ interface StartupDirectoryProps {
 }
 
 const STAGE_FILTERS = [
-  { label: 'All Stages', value: 'ALL' },
-  { label: 'Pre-Seed', value: 'PRE_SEED' },
+  { label: 'All stages', value: 'ALL' },
+  { label: 'Pre-seed', value: 'PRE_SEED' },
   { label: 'Seed', value: 'SEED' },
   { label: 'Series A', value: 'SERIES_A' },
   { label: 'Series B', value: 'SERIES_B' },
   { label: 'Series C+', value: 'SERIES_C' },
-  { label: 'Growth / Scale', value: 'GROWTH' },
+  { label: 'Growth', value: 'GROWTH' },
 ];
 
 const MODEL_FILTERS = [
-  { label: 'All Business Models', value: 'ALL' },
+  { label: 'Any model', value: 'ALL' },
   { label: 'B2B', value: 'B2B' },
   { label: 'B2C', value: 'B2C' },
   { label: 'B2B2C', value: 'B2B2C' },
@@ -93,12 +80,21 @@ const MODEL_FILTERS = [
 ];
 
 const CITY_FILTERS = [
-  { label: 'All Cities', value: 'ALL' },
+  { label: 'Any city', value: 'ALL' },
   { label: 'Riyadh', value: 'Riyadh' },
   { label: 'Jeddah', value: 'Jeddah' },
   { label: 'Tabuk / NEOM', value: 'Tabuk' },
   { label: 'Dhahran / Khobar', value: 'Dhahran' },
 ];
+
+const SORT_OPTIONS = [
+  { label: 'Recently checked', value: 'RECENT' },
+  { label: 'Name, A–Z', value: 'NAME' },
+  { label: 'Stage, latest first', value: 'STAGE' },
+  { label: 'Founded, newest first', value: 'FOUNDING_YEAR' },
+];
+
+const COLS = 'md:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_7.5rem_4.5rem_6.5rem]';
 
 export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
   initialStartups,
@@ -144,7 +140,6 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
 
   const filteredItems = useMemo(() => {
     let result = initialStartups.filter((item) => {
-      // Search
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch =
         !q ||
@@ -152,30 +147,18 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
         item.tagline.toLowerCase().includes(q) ||
         item.description.toLowerCase().includes(q) ||
         item.hqCity.toLowerCase().includes(q) ||
-        (Array.isArray(item.products) &&
-          item.products.some((p: string) => p.toLowerCase().includes(q))) ||
-        (Array.isArray(item.techStack) &&
-          item.techStack.some((t: string) => t.toLowerCase().includes(q)));
+        (Array.isArray(item.products) && item.products.some((p: string) => p.toLowerCase().includes(q))) ||
+        (Array.isArray(item.techStack) && item.techStack.some((t: string) => t.toLowerCase().includes(q)));
 
-      // Stage
       const matchesStage = selectedStage === 'ALL' || item.stage === selectedStage;
-
-      // Model
       const matchesModel = selectedModel === 'ALL' || item.businessModel === selectedModel;
-
-      // Pillar
       const matchesPillar = selectedPillar === 'ALL' || item.category?.slug === selectedPillar;
-
-      // City
       const matchesCity = selectedCity === 'ALL' || item.hqCity.toLowerCase().includes(selectedCity.toLowerCase());
-
-      // CR Verified
       const matchesCr = !crOnly || item.crVerified === true;
 
       return matchesSearch && matchesStage && matchesModel && matchesPillar && matchesCity && matchesCr;
     });
 
-    // Sorting
     if (selectedSort === 'NAME') {
       result = [...result].sort((a, b) => a.name.localeCompare(b.name));
     } else if (selectedSort === 'FOUNDING_YEAR') {
@@ -196,26 +179,20 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
     return result;
   }, [initialStartups, searchQuery, selectedStage, selectedModel, selectedPillar, selectedCity, crOnly, selectedSort]);
 
-  const formatStage = (st: string) => {
-    switch (st) {
-      case 'PRE_SEED':
-        return 'Pre-Seed';
-      case 'SEED':
-        return 'Seed';
-      case 'SERIES_A':
-        return 'Series A';
-      case 'SERIES_B':
-        return 'Series B';
-      case 'SERIES_C':
-        return 'Series C+';
-      case 'GROWTH':
-        return 'Growth / Scale';
-      case 'BOOTSTRAPPED':
-        return 'Bootstrapped';
-      default:
-        return st;
-    }
-  };
+  const stageCounts = useMemo(() => {
+    const counts: Record<string, number> = { ALL: initialStartups.length };
+    for (const s of initialStartups) counts[s.stage] = (counts[s.stage] || 0) + 1;
+    return counts;
+  }, [initialStartups]);
+
+  const trimmedQuery = searchQuery.trim();
+  const hasFilters =
+    Boolean(trimmedQuery) ||
+    selectedStage !== 'ALL' ||
+    selectedModel !== 'ALL' ||
+    selectedPillar !== 'ALL' ||
+    selectedCity !== 'ALL' ||
+    crOnly;
 
   const handleResetFilters = () => {
     setSearchQuery('');
@@ -227,356 +204,242 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
     setSelectedSort('RECENT');
   };
 
-  const isFilteringActive =
-    searchQuery.trim().length > 0 ||
-    selectedStage !== 'ALL' ||
-    selectedModel !== 'ALL' ||
-    selectedPillar !== 'ALL' ||
-    selectedCity !== 'ALL' ||
-    crOnly ||
-    selectedSort !== 'RECENT';
-
   return (
-    <div className="space-y-8 font-sans">
-      {/* 1. Filter and Search Controls Matrix */}
-      <div className="bg-[#F1F5F2] dark:bg-[#102433] p-5 sm:p-6 rounded-xl border border-[#E2E8E4] dark:border-[#1E3A4C] shadow-xs space-y-5">
-        {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563] dark:text-[#94A3B8]" />
+    <div>
+      {/* Filters */}
+      <div role="search" aria-label="Filter the register" className="space-y-7">
+        <div className="flex items-end gap-4 border-b-2 border-ink focus-within:border-clay transition-colors">
+          <label htmlFor="startup-search" className="sr-only">
+            Search companies
+          </label>
           <input
-            type="text"
-            placeholder="Search Saudi startups, technology stacks, products, or founders (e.g. Mozn, Tamara, PyTorch, Open Banking)..."
+            id="startup-search"
+            type="search"
+            placeholder="Search by name, product or technology"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-11 pr-10 py-3 text-sm bg-white dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C] rounded-lg text-[#111827] dark:text-[#FAF9F6] placeholder:text-[#4B5563]/70 dark:placeholder:text-[#94A3B8]/70 focus:outline-none focus:ring-2 focus:ring-[#0B6E4F]/30 focus:border-[#0B6E4F] transition-all shadow-2xs"
+            className="flex-1 min-w-0 bg-transparent py-3 font-serif text-xl md:text-2xl text-ink placeholder:text-ink-4 focus:outline-none [&::-webkit-search-cancel-button]:hidden"
           />
           {searchQuery && (
             <button
+              type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4B5563] dark:text-[#94A3B8] hover:text-[#111827] dark:hover:text-white p-1"
-              aria-label="Clear search"
+              className="shrink-0 pb-3.5 text-sm text-ink-3 hover:text-ink transition-colors"
             >
-              <X className="w-4 h-4" />
+              Clear
             </button>
           )}
         </div>
 
-        {/* Funding Stage Pills Navigation */}
-        <div className="space-y-2.5">
-          <div className="flex items-center justify-between text-xs font-bold text-[#4B5563] dark:text-[#94A3B8] uppercase tracking-wider">
-            <span>Funding Stage</span>
-            {isFilteringActive && (
-              <button
-                onClick={handleResetFilters}
-                className="text-[#0B6E4F] dark:text-[#19B5A3] hover:underline font-bold text-xs capitalize flex items-center gap-1 cursor-pointer"
-              >
-                <span>Reset All Filters</span>
-                <X className="w-3.5 h-3.5" />
-              </button>
+        <div>
+          <p className="meta mb-2" id="stage-tabs-label">
+            Stage
+          </p>
+          <div role="group" aria-labelledby="stage-tabs-label" className="flex flex-wrap gap-x-6 gap-y-2">
+            {STAGE_FILTERS.map((stage) => {
+              const active = selectedStage === stage.value;
+              const count = stageCounts[stage.value] || 0;
+              return (
+                <button
+                  key={stage.value}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setSelectedStage(stage.value)}
+                  className={cn(
+                    'relative py-1 text-[0.9375rem] transition-colors',
+                    active ? 'text-ink' : count ? 'text-ink-3 hover:text-ink' : 'text-ink-4 hover:text-ink-3'
+                  )}
+                >
+                  {stage.label}
+                  <span className="ml-1.5 font-sans text-[0.6875rem] tabular text-ink-4">{count}</span>
+                  <span
+                    aria-hidden
+                    className={cn(
+                      'absolute left-0 -bottom-px h-px bg-clay transition-all duration-300',
+                      active ? 'w-full' : 'w-0'
+                    )}
+                  />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-x-6 gap-y-5 md:grid-cols-[repeat(4,minmax(0,1fr))_auto] md:items-end">
+          <FilterSelect label="Sector" value={selectedPillar} onChange={setSelectedPillar}>
+            <option value="ALL">Any sector</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.slug}>
+                {cat.name}
+              </option>
+            ))}
+          </FilterSelect>
+          <FilterSelect label="City" value={selectedCity} onChange={setSelectedCity}>
+            {CITY_FILTERS.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </FilterSelect>
+          <FilterSelect label="Model" value={selectedModel} onChange={setSelectedModel}>
+            {MODEL_FILTERS.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.label}
+              </option>
+            ))}
+          </FilterSelect>
+          <FilterSelect label="Sort" value={selectedSort} onChange={setSelectedSort}>
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </FilterSelect>
+          <label className="col-span-2 md:col-span-1 inline-flex items-center gap-2.5 pb-2 text-sm text-ink-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={crOnly}
+              onChange={(e) => setCrOnly(e.target.checked)}
+              className="h-3.5 w-3.5 accent-[var(--ink)]"
+            />
+            <span className="whitespace-nowrap">Confirmed CR only</span>
+          </label>
+        </div>
+      </div>
+
+      {/* Count line */}
+      <div className="mt-12 mb-3 flex items-baseline justify-between gap-4">
+        <p className="meta" aria-live="polite">
+          {filteredItems.length === initialStartups.length
+            ? `${filteredItems.length} ${filteredItems.length === 1 ? 'company' : 'companies'}`
+            : `${filteredItems.length} of ${initialStartups.length} companies`}
+        </p>
+        {hasFilters && (
+          <button type="button" onClick={handleResetFilters} className="text-sm text-ink link-rule">
+            Clear filters
+          </button>
+        )}
+      </div>
+
+      {/* Register */}
+      {filteredItems.length === 0 ? (
+        <div className="border-t-2 border-ink border-b border-b-rule py-14 md:py-20">
+          <p className="font-serif text-display-sm text-ink max-w-xl">No companies match these filters.</p>
+          <p className="mt-3 max-w-xl text-[0.9375rem] leading-relaxed text-ink-3">
+            The register is small and checked by hand, so narrow searches often come up empty. Try a broader stage or
+            city, or search the whole site instead.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-x-8 gap-y-3 text-sm text-ink">
+            <button type="button" onClick={handleResetFilters} className="group inline-flex items-center gap-2">
+              <span className="link-rule">Clear all filters</span>
+              <span aria-hidden>→</span>
+            </button>
+            {trimmedQuery && (
+              <Link href={`/search?q=${encodeURIComponent(trimmedQuery)}`} className="group inline-flex items-center gap-2">
+                <span className="link-rule">Search everything for &ldquo;{trimmedQuery}&rdquo;</span>
+                <span aria-hidden>→</span>
+              </Link>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {STAGE_FILTERS.map((stage) => (
-              <button
-                key={stage.value}
-                onClick={() => setSelectedStage(stage.value)}
-                className={cn(
-                  'px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer',
-                  selectedStage === stage.value
-                    ? 'bg-[#0B6E4F] text-white shadow-xs font-bold'
-                    : 'bg-white dark:bg-[#132B3D] text-[#4B5563] dark:text-[#94A3B8] hover:text-[#111827] dark:hover:text-white hover:bg-white/80 dark:hover:bg-[#1A374D] border border-[#E2E8E4] dark:border-[#1E3A4C]'
-                )}
-              >
-                {stage.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Dropdowns Row: Pillar, City, Model, Sort & CR Verification */}
-        <div className="pt-4 border-t border-[#E2E8E4] dark:border-[#1E3A4C] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 items-end">
-          {/* Sovereign Pillar Dropdown */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#94A3B8] block">
-              Sovereign Pillar
-            </label>
-            <select
-              value={selectedPillar}
-              onChange={(e) => setSelectedPillar(e.target.value)}
-              className="w-full text-xs font-medium bg-white dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C] text-[#111827] dark:text-[#FAF9F6] rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] cursor-pointer"
-            >
-              <option value="ALL">All Sovereign Pillars (6 Desks)</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.slug}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* City Dropdown */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#94A3B8] block">
-              Headquarters City
-            </label>
-            <select
-              value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
-              className="w-full text-xs font-medium bg-white dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C] text-[#111827] dark:text-[#FAF9F6] rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] cursor-pointer"
-            >
-              {CITY_FILTERS.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Business Model Dropdown */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#94A3B8] block">
-              Business Model
-            </label>
-            <select
-              value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value)}
-              className="w-full text-xs font-medium bg-white dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C] text-[#111827] dark:text-[#FAF9F6] rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] cursor-pointer"
-            >
-              {MODEL_FILTERS.map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Sort Dropdown */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#94A3B8] block">
-              Sort Order
-            </label>
-            <select
-              value={selectedSort}
-              onChange={(e) => setSelectedSort(e.target.value)}
-              className="w-full text-xs font-medium bg-white dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C] text-[#111827] dark:text-[#FAF9F6] rounded-lg px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#0B6E4F] cursor-pointer"
-            >
-              <option value="RECENT">Recently Verified</option>
-              <option value="NAME">Venture Name (A–Z)</option>
-              <option value="STAGE">Funding Stage (Highest)</option>
-              <option value="FOUNDING_YEAR">Founding Year (Newest)</option>
-            </select>
-          </div>
-
-          {/* CR Verification Toggle */}
-          <div className="h-10 flex items-center justify-start lg:justify-end">
-            <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-bold text-[#111827] dark:text-[#FAF9F6] select-none bg-white dark:bg-[#132B3D] px-3 py-2 rounded-lg border border-[#E2E8E4] dark:border-[#1E3A4C] hover:border-[#0B6E4F]/40 transition-colors">
-              <input
-                type="checkbox"
-                checked={crOnly}
-                onChange={(e) => setCrOnly(e.target.checked)}
-                className="w-4 h-4 rounded border-[#E2E8E4] dark:border-[#1E3A4C] text-[#0B6E4F] focus:ring-[#0B6E4F] cursor-pointer accent-[#0B6E4F]"
-              />
-              <span className="flex items-center gap-1.5 text-[#111827] dark:text-[#FAF9F6]">
-                <ShieldCheck className="w-4 h-4 text-[#0B6E4F] dark:text-[#19B5A3]" />
-                <span>CR Audited Only</span>
-              </span>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Directory Count & Provenance Notice */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#4B5563] px-1">
-        <p>
-          Showing <span className="font-bold text-[#111827]">{filteredItems.length}</span> verified{' '}
-          {filteredItems.length === 1 ? 'venture' : 'ventures'}
-        </p>
-        <div className="flex items-center gap-1.5 text-xs text-[#0B6E4F] font-semibold">
-          <ShieldCheck className="w-4 h-4 text-[#0B6E4F]" />
-          <span>Strict CR Provenance • Verified with Ministry of Commerce &amp; Wathiq</span>
-        </div>
-      </div>
-
-      {/* 3. Startup Cards Grid (2-Column Architecture for Maximum Readability) */}
-      {filteredItems.length === 0 ? (
-        <div className="bg-white p-12 text-center rounded-xl border border-[#E2E8E4] space-y-3">
-          <Building2 className="w-10 h-10 text-[#4B5563] mx-auto" />
-          <h3 className="font-heading font-bold text-lg text-[#111827]">No startups match your search</h3>
-          <p className="text-sm text-[#4B5563] max-w-md mx-auto">
-            Try adjusting your search criteria, stage filter, or headquarters city to explore the registry.
-          </p>
-          <button
-            onClick={handleResetFilters}
-            className="mt-2 text-xs font-bold px-4 py-2 rounded-lg bg-[#0B6E4F] text-white hover:bg-[#08533C] transition-all cursor-pointer"
-          >
-            Reset All Filters
-          </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredItems.map((item) => {
-            const techList = Array.isArray(item.techStack) ? item.techStack : [];
-            const productList = Array.isArray(item.products) ? item.products : [];
-
-            return (
-              <article
-                key={item.id}
-                data-testid="startup-card"
-                className="group bg-white dark:bg-[#102433] rounded-xl border border-[#E2E8E4] dark:border-[#1E3A4C] hover:border-[#0B6E4F]/40 dark:hover:border-[#19B5A3]/40 hover:shadow-lg transition-all duration-200 p-6 flex flex-col justify-between"
-              >
-                <div className="space-y-4">
-                  {/* Zone 1: Name, Tagline, CR Badge & Sector */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Link href={`/startup/${item.slug}`} className="group/name">
-                          <h3 className="font-heading font-black text-xl text-[#111827] dark:text-[#FAF9F6] group-hover/name:text-[#0B6E4F] dark:group-hover/name:text-[#19B5A3] transition-colors">
-                            {item.name}
-                          </h3>
-                        </Link>
-                        {item.crVerified && (
-                          <span
-                            title="Commercial Registration (CR) Audited via Ministry of Commerce / Wathiq"
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#E8F5EF] dark:bg-[#0B6E4F]/20 text-[#0B6E4F] dark:text-[#19B5A3] border border-[#0B6E4F]/25 dark:border-[#19B5A3]/30"
-                          >
-                            <ShieldCheck className="w-3 h-3 text-[#0B6E4F] dark:text-[#19B5A3]" />
-                            <span>CR Audited</span>
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs font-semibold text-[#4B5563] dark:text-[#94A3B8] line-clamp-1">
-                        {item.tagline}
-                      </p>
-                    </div>
-
-                    {item.category && (
+        <div>
+          <div className={cn('hidden md:grid gap-6 border-t-2 border-ink border-b border-b-ink py-3 meta', COLS)}>
+            <span>Company</span>
+            <span>What it does</span>
+            <span>City</span>
+            <span className="text-right">Founded</span>
+            <span className="text-right">Stage</span>
+          </div>
+          <ul className="border-t-2 border-ink md:border-t-0">
+            {filteredItems.map((item) => (
+              <li key={item.id} data-testid="startup-card" className="group border-b border-rule">
+                <Link
+                  href={`/startup/${item.slug}`}
+                  className={cn(
+                    'grid gap-x-6 gap-y-1.5 py-5 -mx-3 px-3 md:items-baseline transition-colors hover:bg-paper-sheet/60',
+                    COLS
+                  )}
+                >
+                  <div className="min-w-0">
+                    {item.logoUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={item.logoUrl}
+                        alt=""
+                        width={28}
+                        height={28}
+                        className="inline-block align-[-0.4rem] mr-2.5 h-7 w-7 object-contain bg-paper-sheet border border-rule"
+                      />
+                    )}
+                    <span className="font-serif text-[1.3125rem] leading-snug text-ink headline-link">{item.name}</span>
+                    {item.crVerified && (
                       <span
-                        className="text-[11px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-md bg-[#F1F5F2] dark:bg-[#132B3D] shrink-0 border border-[#E2E8E4] dark:border-[#1E3A4C]"
-                        style={{ color: item.category.color }}
+                        className="ml-2 font-sans text-[0.65rem] text-moss align-middle whitespace-nowrap"
+                        title="Commercial registration confirmed"
                       >
-                        {item.category.name}
+                        CR ✓
                       </span>
                     )}
                   </div>
-
-                  {/* Zone 2: Key Operational Metrics Ribbon */}
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <span className="px-2.5 py-1 rounded-md bg-[#F1F5F2] dark:bg-[#132B3D] text-[#111827] dark:text-[#FAF9F6] font-bold border border-[#E2E8E4] dark:border-[#1E3A4C]">
-                      {formatStage(item.stage)}
-                    </span>
-                    <span className="px-2.5 py-1 rounded-md bg-[#F1F5F2] dark:bg-[#132B3D] text-[#4B5563] dark:text-[#94A3B8] font-semibold border border-[#E2E8E4] dark:border-[#1E3A4C]">
-                      {item.businessModel}
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-[#4B5563] dark:text-[#94A3B8] bg-[#F1F5F2] dark:bg-[#132B3D] px-2.5 py-1 rounded-md border border-[#E2E8E4] dark:border-[#1E3A4C] font-medium">
-                      <MapPin className="w-3.5 h-3.5 text-[#4B5563] dark:text-[#94A3B8]" />
-                      <span>{item.hqCity}</span>
-                    </span>
-                    <span className="text-xs text-[#4B5563] dark:text-[#94A3B8] bg-[#F1F5F2] dark:bg-[#132B3D] px-2.5 py-1 rounded-md border border-[#E2E8E4] dark:border-[#1E3A4C] font-medium">
-                      Est. {item.foundingYear}
-                    </span>
+                  <div className="min-w-0">
+                    <p className="text-[0.9375rem] leading-snug text-ink-2">{item.tagline}</p>
+                    <p className="mt-1 text-[0.8125rem] text-ink-3">
+                      {[item.category?.name, businessModelLabel(item.businessModel)].filter(Boolean).join(' · ')}
+                    </p>
                   </div>
-
-                  {/* Zone 3: Description */}
-                  <p className="text-sm text-[#374151] dark:text-[#CBD5E1] leading-relaxed line-clamp-2">
-                    {item.description}
+                  {/* Mobile: the facts on one mono line */}
+                  <p className="md:hidden meta mt-1">
+                    {item.hqCity} · {item.foundingYear} · <span className="text-ink">{stageLabel(item.stage)}</span>
                   </p>
-
-                  {/* Zone 4: Key Milestone / Verified Traction */}
-                  {item.keyMetrics && (
-                    <div className="flex items-start gap-2.5 p-3 rounded-lg bg-[#E8F5EF] dark:bg-[#0B6E4F]/20 border border-[#0B6E4F]/25 dark:border-[#19B5A3]/30 text-xs">
-                      <TrendingUp className="w-4 h-4 text-[#0B6E4F] dark:text-[#19B5A3] shrink-0 mt-0.5" />
-                      <span className="text-xs font-semibold text-[#111827] dark:text-[#FAF9F6] leading-snug">
-                        {item.keyMetrics}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Zone 5: Products & Tech Stack Highlights */}
-                  {(productList.length > 0 || techList.length > 0) && (
-                    <div className="space-y-2 pt-1 border-t border-[#E2E8E4] dark:border-[#1E3A4C]">
-                      {productList.length > 0 && (
-                        <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#94A3B8] mr-1 flex items-center gap-1">
-                            <Package className="w-3 h-3 text-[#4B5563] dark:text-[#94A3B8]" />
-                            <span>Products:</span>
-                          </span>
-                          {productList.slice(0, 3).map((prod: string, idx: number) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-0.5 rounded-md bg-[#F1F5F2] dark:bg-[#132B3D] text-[11px] font-medium text-[#111827] dark:text-[#FAF9F6] border border-[#E2E8E4] dark:border-[#1E3A4C]"
-                            >
-                              {prod}
-                            </span>
-                          ))}
-                          {productList.length > 3 && (
-                            <span className="text-[11px] text-[#4B5563] dark:text-[#94A3B8] font-medium">
-                              +{productList.length - 3} more
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {techList.length > 0 && (
-                        <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] dark:text-[#94A3B8] mr-1 flex items-center gap-1">
-                            <Code2 className="w-3 h-3 text-[#4B5563] dark:text-[#94A3B8]" />
-                            <span>Tech:</span>
-                          </span>
-                          {techList.slice(0, 4).map((tech: string, idx: number) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-0.5 rounded-md bg-[#F1F5F2] dark:bg-[#132B3D] text-[11px] font-mono text-[#111827] dark:text-[#FAF9F6] border border-[#E2E8E4] dark:border-[#1E3A4C]"
-                            >
-                              {tech}
-                            </span>
-                          ))}
-                          {techList.length > 4 && (
-                            <span className="text-[11px] font-mono text-[#4B5563] dark:text-[#94A3B8]">
-                              +{techList.length - 4} more
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Zone 6: Card Footer (Clear Action Button) */}
-                <div className="pt-4 mt-5 border-t border-[#E2E8E4] dark:border-[#1E3A4C] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                  <div className="text-xs text-[#4B5563] dark:text-[#94A3B8] space-y-0.5">
-                    <span className="text-[11px] text-slate-400 dark:text-slate-500 block">
-                      Audited {formatDate(item.verifiedAt)}
-                    </span>
-                    {item.sourceName && (
-                      <span className="text-[11px] text-[#4B5563] dark:text-[#94A3B8] font-medium block truncate max-w-[200px]">
-                        via {item.sourceName}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <a
-                      href={item.websiteUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-3.5 py-2 rounded-lg bg-[#F1F5F2] dark:bg-[#132B3D] hover:bg-[#E8F5EF] dark:hover:bg-[#1A374D] text-[#111827] dark:text-[#FAF9F6] text-xs font-bold border border-[#E2E8E4] dark:border-[#1E3A4C] transition-colors"
-                    >
-                      <span>Web</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                    <Link
-                      href={`/startup/${item.slug}`}
-                      className="inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-[#0B6E4F] hover:bg-[#08533C] text-white text-xs font-bold transition-all shadow-xs"
-                    >
-                      <span>View Startup Dossier</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
+                  <span className="hidden md:block text-sm text-ink-3">{item.hqCity}</span>
+                  <span className="hidden md:block font-sans tabular text-sm text-ink-3 text-right">{item.foundingYear}</span>
+                  <span className="hidden md:block font-sans text-sm text-ink text-right whitespace-nowrap">
+                    {stageLabel(item.stage)}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
   );
 };
+
+function FilterSelect({
+  label,
+  value,
+  onChange,
+  children,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  children: React.ReactNode;
+}) {
+  const id = `filter-${label.toLowerCase()}`;
+  return (
+    <div className="min-w-0">
+      <label htmlFor={id} className="meta block mb-1">
+        {label}
+      </label>
+      <div className="relative">
+        <select
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full appearance-none bg-transparent border-b border-ink py-2 pr-6 text-[0.9375rem] text-ink rounded-none cursor-pointer focus:outline-none focus:border-clay transition-colors truncate"
+        >
+          {children}
+        </select>
+        <span
+          aria-hidden
+          className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-[0.5625rem] text-ink-3"
+        >
+          ▼
+        </span>
+      </div>
+    </div>
+  );
+}

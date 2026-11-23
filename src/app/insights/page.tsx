@@ -1,143 +1,217 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import { SiteHeader } from '@/components/public/SiteHeader';
-import { SiteFooter } from '@/components/public/SiteFooter';
-import { getAllPublishedArticles, getAllCategories } from '@/lib/data';
-import { BreadcrumbJsonLd } from '@/lib/seo/json-ld';
-import { getCanonicalUrl, DEFAULT_SEO } from '@/lib/seo/config';
-import { Sparkles, BookOpen, Clock, ArrowRight, ShieldCheck, Tag } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { SiteHeader } from '@/components/public/SiteHeader';
+import { SiteFooter } from '@/components/public/SiteFooter';
+import { MainContainer } from '@/components/public/MainContainer';
+import { CategoryBadge } from '@/components/public/CategoryBadge';
+import { NewsletterBanner } from '@/components/public/NewsletterBanner';
+import { getAllPublishedArticles, getAllCategories } from '@/lib/data';
+import { BreadcrumbJsonLd } from '@/lib/seo/json-ld';
+import { getCanonicalUrl } from '@/lib/seo/config';
+import { formatDate, formatReadingTime } from '@/lib/utils';
 
 export const revalidate = 60;
 
 const canonicalUrl = getCanonicalUrl('/insights');
 
 export const metadata: Metadata = {
-  title: 'Founder Insights & Regulatory Intelligence | Saudi Future Tech',
+  title: 'Analysis | Saudi Future Tech',
   description:
-    'Deep-dive analysis, regulatory tear-downs, market intelligence, and architectural briefs for technology founders building in Saudi Arabia.',
+    'Longer pieces on regulation, infrastructure and markets for people building technology companies in Saudi Arabia.',
   alternates: {
     canonical: canonicalUrl,
   },
 };
 
 export default async function InsightsPage() {
-  const [articles, categories] = await Promise.all([
-    getAllPublishedArticles(),
-    getAllCategories(),
-  ]);
+  const [articles, categories] = await Promise.all([getAllPublishedArticles(), getAllCategories()]);
 
   const breadcrumbs = [
     { label: 'Home', href: '/' },
-    { label: 'Insights & Briefings', current: true },
+    { label: 'Analysis', current: true },
   ];
 
+  const [lead, ...rest] = articles;
+  const seconds = rest.slice(0, 2);
+  const remaining = rest.slice(2);
+
+  // Everything after the top three, filed under its section.
+  const bySection = categories
+    .map((cat) => ({ cat, items: remaining.filter((a) => a.category.slug === cat.slug) }))
+    .filter((g) => g.items.length > 0);
+  const filed = new Set(bySection.flatMap((g) => g.items.map((a) => a.id)));
+  const unfiled = remaining.filter((a) => !filed.has(a.id));
+
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] dark:bg-[#0A1F2C] text-[#111827] dark:text-[#FAF9F6] transition-colors duration-200">
+    <>
       <BreadcrumbJsonLd items={breadcrumbs} />
       <SiteHeader />
 
-      <main className="flex-1 pb-20">
-        {/* 1. Masthead */}
-        <div className="bg-[#F1F5F2] dark:bg-[#0A1F2C] border-b border-[#E2E8E4] dark:border-[#1E3A4C] py-12 sm:py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C] text-xs font-semibold text-[#111827] dark:text-[#FAF9F6]">
-                <BookOpen className="w-3.5 h-3.5 text-[#0B6E4F] dark:text-[#19B5A3]" />
-                <span>Founder Operating Intelligence &amp; Research</span>
+      <main id="main" className="flex-1">
+        <MainContainer className="pt-6 md:pt-8 pb-24 space-y-20 md:space-y-28">
+          <div>
+            <nav aria-label="Breadcrumb" className="meta">
+              <Link href="/" className="hover:text-ink">
+                Home
+              </Link>
+              <span className="mx-2 text-ink-4">/</span>
+              <span>Analysis</span>
+            </nav>
+
+            <header className="mt-10 md:mt-14 pb-8 border-b-2 border-ink grid gap-6 lg:grid-cols-12 lg:gap-x-10 lg:items-end">
+              <div className="lg:col-span-8">
+                <p className="kicker mb-3">For founders and operators</p>
+                <h1 className="font-serif text-display-lg text-ink">Analysis</h1>
+                <p className="mt-5 max-w-2xl font-serif text-[1.25rem] leading-snug text-ink-3">
+                  Longer pieces on the rules, infrastructure and money that shape building a technology company in
+                  Saudi Arabia.
+                </p>
               </div>
-
-              <h1 className="text-3xl sm:text-5xl font-heading font-black tracking-tight text-[#111827] dark:text-[#FAF9F6] leading-tight">
-                Insights &amp; Executive Briefings
-              </h1>
-
-              <p className="text-sm sm:text-base text-[#4B5563] dark:text-[#94A3B8] leading-relaxed">
-                Strategic teardowns, regulatory frameworks, sovereign compute benchmarks, and market analysis designed to help Saudi startup founders make high-conviction architecture and expansion decisions.
+              <p className="meta lg:col-span-4 lg:border-l lg:border-rule lg:pl-10">
+                {articles.length} {articles.length === 1 ? 'piece' : 'pieces'}
               </p>
+            </header>
 
-              <div className="flex flex-wrap items-center gap-6 pt-2 text-xs text-[#4B5563] dark:text-[#94A3B8]">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-[#0B6E4F]" />
-                  <span>Institutional Research • Zero Sponsored Filler</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#C9A227]" />
-                  <span>CMA, SAMA &amp; SDAIA Framework Analysis</span>
-                </div>
+            {!lead ? (
+              <div className="py-16 max-w-xl">
+                <p className="font-serif text-display-sm text-ink">No analysis published yet.</p>
+                <Link href="/latest" className="group mt-4 inline-flex items-center gap-2 text-sm text-ink">
+                  <span className="link-rule">Read the latest news</span>
+                  <span aria-hidden>→</span>
+                </Link>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 2. Featured In-Depth Reports */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {articles.map((art) => (
-              <article
-                key={art.id}
-                className="group bg-white rounded-lg border border-[#E2E8E4] hover:border-[#0B6E4F]/50 hover:shadow-md transition-all overflow-hidden flex flex-col justify-between"
-              >
-                <div>
-                  {art.coverImageUrl && (
-                    <div className="relative aspect-[16/9] w-full bg-[#F1F5F2] overflow-hidden">
+            ) : (
+              <section aria-label="Top analysis" className="pt-8 grid gap-y-10 lg:grid-cols-12 lg:gap-x-10">
+                <article className={`group rise ${seconds.length ? 'lg:col-span-7' : 'lg:col-span-12'}`}>
+                  <Link
+                    href={`/article/${lead.slug}`}
+                    tabIndex={-1}
+                    aria-hidden
+                    className="relative block aspect-[4/3] md:aspect-[16/11] overflow-hidden bg-paper-band"
+                  >
+                    {lead.coverImageUrl && (
                       <Image
-                        src={art.coverImageUrl}
-                        alt={art.title}
+                        src={lead.coverImageUrl}
+                        alt=""
                         fill
-                        className="object-cover group-hover:scale-102 transition-transform duration-300"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        priority
+                        sizes="(max-width: 1024px) 100vw, 58vw"
+                        className="object-cover img-warm transition-transform duration-[1200ms] ease-out group-hover:scale-[1.02]"
                       />
-                    </div>
-                  )}
-
-                  <div className="p-5 sm:p-6 space-y-3">
-                    <div className="flex items-center justify-between text-xs">
-                      {art.category && (
-                        <span
-                          className="font-bold text-[10px] uppercase tracking-wider"
-                          style={{ color: art.category.color }}
-                        >
-                          {art.category.name}
-                        </span>
-                      )}
-                      <span className="inline-flex items-center gap-1 text-[11px] text-[#4B5563]">
-                        <Clock className="w-3 h-3 text-[#C9A227]" />
-                        {art.readingTimeMinutes} min read
-                      </span>
-                    </div>
-
-                    <Link href={`/article/${art.slug}`}>
-                      <h2 className="font-heading font-bold text-lg text-[#111827] group-hover:text-[#0B6E4F] transition-colors leading-snug line-clamp-2">
-                        {art.title}
-                      </h2>
-                    </Link>
-
-                    <p className="text-xs text-[#4B5563] leading-relaxed line-clamp-3">
-                      {art.excerpt}
+                    )}
+                  </Link>
+                  <div className="mt-6">
+                    <CategoryBadge category={lead.category} size="md" />
+                    <h2 className="mt-3 font-serif text-display-md text-ink">
+                      <Link href={`/article/${lead.slug}`} className="headline-link">
+                        {lead.title}
+                      </Link>
+                    </h2>
+                    <p className="mt-4 max-w-2xl font-serif text-lg italic leading-snug text-ink-2">{lead.excerpt}</p>
+                    <p className="meta mt-4">
+                      <span className="text-ink-2">{lead.author?.displayName}</span> ·{' '}
+                      <time dateTime={lead.publishedAt}>{formatDate(lead.publishedAt)}</time> ·{' '}
+                      {formatReadingTime(lead.readingTimeMinutes)}
                     </p>
                   </div>
-                </div>
+                </article>
 
-                <div className="px-5 sm:px-6 pb-5 pt-3 border-t border-[#E2E8E4] flex items-center justify-between text-xs">
-                  <span className="text-[11px] text-[#4B5563]">
-                    {art.author?.displayName || 'SFT Research Desk'}
-                  </span>
-                  <Link
-                    href={`/article/${art.slug}`}
-                    className="inline-flex items-center gap-1 font-semibold text-[#0B6E4F] hover:text-[#08533C] transition-colors"
-                  >
-                    <span>Read Briefing</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-              </article>
-            ))}
+                {seconds.length > 0 && (
+                  <div className="lg:col-span-5 lg:border-l lg:border-rule lg:pl-10 divide-y divide-rule border-t border-ink lg:border-t-0">
+                    {seconds.map((a, i) => (
+                      <article
+                        key={a.id}
+                        className="group py-8 lg:first:pt-0 rise"
+                        style={{ animationDelay: `${80 + i * 60}ms` }}
+                      >
+                        {a.coverImageUrl && (
+                          <Link
+                            href={`/article/${a.slug}`}
+                            tabIndex={-1}
+                            aria-hidden
+                            className="relative block aspect-[16/9] overflow-hidden bg-paper-band mb-4"
+                          >
+                            <Image
+                              src={a.coverImageUrl}
+                              alt=""
+                              fill
+                              sizes="(max-width: 1024px) 100vw, 40vw"
+                              className="object-cover img-warm"
+                            />
+                          </Link>
+                        )}
+                        <CategoryBadge category={a.category} />
+                        <h3 className="mt-2 font-serif text-[1.5rem] leading-[1.18] text-ink">
+                          <Link href={`/article/${a.slug}`} className="headline-link">
+                            {a.title}
+                          </Link>
+                        </h3>
+                        <p className="meta mt-3">
+                          {a.author?.displayName} · {formatReadingTime(a.readingTimeMinutes)}
+                        </p>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
           </div>
-        </div>
+
+          {(bySection.length > 0 || unfiled.length > 0) && (
+            <section aria-labelledby="by-section">
+              <div className="border-t-2 border-ink pt-4 mb-2">
+                <h2 id="by-section" className="font-serif text-display-sm md:text-display-md text-ink">
+                  By section
+                </h2>
+              </div>
+
+              <div>
+                {[...bySection, ...(unfiled.length ? [{ cat: null, items: unfiled }] : [])].map(({ cat, items }) => (
+                  <div
+                    key={cat?.slug ?? 'other'}
+                    className="grid gap-y-2 lg:grid-cols-12 lg:gap-x-10 border-b border-rule py-6 lg:py-8"
+                  >
+                    <div className="lg:col-span-3">
+                      {cat ? (
+                        <Link href={`/category/${cat.slug}`} className="group inline-flex items-baseline gap-2">
+                          <span className="font-serif text-[1.375rem] leading-tight text-ink headline-link">{cat.name}</span>
+                          <span aria-hidden className="text-ink-4 transition-all duration-300 group-hover:text-clay group-hover:translate-x-0.5">
+                            →
+                          </span>
+                        </Link>
+                      ) : (
+                        <span className="font-serif text-[1.375rem] leading-tight text-ink">Other</span>
+                      )}
+                    </div>
+                    <ul className="lg:col-span-9 divide-y divide-rule">
+                      {items.map((a) => (
+                        <li key={a.id} className="group py-3 first:pt-0 last:pb-0">
+                          <article className="grid sm:grid-cols-[1fr_auto] gap-x-8 gap-y-1 sm:items-baseline">
+                            <h3 className="font-serif text-[1.1875rem] leading-snug text-ink">
+                              <Link href={`/article/${a.slug}`} className="headline-link">
+                                {a.title}
+                              </Link>
+                            </h3>
+                            <p className="meta whitespace-nowrap">
+                              {a.author?.displayName} · {formatReadingTime(a.readingTimeMinutes)}
+                            </p>
+                          </article>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <NewsletterBanner />
+        </MainContainer>
       </main>
 
       <SiteFooter />
-    </div>
+    </>
   );
 }

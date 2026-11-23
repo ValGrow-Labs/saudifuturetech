@@ -1,17 +1,17 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { SiteHeader } from '@/components/public/SiteHeader';
 import { SiteFooter } from '@/components/public/SiteFooter';
+import { MainContainer } from '@/components/public/MainContainer';
 import { getStartups } from '@/lib/founder-intelligence';
 import prisma from '@/lib/prisma';
 import { StartupDirectory, StartupItem } from '@/components/public/StartupDirectory';
-import { Building2, ShieldCheck, Sparkles, MapPin } from 'lucide-react';
-import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Saudi Startup Directory | Saudi Future Tech',
+  title: 'Saudi startup directory | Saudi Future Tech',
   description:
-    'Verified registry of technology startups and scaleups building in the Kingdom of Saudi Arabia across AI, FinTech, GovTech, Clean Energy, and Smart Cities.',
+    'A hand-checked register of technology companies founded or based in Saudi Arabia, with stage, city, business model and sources for each listing.',
 };
 
 export const dynamic = 'force-dynamic';
@@ -79,94 +79,71 @@ export default async function StartupsPage({ searchParams }: PageProps) {
 
   const crVerifiedCount = startups.filter((s) => s.crVerified).length;
   const uniqueCities = Array.from(new Set(startups.map((s) => s.hqCity))).length;
+  const sectorCount = Array.from(new Set(startups.map((s) => s.category?.slug).filter(Boolean))).length;
+  const lastChecked = rawStartups.reduce<Date | null>(
+    (latest, s) => (!latest || s.verifiedAt > latest ? s.verifiedAt : latest),
+    null
+  );
+
+  const facts = [
+    `${startups.length} ${startups.length === 1 ? 'company' : 'companies'}`,
+    `${uniqueCities} ${uniqueCities === 1 ? 'city' : 'cities'}`,
+    sectorCount ? `${sectorCount} ${sectorCount === 1 ? 'sector' : 'sectors'}` : null,
+    crVerifiedCount ? `${crVerifiedCount} with a confirmed CR` : null,
+    lastChecked
+      ? `Last checked ${new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(lastChecked)}`
+      : null,
+  ].filter(Boolean);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] dark:bg-[#0A1F2C] text-[#111827] dark:text-[#FAF9F6] font-sans transition-colors duration-200">
+    <>
       <SiteHeader />
 
-      <main className="flex-1 pb-20">
-        {/* 1. Page Hero Banner */}
-        <div className="bg-[#FAF9F6] dark:bg-[#0A1F2C] border-b border-[#E2E8E4] dark:border-[#1E3A4C] py-12 sm:py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl space-y-4">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F1F5F2] dark:bg-[#132B3D] border border-[#E2E8E4] dark:border-[#1E3A4C] text-xs font-semibold text-[#0A1F2C] dark:text-[#FAF9F6]">
-                <Building2 className="w-3.5 h-3.5 text-[#0B6E4F] dark:text-[#19B5A3]" />
-                <span>Verified Saudi Tech Registry</span>
-              </div>
+      <main id="main" className="flex-1">
+        <MainContainer className="pt-10 md:pt-14 pb-24">
+          <header className="max-w-3xl">
+            <p className="kicker mb-3">The register</p>
+            <h1 className="font-serif text-display-lg text-ink">Saudi startups</h1>
+            <p className="mt-4 max-w-2xl text-[1.0625rem] leading-relaxed text-ink-3">
+              Technology companies founded or based in Saudi Arabia, each with a working product and a named team. We
+              check every listing against the company’s own site and public filings, and note the date we last did.
+            </p>
+            <p className="meta mt-5">{facts.join(' · ')}</p>
+          </header>
 
-              <h1 className="text-3xl sm:text-5xl font-heading font-black tracking-tight text-[#111827] dark:text-[#FAF9F6] leading-tight">
-                Saudi Startup Directory
-              </h1>
-
-              <p className="text-sm sm:text-base text-[#4B5563] dark:text-[#94A3B8] leading-relaxed">
-                Explore verified technology companies founded or headquartered in Saudi Arabia. Track their stages, core tech stacks, business models, and verified traction across the Kingdom’s six economic pillars.
-              </p>
-
-              <div className="flex flex-wrap items-center gap-6 pt-2 text-xs text-[#4B5563] dark:text-[#94A3B8]">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#0B6E4F] dark:bg-[#19B5A3]" />
-                  <span className="font-bold text-[#111827] dark:text-[#FAF9F6]">{startups.length} Verified Ventures</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-[#0B6E4F] dark:text-[#19B5A3]" />
-                  <span>{crVerifiedCount} Commercial Registrations (CR) Audited</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-[#19B5A3]" />
-                  <span>{uniqueCities} Sovereign Tech Hubs</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-[#C9A227]" />
-                  <span>Zero Speculation Policy</span>
-                </div>
-              </div>
-            </div>
+          <div className="mt-12 md:mt-14">
+            <StartupDirectory
+              initialStartups={startups}
+              categories={categories}
+              initialFilters={{
+                q: resolvedParams.q || '',
+                pillar: resolvedParams.pillar || 'ALL',
+                city: resolvedParams.city || 'ALL',
+                model: resolvedParams.model || 'ALL',
+                stage: resolvedParams.stage || 'ALL',
+                crVerified: resolvedParams.crVerified === 'true',
+                sort: resolvedParams.sort || 'RECENT',
+              }}
+            />
           </div>
-        </div>
 
-        {/* 2. Directory Component */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-          <StartupDirectory
-            initialStartups={startups}
-            categories={categories}
-            initialFilters={{
-              q: resolvedParams.q || '',
-              pillar: resolvedParams.pillar || 'ALL',
-              city: resolvedParams.city || 'ALL',
-              model: resolvedParams.model || 'ALL',
-              stage: resolvedParams.stage || 'ALL',
-              crVerified: resolvedParams.crVerified === 'true',
-              sort: resolvedParams.sort || 'RECENT',
-            }}
-          />
-        </div>
-
-        {/* 3. Founder Submission Callout */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
-          <div className="bg-[#0A1F2C] text-white rounded-lg p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm border border-[#1E3A4C]">
-            <div className="space-y-2 max-w-xl">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#19B5A3]">
-                Are you a founder building in Saudi Arabia?
-              </span>
-              <h2 className="text-2xl font-heading font-bold text-white">
-                Get your venture listed in the SFT Directory
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-300">
-                Submit your company profile for editorial verification. Reach Saudi institutional investors, sovereign funds, and fellow technical builders.
+          <aside className="mt-20 md:mt-24 border-t-2 border-ink pt-5 grid gap-6 md:grid-cols-12 md:items-baseline">
+            <h2 className="md:col-span-5 font-serif text-display-sm text-ink">Building a company in Saudi Arabia?</h2>
+            <div className="md:col-span-7 md:border-l md:border-rule md:pl-10">
+              <p className="text-[0.9375rem] leading-relaxed text-ink-2 max-w-xl">
+                We add companies that have a commercial registration, a product people can use and a team we can name.
+                Send us your details and a link to your public filings, and we’ll check them before listing.
               </p>
+              <Link href="/about#listings" className="group mt-4 inline-flex items-center gap-2 text-sm text-ink">
+                <span className="link-rule">How we check listings</span>
+                <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+              </Link>
             </div>
-            <Link
-              href="/newsletter"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-md bg-[#0B6E4F] hover:bg-[#08533C] text-white font-bold text-xs uppercase tracking-wider transition-all shrink-0 shadow-xs"
-            >
-              <span>Submit Your Startup</span>
-              <span>&rarr;</span>
-            </Link>
-          </div>
-        </div>
+          </aside>
+        </MainContainer>
       </main>
 
       <SiteFooter />
-    </div>
+    </>
   );
 }

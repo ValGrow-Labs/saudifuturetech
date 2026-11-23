@@ -42,17 +42,23 @@ export default async function AdminSubscribersPage({ searchParams }: AdminSubscr
     orderBy: { createdAt: 'desc' },
   });
 
+  const isSuperAdmin = currentUser.role === 'SUPER_ADMIN';
+
   return (
-    <div className="space-y-6 font-sans">
-      <div className="pb-4 border-b border-editorial-hairline">
-        <div className="text-[10px] uppercase font-bold tracking-widest text-ink-muted font-sans mb-1">
-          Audience & Distribution
-        </div>
-        <PageHeading
-          title="Newsletter Subscribers"
-          description="Manage active readers, verified consent audit trails, unsubscription preferences, and secure CSV exports."
-        />
-      </div>
+    <div className="space-y-6">
+      <PageHeading
+        title="Subscribers"
+        description="People who signed up for the newsletter, with the date they gave consent."
+      >
+        {isSuperAdmin ? (
+          <a href="/api/admin/subscribers/export" download className="btn-quiet">
+            Export active as CSV
+            <span className="font-sans tabular text-[0.75rem]">{activeCount}</span>
+          </a>
+        ) : (
+          <span className="text-[0.8125rem] text-ink-3">Only super admins can export.</span>
+        )}
+      </PageHeading>
 
       <SubscriberManager
         subscribers={subscribers}
@@ -61,9 +67,8 @@ export default async function AdminSubscribersPage({ searchParams }: AdminSubscr
         unsubscribedCount={unsubscribedCount}
         initialSearch={searchQuery}
         initialStatus={activeStatus}
-        isSuperAdmin={currentUser.role === 'SUPER_ADMIN'}
+        isSuperAdmin={isSuperAdmin}
       />
     </div>
   );
 }
-

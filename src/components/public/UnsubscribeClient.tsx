@@ -2,9 +2,17 @@
 
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { MailX, CheckCircle2, AlertTriangle, Loader2, ArrowLeft } from 'lucide-react';
 import { unsubscribeNewsletterAction } from '@/actions/newsletter';
 import { Button } from '@/components/ui/Button';
+
+function BackLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link href={href} className="group inline-flex items-center gap-2 text-sm text-ink">
+      <span className="link-rule">{children}</span>
+      <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+    </Link>
+  );
+}
 
 export function UnsubscribeClient({ token }: { token?: string }) {
   const [isPending, startTransition] = useTransition();
@@ -20,93 +28,65 @@ export function UnsubscribeClient({ token }: { token?: string }) {
 
   if (!token) {
     return (
-      <div className="p-8 bg-editorial-pure rounded-none border border-editorial-hairline text-center space-y-4 max-w-md mx-auto shadow-sm">
-        <div className="w-12 h-12 rounded-full bg-editorial-sand border border-editorial-hairline flex items-center justify-center text-ink-muted mx-auto">
-          <AlertTriangle className="w-6 h-6 text-amber-600" />
-        </div>
-        <h2 className="text-xl font-bold font-serif text-ink-high">Missing Unsubscribe Link</h2>
-        <p className="text-xs text-ink-muted leading-relaxed font-sans">
-          This unsubscription page requires a secure personal token from the footer of your Saudi Future Tech email dispatch.
+      <div className="max-w-2xl">
+        <p className="kicker mb-3">The Sunday Brief</p>
+        <h1 className="font-serif text-display-md text-ink">This unsubscribe link is incomplete.</h1>
+        <p className="mt-4 text-[1.0625rem] leading-relaxed text-ink-3">
+          Use the unsubscribe link at the bottom of any Sunday Brief email — it carries a code that identifies your
+          address. If that doesn’t work, contact us through the about page and we’ll remove you by hand.
         </p>
-        <Link href="/" className="inline-block pt-2">
-          <Button variant="secondary" size="sm" className="text-xs font-sans uppercase">
-            Return to Homepage
-          </Button>
-        </Link>
+        <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3">
+          <BackLink href="/about#contact">Contact us</BackLink>
+          <BackLink href="/">Go to the front page</BackLink>
+        </div>
       </div>
     );
   }
 
   if (result?.success) {
     return (
-      <div className="p-8 bg-editorial-pure rounded-none border border-emerald-500/40 text-center space-y-4 max-w-md mx-auto shadow-sm">
-        <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mx-auto">
-          <CheckCircle2 className="w-6 h-6" />
-        </div>
-        <h2 className="text-xl font-bold font-serif text-ink-high">Unsubscribed Successfully</h2>
-        <p className="text-xs text-ink-muted leading-relaxed font-sans">
+      <div className="max-w-2xl" role="status">
+        <p className="kicker mb-3">The Sunday Brief</p>
+        <h1 className="font-serif text-display-md text-ink">You’ve been unsubscribed.</h1>
+        <p className="mt-4 text-[1.0625rem] leading-relaxed text-ink-3">
           {result.email ? (
             <>
-              <strong className="text-ink-high font-semibold">{result.email}</strong> has been removed from all future Saudi Future Tech email briefings.
+              We won’t send the Sunday Brief to <span className="font-sans text-[0.9375rem] text-ink">{result.email}</span>{' '}
+              again.
             </>
           ) : (
-            'You have been successfully removed from our subscriber list.'
-          )}
+            'We won’t send you the Sunday Brief again.'
+          )}{' '}
+          If you change your mind, you can sign up again at any time.
         </p>
-        <div className="pt-2">
-          <Link href="/">
-            <Button variant="secondary" size="sm" className="text-xs font-sans uppercase flex items-center gap-1.5 mx-auto">
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Publication</span>
-            </Button>
-          </Link>
+        <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3">
+          <BackLink href="/">Go to the front page</BackLink>
+          <BackLink href="/newsletter">Sign up again</BackLink>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-8 bg-editorial-pure rounded-none border border-editorial-hairline text-center space-y-5 max-w-md mx-auto shadow-sm">
-      <div className="w-12 h-12 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 mx-auto">
-        <MailX className="w-6 h-6" />
-      </div>
-      <div className="space-y-1.5">
-        <h2 className="text-xl font-bold font-serif text-ink-high">Confirm Unsubscription</h2>
-        <p className="text-xs text-ink-muted leading-relaxed font-sans">
-          Are you sure you want to stop receiving the Saudi Future Tech Executive Briefing? You will miss our weekly analysis on foundation models, giga-projects, and venture deals.
-        </p>
-      </div>
+    <div className="max-w-2xl">
+      <p className="kicker mb-3">The Sunday Brief</p>
+      <h1 className="font-serif text-display-md text-ink">Stop receiving the Sunday Brief?</h1>
+      <p className="mt-4 text-[1.0625rem] leading-relaxed text-ink-3">
+        Confirm below and we’ll take your address off the list. You won’t get any more emails from us.
+      </p>
 
       {result?.error && (
-        <div className="p-3 bg-rose-50 border border-rose-300 rounded-none text-xs text-rose-800">
+        <p role="alert" className="mt-6 border-l-2 border-clay pl-4 py-1 text-[0.9375rem] text-clay">
           {result.error}
-        </div>
+        </p>
       )}
 
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-        <Link href="/" className="w-full sm:w-auto">
-          <Button variant="outline" size="sm" className="w-full text-xs font-sans uppercase">
-            Keep My Subscription
-          </Button>
-        </Link>
-        <Button
-          variant="primary"
-          size="sm"
-          disabled={isPending}
-          onClick={handleConfirmUnsubscribe}
-          className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white text-xs font-sans uppercase flex items-center justify-center gap-1.5"
-        >
-          {isPending ? (
-            <>
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              <span>Unsubscribing...</span>
-            </>
-          ) : (
-            <span>Confirm Unsubscribe</span>
-          )}
+      <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
+        <Button variant="primary" size="lg" disabled={isPending} onClick={handleConfirmUnsubscribe}>
+          {isPending ? 'Unsubscribing…' : 'Unsubscribe'}
         </Button>
+        <BackLink href="/">Keep my subscription</BackLink>
       </div>
     </div>
   );
 }
-

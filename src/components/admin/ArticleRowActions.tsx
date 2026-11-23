@@ -3,15 +3,6 @@
 import React, { useTransition } from 'react';
 import Link from 'next/link';
 import {
-  ExternalLink,
-  Edit,
-  CheckCircle2,
-  ArrowDownCircle,
-  Clock,
-  Trash2,
-  Loader2,
-} from 'lucide-react';
-import {
   publishArticleAction,
   unpublishArticleAction,
   submitForReviewAction,
@@ -38,7 +29,7 @@ export function ArticleRowActions({
   const [isPending, startTransition] = useTransition();
 
   const handlePublish = () => {
-    if (confirm('Are you sure you want to publish this article immediately to saudifuturetech.com?')) {
+    if (confirm('Publish this article now? It will go live on the site immediately.')) {
       startTransition(async () => {
         await publishArticleAction(articleId);
       });
@@ -46,7 +37,7 @@ export function ArticleRowActions({
   };
 
   const handleUnpublish = () => {
-    if (confirm('Revert this article to DRAFT? It will be removed from the public website.')) {
+    if (confirm('Move this article back to draft? It will be removed from the public site.')) {
       startTransition(async () => {
         await unpublishArticleAction(articleId);
       });
@@ -60,7 +51,7 @@ export function ArticleRowActions({
   };
 
   const handleDelete = () => {
-    if (confirm('Are you sure you want to permanently delete this article? This action cannot be undone.')) {
+    if (confirm('Delete this article permanently? This cannot be undone.')) {
       startTransition(async () => {
         await deleteArticleAction(articleId);
       });
@@ -68,84 +59,54 @@ export function ArticleRowActions({
   };
 
   if (isPending) {
-    return (
-      <div className="flex items-center justify-end gap-2 text-sft-text-muted">
-        <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-yellow" />
-        <span className="text-[11px] font-mono">Updating...</span>
-      </div>
-    );
+    return <span className="font-sans text-[0.71875rem] text-ink-3">Updating…</span>;
   }
 
   return (
-    <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
-      {/* Editorial Canvas Preview */}
-      <Link
-        href={`/admin/articles/${articleId}/preview`}
-        className="p-1.5 rounded-sm bg-brand-dark/80 hover:bg-brand-surface text-sft-text-muted hover:text-brand-yellow border border-sft transition-colors"
-        title="View Editorial Preview"
-      >
-        <ExternalLink className="w-3.5 h-3.5" />
-      </Link>
-
-      {/* Edit (if permitted) */}
+    <div className="flex items-center justify-end gap-x-3 whitespace-nowrap">
       {canEdit && (
-        <Link
-          href={`/admin/articles/${articleId}/edit`}
-          className="p-1.5 rounded-sm bg-brand-dark/80 hover:bg-brand-surface text-sft-text-muted hover:text-brand-cloud border border-sft transition-colors"
-          title="Edit Story"
-        >
-          <Edit className="w-3.5 h-3.5" />
+        <Link href={`/admin/articles/${articleId}/edit`} className="row-action">
+          Edit
         </Link>
       )}
 
-      {/* Submit for Review (if DRAFT and user is author or editor) */}
+      <Link href={`/admin/articles/${articleId}/preview`} className="row-action">
+        Preview
+      </Link>
+
       {status === 'DRAFT' && (
-        <button
-          type="button"
-          onClick={handleSubmitForReview}
-          className="p-1.5 rounded-sm bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition-colors"
-          title="Submit for Editorial Review"
-        >
-          <Clock className="w-3.5 h-3.5" />
+        <button type="button" onClick={handleSubmitForReview} className="row-action" title="Submit for review">
+          Submit
         </button>
       )}
 
-      {/* Quick Publish (Editors & Super Admins) */}
       {canPublish && (status === 'DRAFT' || status === 'IN_REVIEW' || status === 'SCHEDULED') && (
         <button
           type="button"
           onClick={handlePublish}
-          className="p-1.5 rounded-sm bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-colors"
-          title={status === 'SCHEDULED' ? 'Publish Immediately (Override Schedule)' : 'Approve & Publish to Production'}
+          className="row-action"
+          title={status === 'SCHEDULED' ? 'Publish now, ignoring the schedule' : 'Publish now'}
         >
-          <CheckCircle2 className="w-3.5 h-3.5" />
+          Publish
         </button>
       )}
 
-      {/* Quick Unpublish / Cancel Schedule (Editors & Super Admins) */}
       {canPublish && (status === 'PUBLISHED' || status === 'SCHEDULED') && (
         <button
           type="button"
           onClick={handleUnpublish}
-          className="p-1.5 rounded-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-600 transition-colors"
-          title={status === 'SCHEDULED' ? 'Cancel Scheduled Release (Revert to Draft)' : 'Unpublish to Draft'}
+          className="row-action"
+          title={status === 'SCHEDULED' ? 'Cancel the schedule and move back to draft' : 'Move back to draft'}
         >
-          <ArrowDownCircle className="w-3.5 h-3.5" />
+          {status === 'SCHEDULED' ? 'Unschedule' : 'Unpublish'}
         </button>
       )}
 
-      {/* Delete (if permitted) */}
       {canDelete && (
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="p-1.5 rounded-sm bg-red-950/20 hover:bg-red-900/40 text-red-400/80 hover:text-red-300 border border-red-900/40 transition-colors"
-          title="Delete Article"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
+        <button type="button" onClick={handleDelete} className="row-action-danger">
+          Delete
         </button>
       )}
     </div>
   );
 }
-

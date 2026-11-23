@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { Plus, Edit2, Trash2, Check, X, AlertTriangle, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
+import { PageHeading } from '@/components/ui/PageHeading';
+import { StatusDot, Note, type Tone } from '@/components/ui/StatusDot';
 import {
   createCategoryAction,
   updateCategoryAction,
@@ -102,7 +104,7 @@ export function CategoryManager({ categories }: { categories: CategoryItem[] }) 
   };
 
   const handleDelete = (id: string, name: string) => {
-    if (confirm(`Are you sure you want to delete category "${name}"?`)) {
+    if (confirm(`Delete the section "${name}"?`)) {
       setErrorMsg(null);
       startTransition(async () => {
         const result = await deleteCategoryAction(id);
@@ -114,52 +116,38 @@ export function CategoryManager({ categories }: { categories: CategoryItem[] }) 
   };
 
   return (
-    <div className="space-y-6 font-sans">
-      {errorMsg && (
-        <div className="p-3.5 bg-red-950/40 border border-red-500/40 rounded-sm text-xs text-red-200 flex items-start gap-2.5">
-          <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-          <p className="font-sans text-red-300">{errorMsg}</p>
-        </div>
-      )}
-
-      {/* Action to trigger Create */}
-      <div className="flex justify-end">
+    <div className="space-y-6">
+      <PageHeading title="Sections" description="The coverage sections articles are filed under, in the order they appear in navigation.">
         {!isCreating && (
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            onClick={() => setIsCreating(true)}
-            className="font-heading uppercase tracking-wider text-xs flex items-center gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Category Pillar</span>
+          <Button type="button" onClick={() => setIsCreating(true)}>
+            Add section
           </Button>
         )}
-      </div>
+      </PageHeading>
 
-      {/* Create Form */}
+      {errorMsg && (
+        <Note tone="error" onDismiss={() => setErrorMsg(null)}>
+          {errorMsg}
+        </Note>
+      )}
+
+      {/* Create form */}
       {isCreating && (
-        <form onSubmit={handleCreate} className="p-5 bg-brand-surface border border-brand-yellow/40 rounded-sm space-y-4">
-          <div className="flex items-center justify-between border-b border-sft pb-3">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-brand-yellow font-heading">
-              New Category Pillar
-            </h3>
-            <button
-              type="button"
-              onClick={() => setIsCreating(false)}
-              className="text-sft-text-muted hover:text-brand-cloud"
-            >
-              <X className="w-4 h-4" />
+        <form onSubmit={handleCreate} className="panel p-5 space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="panel-title">New section</h2>
+            <button type="button" onClick={() => setIsCreating(false)} className="row-action">
+              Close
             </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase text-sft-text-muted font-heading">
-                Name *
+            <div>
+              <label htmlFor="cat-new-name" className="field-label">
+                Name
               </label>
               <input
+                id="cat-new-name"
                 type="text"
                 value={newName}
                 onChange={(e) => {
@@ -171,198 +159,183 @@ export function CategoryManager({ categories }: { categories: CategoryItem[] }) 
                       .replace(/[\s_-]+/g, '-')
                   );
                 }}
-                placeholder="e.g. Clean Energy"
+                placeholder="Clean Energy"
                 required
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-1.5 text-xs text-brand-cloud focus:border-brand-yellow focus:outline-none"
+                className="field"
               />
             </div>
-
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase text-sft-text-muted font-heading">
-                Slug *
+            <div>
+              <label htmlFor="cat-new-slug" className="field-label">
+                Slug
               </label>
               <input
+                id="cat-new-slug"
                 type="text"
                 value={newSlug}
                 onChange={(e) => setNewSlug(e.target.value)}
                 placeholder="clean-energy"
                 required
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-1.5 text-xs font-mono text-brand-cloud focus:border-brand-yellow focus:outline-none"
+                className="field font-sans"
               />
             </div>
-
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase text-sft-text-muted font-heading">
-                Accent Hex
+            <div>
+              <label htmlFor="cat-new-color" className="field-label">
+                Accent colour
               </label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
+                  aria-label="Pick accent colour"
                   value={newColor}
                   onChange={(e) => setNewColor(e.target.value)}
-                  className="w-8 h-8 rounded-sm bg-transparent cursor-pointer border border-sft"
+                  className="h-[2.375rem] w-10 shrink-0 cursor-pointer rounded-sm border border-rule bg-paper-sheet p-1"
                 />
                 <input
+                  id="cat-new-color"
                   type="text"
                   value={newColor}
                   onChange={(e) => setNewColor(e.target.value)}
-                  className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-1.5 text-xs font-mono text-brand-cloud focus:border-brand-yellow focus:outline-none"
+                  className="field font-sans"
                 />
               </div>
+              <p className="field-hint">Stored for reference; the public site doesn&apos;t use it.</p>
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="block text-[11px] font-bold uppercase text-sft-text-muted font-heading">
+          <div>
+            <label htmlFor="cat-new-desc" className="field-label">
               Description
             </label>
             <textarea
+              id="cat-new-desc"
               rows={2}
               value={newDesc}
               onChange={(e) => setNewDesc(e.target.value)}
-              placeholder="Editorial description of this pillar..."
-              className="w-full bg-brand-dark border border-sft rounded-sm p-2 text-xs text-brand-cloud focus:border-brand-yellow focus:outline-none"
+              placeholder="One line on what this section covers."
+              className="field"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-sft">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsCreating(false)}
-              className="text-xs"
-            >
+          <div className="flex items-center justify-end gap-2 pt-1">
+            <Button type="button" variant="ghost" onClick={() => setIsCreating(false)}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="sm"
-              disabled={isPending}
-              className="text-xs font-heading uppercase"
-            >
-              {isPending ? 'Saving...' : 'Create Category'}
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Saving…' : 'Create section'}
             </Button>
           </div>
         </form>
       )}
 
-      {/* Category List Table */}
-      <div className="bg-brand-surface rounded-sm border border-sft overflow-hidden shadow-sm">
-        <table className="w-full text-left border-collapse text-xs">
+      <p className="meta">{categories.length} sections</p>
+
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="data-table min-w-[760px]">
           <thead>
-            <tr className="border-b border-sft bg-brand-dark/60 text-sft-text-muted font-heading uppercase tracking-wider text-[11px]">
-              <th className="py-3 px-4 font-bold">Category Pillar</th>
-              <th className="py-3 px-4 font-bold">Slug</th>
-              <th className="py-3 px-4 font-bold">Articles</th>
-              <th className="py-3 px-4 font-bold">Accent Color</th>
-              <th className="py-3 px-4 font-bold">Order</th>
-              <th className="py-3 px-4 font-bold text-right">Actions</th>
+            <tr>
+              <th>Section</th>
+              <th>Slug</th>
+              <th className="text-right">Articles</th>
+              <th>Accent</th>
+              <th className="text-right">Order</th>
+              <th className="text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-sft/50">
+          <tbody>
+            {categories.length === 0 && (
+              <tr>
+                <td colSpan={6} className="py-10">
+                  <p className="font-serif text-lg text-ink">No sections yet.</p>
+                  <p className="mt-1 text-sm text-ink-3">Add one so articles have somewhere to be filed.</p>
+                </td>
+              </tr>
+            )}
             {categories.map((cat) => {
               const isEditing = editingId === cat.id;
 
               if (isEditing) {
                 return (
-                  <tr key={cat.id} className="bg-brand-dark/80 text-brand-cloud">
-                    <td className="py-3 px-4">
+                  <tr key={cat.id} className="bg-paper-sheet">
+                    <td>
                       <input
                         type="text"
+                        aria-label="Name"
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
-                        className="w-full bg-brand-surface border border-brand-yellow rounded-sm px-2 py-1 text-xs text-brand-cloud"
+                        className="field !py-1"
                       />
                     </td>
-                    <td className="py-3 px-4">
+                    <td>
                       <input
                         type="text"
+                        aria-label="Slug"
                         value={editSlug}
                         onChange={(e) => setEditSlug(e.target.value)}
-                        className="w-full bg-brand-surface border border-sft rounded-sm px-2 py-1 text-xs font-mono text-brand-cloud"
+                        className="field !py-1 font-sans"
                       />
                     </td>
-                    <td className="py-3 px-4 text-sft-text-muted font-mono">{cat._count.articles}</td>
-                    <td className="py-3 px-4">
+                    <td className="text-right font-sans tabular text-ink-3">{cat._count.articles}</td>
+                    <td>
                       <input
                         type="text"
+                        aria-label="Accent colour"
                         value={editColor}
                         onChange={(e) => setEditColor(e.target.value)}
-                        className="w-24 bg-brand-surface border border-sft rounded-sm px-2 py-1 text-xs font-mono text-brand-cloud"
+                        className="field !py-1 !w-28 font-sans"
                       />
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="text-right">
                       <input
                         type="number"
+                        aria-label="Order"
                         value={editOrder}
                         onChange={(e) => setEditOrder(parseInt(e.target.value, 10) || 0)}
-                        className="w-16 bg-brand-surface border border-sft rounded-sm px-2 py-1 text-xs font-mono text-brand-cloud"
+                        className="field !py-1 !w-20 ml-auto font-sans tabular"
                       />
                     </td>
-                    <td className="py-3 px-4 text-right space-x-2">
-                      <button
-                        type="button"
-                        onClick={() => handleUpdate(cat.id)}
-                        disabled={isPending}
-                        className="p-1 rounded-sm bg-brand-yellow text-brand-graphite"
-                      >
-                        <Check className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={cancelEdit}
-                        className="p-1 rounded-sm bg-brand-surface text-sft-text-muted hover:text-brand-cloud border border-sft"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
+                    <td className="text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button type="button" variant="ghost" size="sm" onClick={cancelEdit}>
+                          Cancel
+                        </Button>
+                        <Button type="button" size="sm" onClick={() => handleUpdate(cat.id)} disabled={isPending}>
+                          {isPending ? 'Saving…' : 'Save'}
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 );
               }
 
               return (
-                <tr key={cat.id} className="hover:bg-brand-dark/40 text-brand-cloud transition-editorial">
-                  <td className="py-3 px-4">
-                    <div className="font-bold font-heading">{cat.name}</div>
-                    {cat.description && (
-                      <div className="text-[11px] text-sft-text-muted line-clamp-1">{cat.description}</div>
-                    )}
-                  </td>
-                  <td className="py-3 px-4 font-mono text-sft-text-muted text-[11px]">/{cat.slug}</td>
-                  <td className="py-3 px-4 font-mono">
-                    <span className="px-2 py-0.5 rounded-xs bg-brand-dark border border-sft text-[11px]">
-                      {cat._count.articles} stories
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="w-3.5 h-3.5 rounded-full border border-white/20"
-                        style={{ backgroundColor: cat.accentColor || '#F4C542' }}
-                      />
-                      <span className="font-mono text-[11px] text-sft-text-muted">{cat.accentColor}</span>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 font-mono text-sft-text-muted">{cat.displayOrder}</td>
-                  <td className="py-3 px-4 text-right space-x-1">
+                <tr key={cat.id}>
+                  <td className="max-w-sm">
                     <button
                       type="button"
                       onClick={() => startEdit(cat)}
-                      className="p-1.5 rounded-sm hover:bg-brand-surface text-sft-text-muted hover:text-brand-cloud"
-                      title="Edit Category"
+                      className="font-serif text-[1.0625rem] leading-snug text-ink text-left hover:text-clay transition-colors"
                     >
-                      <Edit2 className="w-3.5 h-3.5" />
+                      {cat.name}
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(cat.id, cat.name)}
-                      className="p-1.5 rounded-sm hover:bg-red-950/20 text-red-400/80 hover:text-red-300"
-                      title="Delete Category"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    {cat.description && <p className="mt-0.5 text-[0.8125rem] text-ink-3 line-clamp-1">{cat.description}</p>}
+                  </td>
+                  <td className="whitespace-nowrap font-sans text-[0.8125rem] text-ink-3">/{cat.slug}</td>
+                  <td className="text-right font-sans tabular text-ink-2">{cat._count.articles}</td>
+                  <td className="whitespace-nowrap font-sans text-[0.8125rem] text-ink-3">{cat.accentColor || '—'}</td>
+                  <td className="text-right font-sans tabular text-ink-3">{cat.displayOrder}</td>
+                  <td className="text-right whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-4">
+                      <button type="button" onClick={() => startEdit(cat)} className="row-action">
+                        Edit
+                      </button>
+                      <a href={`/category/${cat.slug}`} target="_blank" rel="noopener noreferrer" className="row-action">
+                        View ↗
+                      </a>
+                      <button type="button" onClick={() => handleDelete(cat.id, cat.name)} className="row-action-danger">
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
@@ -373,4 +346,3 @@ export function CategoryManager({ categories }: { categories: CategoryItem[] }) 
     </div>
   );
 }
-

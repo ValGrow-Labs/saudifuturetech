@@ -7,30 +7,28 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   children: React.ReactNode;
 }
 
-export const Badge: React.FC<BadgeProps> = ({
-  className,
-  variant = 'default',
-  size = 'sm',
-  children,
-  ...props
-}) => {
-  const baseStyles =
-    'inline-flex items-center font-bold tracking-widest uppercase rounded-sm font-heading transition-editorial';
-
+/**
+ * A status word in mono — not a pill. `accent` is clay (urgent / highlighted),
+ * `subtle` is moss (open / confirmed), `outline` adds a hairline underline.
+ */
+export const Badge: React.FC<BadgeProps> = ({ className, variant = 'default', size = 'sm', children, ...props }) => {
   const variants = {
-    default: 'bg-brand-surface text-sft-text-body border border-sft',
-    accent: 'bg-brand-yellow text-brand-graphite shadow-sm',
-    outline: 'bg-transparent border border-sft text-brand-cloud',
-    subtle: 'bg-brand-yellow/10 text-brand-yellow border border-brand-yellow/30',
+    default: 'text-ink-3',
+    accent: 'text-clay',
+    outline: 'text-ink-2 border-b border-rule',
+    subtle: 'text-moss',
   };
 
   const sizes = {
-    sm: 'text-[10px] px-2 py-0.5',
-    md: 'text-xs px-2.5 py-1',
+    sm: 'text-[0.6875rem]',
+    md: 'text-xs',
   };
 
   return (
-    <span className={cn(baseStyles, variants[variant], sizes[size], className)} {...props}>
+    <span
+      className={cn('inline-flex items-center gap-1.5 font-sans tabular leading-none', variants[variant], sizes[size], className)}
+      {...props}
+    >
       {children}
     </span>
   );

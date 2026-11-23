@@ -3,16 +3,14 @@ import type { Metadata } from 'next';
 import { SiteHeader } from '@/components/public/SiteHeader';
 import { SiteFooter } from '@/components/public/SiteFooter';
 import { MainContainer } from '@/components/public/MainContainer';
-import { FounderCommandHero } from '@/components/public/FounderCommandHero';
-import { OpportunityRadarPreview } from '@/components/public/OpportunityRadarPreview';
-import { StartupSpotlightPreview } from '@/components/public/StartupSpotlightPreview';
-import { EditorialPillarsSection } from '@/components/public/EditorialPillarsSection';
-import { EditorsSelectionSection } from '@/components/public/EditorsSelectionSection';
-import { LatestStoriesSection } from '@/components/public/LatestStoriesSection';
-import { TrendingRail } from '@/components/public/TrendingRail';
-import { ProvenanceTrustGuarantee } from '@/components/public/ProvenanceTrustGuarantee';
-import { NewsletterBanner } from '@/components/public/NewsletterBanner';
-import { BackToTopButton } from '@/components/public/BackToTopButton';
+import { FrontPage } from '@/components/home/FrontPage';
+import { HeroSlideshow } from '@/components/home/HeroSlideshow';
+import { GrantLedger } from '@/components/home/GrantLedger';
+import { StartupRegister } from '@/components/home/StartupRegister';
+import { LongReads } from '@/components/home/LongReads';
+import { SectionIndex } from '@/components/home/SectionIndex';
+import { LatestAndMostRead } from '@/components/home/LatestAndMostRead';
+import { SundayBrief } from '@/components/home/SundayBrief';
 import { OrganizationJsonLd, WebSiteJsonLd } from '@/lib/seo/json-ld';
 import { getCanonicalUrl, DEFAULT_SEO } from '@/lib/seo/config';
 import {
@@ -22,21 +20,23 @@ import {
   getTrendingArticles,
   getAllCategories,
 } from '@/lib/data';
-import { getOpportunities, getStartups } from '@/lib/founder-intelligence';
+import { getOpportunities, getStartups, getInvestors } from '@/lib/founder-intelligence';
 import {
   SAMPLE_FEATURED_ARTICLE,
   SAMPLE_SECONDARY_ARTICLES,
   SAMPLE_EDITORS_PICK_ARTICLES,
+  SAMPLE_TRENDING_ITEMS,
   EDITORIAL_CATEGORIES,
 } from '@/lib/constants';
+import type { OpportunityItem } from '@/components/public/OpportunityDirectory';
+import type { StartupItem } from '@/components/public/StartupDirectory';
 
-// Next.js ISR: Revalidate homepage every 60 seconds
 export const revalidate = 60;
 
 /**
  * Directory sections are optional on the front page. If the database can't be
- * reached (e.g. a Vercel build with no DATABASE_URL), render without them
- * instead of failing the prerender; ISR fills them in on revalidation.
+ * reached (e.g. during a build with no DB), render the page without them
+ * instead of failing; ISR fills them in on the next revalidation.
  */
 async function orEmpty<T>(p: Promise<T[]>): Promise<T[]> {
   try {
@@ -47,78 +47,77 @@ async function orEmpty<T>(p: Promise<T[]>): Promise<T[]> {
   }
 }
 
+const TITLE = 'Saudi Future Tech — reporting on technology in Saudi Arabia';
+const DESCRIPTION =
+  'Independent reporting on AI, government platforms, security, cities, finance and energy in Saudi Arabia — with a checked directory of open grants, startups and investors.';
+
 export const metadata: Metadata = {
-  title: 'Saudi Future Tech | Build in the Kingdom. Powered by verified intelligence.',
-  description:
-    'Build in the Kingdom. Powered by verified intelligence. Discover verified grants, venture capital, emerging startups, and sovereign technology across Saudi Arabia.',
-  alternates: {
-    canonical: getCanonicalUrl('/'),
-  },
+  title: { absolute: TITLE },
+  description: DESCRIPTION,
+  alternates: { canonical: getCanonicalUrl('/') },
   openGraph: {
-    title: 'Saudi Future Tech | Build in the Kingdom. Powered by verified intelligence.',
-    description:
-      'Build in the Kingdom. Powered by verified intelligence. Discover verified grants, venture capital, emerging startups, and sovereign technology across Saudi Arabia.',
+    title: TITLE,
+    description: DESCRIPTION,
     url: getCanonicalUrl('/'),
     siteName: DEFAULT_SEO.siteName,
     locale: DEFAULT_SEO.locale,
     type: 'website',
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Saudi Future Tech | Build in the Kingdom. Powered by verified intelligence.',
-    description:
-      'Build in the Kingdom. Powered by verified intelligence. Discover verified grants, venture capital, emerging startups, and sovereign technology across Saudi Arabia.',
-    site: DEFAULT_SEO.social.twitter,
-  },
+  twitter: { card: 'summary_large_image', title: TITLE, description: DESCRIPTION, site: DEFAULT_SEO.social.twitter },
 };
 
 export default async function HomePage() {
-  const [
-    featuredArticle,
-    secondaryArticles,
-    editorsPickArticles,
-    trendingArticles,
-    categories,
-    rawOpportunities,
-    rawStartups,
-  ] = await Promise.all([
+  const [featured, secondary, editorsPick, trending, categories, rawOpportunities, rawStartups, investors] = await Promise.all([
     getFeaturedArticle(),
-    getSecondaryArticles(4),
+    getSecondaryArticles(9),
     getEditorsPickArticles(4),
     getTrendingArticles(5),
     getAllCategories(),
     orEmpty(getOpportunities()),
     orEmpty(getStartups()),
+    orEmpty(getInvestors()),
   ]);
 
-  const activeSecondary = secondaryArticles.length > 0 ? secondaryArticles : SAMPLE_SECONDARY_ARTICLES;
-  const activeEditorsPick = editorsPickArticles.length > 0 ? editorsPickArticles : SAMPLE_EDITORS_PICK_ARTICLES;
-  const activeCategories = categories.length > 0 ? categories : EDITORIAL_CATEGORIES;
+  const lead = featured ?? SAMPLE_FEATURED_ARTICLE;
+  const picksSource = (editorsPick.length ? editorsPick : SAMPLE_EDITORS_PICK_ARTICLES).filter((a) => a.id !== lead.id);
+  const pickIds = new Set(picksSource.map((a) => a.id));
 
-  // Serialize opportunities
-  const opportunities = rawOpportunities.map((opp) => ({
-    id: opp.id,
-    title: opp.title,
-    slug: opp.slug,
-    organization: opp.organization,
-    category: opp.category,
-    fundingAmount: opp.fundingAmount,
-    equityTaken: opp.equityTaken,
-    location: opp.location,
-    description: opp.description,
-    eligibilitySummary: opp.eligibilitySummary,
-    eligibilityCriteria: opp.eligibilityCriteria,
-    status: opp.status,
-    deadline: opp.deadline ? opp.deadline.toISOString() : null,
-    applicationUrl: opp.applicationUrl,
-    sourceName: opp.sourceName,
-    verifiedAt: opp.verifiedAt.toISOString(),
-    isFeatured: opp.isFeatured,
-    categoryRel: opp.categoryRel,
+  // Front column and the latest stream leave out anything the editors picked,
+  // so no story appears twice on the page.
+  const allStream = (secondary.length ? secondary : SAMPLE_SECONDARY_ARTICLES).filter((a) => a.id !== lead.id);
+  const stream = allStream.filter((a) => !pickIds.has(a.id));
+  const frontColumn = (stream.length >= 4 ? stream : allStream).slice(0, 4);
+  const latest = stream.length > 4 ? stream.slice(4, 9) : allStream.slice(0, 5);
+  const picks = picksSource;
+
+  const mostRead = trending.length
+    ? trending.map((a) => ({ title: a.title, slug: a.slug, category: a.category.name }))
+    : SAMPLE_TRENDING_ITEMS.map((t) => ({ title: t.title, slug: t.categorySlug, category: t.category }));
+
+  const sections = categories.length ? categories : EDITORIAL_CATEGORIES;
+
+  const opportunities: OpportunityItem[] = rawOpportunities.map((o) => ({
+    id: o.id,
+    title: o.title,
+    slug: o.slug,
+    organization: o.organization,
+    category: o.category,
+    fundingAmount: o.fundingAmount,
+    equityTaken: o.equityTaken,
+    location: o.location,
+    description: o.description,
+    eligibilitySummary: o.eligibilitySummary,
+    eligibilityCriteria: o.eligibilityCriteria,
+    status: o.status,
+    deadline: o.deadline ? o.deadline.toISOString() : null,
+    applicationUrl: o.applicationUrl,
+    sourceName: o.sourceName,
+    verifiedAt: o.verifiedAt.toISOString(),
+    isFeatured: o.isFeatured,
+    categoryRel: o.categoryRel,
   }));
 
-  // Serialize startups
-  const startups = rawStartups.map((s) => ({
+  const startups: StartupItem[] = rawStartups.map((s) => ({
     id: s.id,
     name: s.name,
     slug: s.slug,
@@ -139,73 +138,31 @@ export default async function HomePage() {
   }));
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] dark:bg-[#0A1F2C] text-[#111827] dark:text-[#FAF9F6] transition-colors duration-200">
-      {/* Schema.org Structured Data */}
+    <>
       <OrganizationJsonLd />
       <WebSiteJsonLd />
+      <SiteHeader />
 
-      {/* 1. Full-Bleed Cinematic Hero Section with Integrated Transparent Header (Vision 2030 Style) */}
-      <div className="relative w-full overflow-hidden">
-        <SiteHeader variant="transparent-hero" />
-        <FounderCommandHero
-          opportunitiesCount={opportunities.length}
-          startupsCount={startups.length}
-          pillarsCount={activeCategories.length}
+      <main id="main" className="flex-1">
+        <HeroSlideshow
+          counts={{
+            opportunities: opportunities.filter((o) => o.status !== 'CLOSED').length,
+            startups: startups.length,
+            investors: investors.length,
+          }}
         />
-      </div>
-
-      {/* Main Operating Terminal Canvas */}
-      <main className="flex-1 pt-6 pb-16 sm:pt-8 sm:pb-20 font-sans">
-        <MainContainer className="space-y-14 sm:space-y-16">
-          {/* 2. Verified Opportunity Radar Strip */}
-          <section aria-label="Verified Opportunity Radar">
-            <OpportunityRadarPreview opportunities={opportunities} />
-          </section>
-
-          {/* 3. Verified Saudi Startups Spotlight */}
-          <section aria-label="Verified Saudi Startups">
-            <StartupSpotlightPreview startups={startups} />
-          </section>
-
-          {/* 4. Six Sovereign Pillars of Saudi Technology Grid */}
-          <section aria-label="Six Sovereign Pillars of Saudi Technology">
-            <EditorialPillarsSection categories={activeCategories} />
-          </section>
-
-          {/* 5. In-Depth Founder Intelligence Briefings */}
-          <section aria-label="Founder Intelligence Briefings">
-            <EditorsSelectionSection articles={activeEditorsPick} />
-          </section>
-
-          {/* 6. Technology Stream & Velocity Rail */}
-          <section aria-label="Latest Stream and Trending Index">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              <div className="lg:col-span-8">
-                <LatestStoriesSection articles={activeSecondary} />
-              </div>
-              <div className="lg:col-span-4 sticky top-20">
-                <TrendingRail articles={trendingArticles} />
-              </div>
-            </div>
-          </section>
-
-          {/* 7. Data Sovereignty & Provenance Guarantee */}
-          <section aria-label="Data Sovereignty & Provenance">
-            <ProvenanceTrustGuarantee />
-          </section>
-
-          {/* 8. Sunday Founder Briefing Newsletter */}
-          <section aria-label="Sunday Founder Briefing">
-            <NewsletterBanner />
-          </section>
+        <MainContainer className="pt-14 md:pt-20 space-y-20 md:space-y-28 pb-24">
+          <FrontPage lead={lead} secondary={frontColumn} />
+          {opportunities.length > 0 && <GrantLedger opportunities={opportunities} total={opportunities.length} />}
+          <LongReads articles={picks} />
+          {startups.length > 0 && <StartupRegister startups={startups} total={startups.length} />}
+          <LatestAndMostRead latest={latest} mostRead={mostRead} />
+          <SectionIndex sections={sections} />
         </MainContainer>
+        <SundayBrief />
       </main>
 
-      {/* Floating Smooth Scroll to Top Action */}
-      <BackToTopButton />
-
-      {/* Publication Footer */}
       <SiteFooter />
-    </div>
+    </>
   );
 }

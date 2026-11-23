@@ -1,6 +1,5 @@
 import React from 'react';
 import Link from 'next/link';
-import { ChevronRight, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface BreadcrumbItem {
@@ -14,35 +13,30 @@ interface BreadcrumbsProps {
   className?: string;
 }
 
+/** Mono breadcrumb trail with "/" separators. A leading "Home" is added if the caller left it out. */
 export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, className }) => {
+  const first = items[0];
+  const trail: BreadcrumbItem[] =
+    first && (first.href === '/' || first.label.toLowerCase() === 'home') ? items : [{ label: 'Home', href: '/' }, ...items];
+
   return (
-    <nav aria-label="Breadcrumb" className={cn('flex items-center text-xs text-ink-muted font-sans', className)}>
-      <ol className="flex items-center space-x-2">
-        <li>
-          <Link
-            href="/"
-            className="flex items-center gap-1 text-ink-muted hover:text-ink-high transition-editorial"
-            aria-label="Home"
-          >
-            <Home className="w-3.5 h-3.5" />
-          </Link>
-        </li>
-
-        {items.map((item, idx) => {
-          const isLast = idx === items.length - 1 || item.current;
-
+    <nav aria-label="Breadcrumb" className={cn('meta min-w-0', className)}>
+      <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        {trail.map((item, idx) => {
+          const isLast = idx === trail.length - 1 || item.current;
           return (
-            <li key={idx} className="flex items-center space-x-2">
-              <ChevronRight className="w-3 h-3 text-ink-faint" aria-hidden="true" />
+            <li key={`${item.label}-${idx}`} className="flex items-center gap-2 min-w-0">
+              {idx > 0 && (
+                <span aria-hidden className="text-ink-4">
+                  /
+                </span>
+              )}
               {isLast || !item.href ? (
-                <span className="font-semibold text-ink-high truncate max-w-[220px]" aria-current="page">
+                <span className="text-ink truncate max-w-[16rem]" aria-current={isLast ? 'page' : undefined}>
                   {item.label}
                 </span>
               ) : (
-                <Link
-                  href={item.href}
-                  className="hover:text-ink-high transition-editorial truncate max-w-[180px]"
-                >
+                <Link href={item.href} className="truncate max-w-[12rem] hover:text-ink transition-colors">
                   {item.label}
                 </Link>
               )}
@@ -53,4 +47,3 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, className }) =>
     </nav>
   );
 };
-

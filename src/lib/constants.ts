@@ -5,9 +5,9 @@ export type { CategoryWithTags };
 export { EDITORIAL_CATEGORIES };
 
 export const SITE_NAME = 'Saudi Future Tech';
-export const SITE_TAGLINE = 'Build in the Kingdom. Powered by verified intelligence.';
+export const SITE_TAGLINE = 'Reporting on the technology being built in Saudi Arabia.';
 export const SITE_DESCRIPTION =
-  'The founder-first operating intelligence platform for discovering verified grants, venture capital, emerging startups, and frontier technology in the Kingdom of Saudi Arabia.';
+  'Independent reporting on technology in Saudi Arabia, and a checked directory of the grants, startups and investors behind it.';
 
 export interface NavLink {
   label: string;
@@ -16,12 +16,11 @@ export interface NavLink {
 }
 
 export const NAV_LINKS: NavLink[] = [
-  { label: 'Discover', href: '/' },
+  { label: 'Latest', href: '/latest' },
   { label: 'Opportunities', href: '/opportunities' },
   { label: 'Startups', href: '/startups' },
-  { label: 'Funding', href: '/funding' },
-  { label: 'Insights', href: '/insights' },
-  { label: 'News', href: '/latest' },
+  { label: 'Investors', href: '/funding' },
+  { label: 'Analysis', href: '/insights' },
 ];
 
 export const PILLAR_LINKS = EDITORIAL_CATEGORIES.map((c) => ({

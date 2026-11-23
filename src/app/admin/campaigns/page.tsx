@@ -1,12 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
-import { Plus, Mail, Eye, Edit2, Send, Clock, CheckCircle2, AlertTriangle, Users } from 'lucide-react';
 import prisma from '@/lib/prisma';
 import { requireRole } from '@/lib/auth/guard';
 import { PageHeading } from '@/components/ui/PageHeading';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { formatDate } from '@/lib/utils';
-import { CampaignRowActions } from '@/components/admin/CampaignRowActions';
+import { CampaignRowActions, CampaignStatusWord } from '@/components/admin/CampaignRowActions';
 import { CampaignStatus, SubscriberStatus } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
@@ -29,144 +29,76 @@ export default async function AdminCampaignsPage() {
   ]);
 
   return (
-    <div className="space-y-6 font-sans">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-editorial-hairline">
-        <div>
-          <div className="text-[10px] uppercase font-bold tracking-widest text-ink-muted font-sans mb-1">
-            Audience & Distribution
-          </div>
-          <PageHeading
-            title="Newsletter Campaigns"
-            description="Compose, preview, and dispatch curated technology briefings to verified subscribers."
-          />
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Link href="/admin/campaigns/new">
-            <Button
-              variant="primary"
-              size="md"
-              className="font-sans uppercase tracking-wider text-xs flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Compose Campaign</span>
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Subscriber Health Pill */}
-      <div className="p-4 bg-editorial-pure rounded-none border border-editorial-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-none bg-editorial-sand border border-editorial-hairline flex items-center justify-center text-ink-high shrink-0">
-            <Users className="w-4 h-4" />
-          </div>
-          <div>
-            <span className="font-bold font-serif text-ink-high text-sm">
-              {activeSubscribersCount} Active Subscribers Ready for Dispatch
-            </span>
-            <p className="text-[11px] text-ink-muted font-sans">
-              Campaigns will be transmitted strictly to active recipients with recorded consent.
-            </p>
-          </div>
-        </div>
-
-        <Link
-          href="/admin/subscribers"
-          className="text-xs font-bold text-ink-high hover:text-amber-800 font-sans uppercase tracking-wider shrink-0"
-        >
-          Manage Subscribers &rarr;
+    <div className="space-y-6">
+      <PageHeading title="Campaigns" description="Newsletter issues: write, preview and send to subscribers.">
+        <Link href="/admin/campaigns/new">
+          <Button variant="primary" size="md">
+            New campaign
+          </Button>
         </Link>
-      </div>
+      </PageHeading>
 
-      {/* Campaigns Table */}
+      <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm text-ink-2">
+        <span>
+          <span className="font-sans tabular text-ink">{activeSubscribersCount}</span> active subscribers will receive
+          the next send.
+        </span>
+        <Link href="/admin/subscribers" className="text-[0.8125rem] text-ink-2 hover:text-clay transition-colors">
+          Manage subscribers →
+        </Link>
+      </p>
+
       {campaigns.length === 0 ? (
-        <div className="p-12 bg-editorial-pure border border-dashed border-editorial-hairline rounded-none text-center space-y-3 shadow-xs">
-          <Mail className="w-8 h-8 text-ink-muted mx-auto" />
-          <h3 className="text-base font-bold text-ink-high font-serif">No Campaigns Created Yet</h3>
-          <p className="text-xs text-ink-muted max-w-sm mx-auto font-sans">
-            Draft your first executive briefing to share weekly intelligence with subscribers.
-          </p>
-          <div className="pt-2">
-            <Link href="/admin/campaigns/new">
-              <Button variant="primary" size="sm" className="font-sans uppercase text-xs">
-                Draft First Campaign
-              </Button>
-            </Link>
-          </div>
-        </div>
+        <EmptyState
+          title="No campaigns yet"
+          description="Write the first newsletter issue. You can preview it before anything is sent."
+          actionLabel="New campaign"
+          actionHref="/admin/campaigns/new"
+        />
       ) : (
-        <div className="bg-editorial-pure rounded-none border border-editorial-hairline overflow-hidden shadow-xs">
-          <table className="w-full text-left border-collapse text-xs">
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <table className="data-table min-w-[48rem]">
             <thead>
-              <tr className="border-b border-editorial-hairline bg-editorial-sand text-ink-muted font-sans uppercase tracking-wider text-[11px]">
-                <th className="py-3 px-4 font-bold">Campaign Subject & Title</th>
-                <th className="py-3 px-4 font-bold">Status</th>
-                <th className="py-3 px-4 font-bold">Recipients</th>
-                <th className="py-3 px-4 font-bold">Created By</th>
-                <th className="py-3 px-4 font-bold">Sent / Created Date</th>
-                <th className="py-3 px-4 font-bold text-right">Actions</th>
+              <tr>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>Recipients</th>
+                <th>Created by</th>
+                <th>Date</th>
+                <th className="text-right">
+                  <span className="sr-only">Actions</span>
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-editorial-hairline">
+            <tbody>
               {campaigns.map((camp) => (
-                <tr key={camp.id} className="hover:bg-editorial-sand/40 text-ink-body transition-editorial">
-                  <td className="py-3 px-4 max-w-sm sm:max-w-md">
-                    <div className="font-bold font-serif line-clamp-1 hover:text-amber-800 transition-colors">
-                      <Link href={`/admin/campaigns/${camp.id}/preview`}>
-                        {camp.subject}
-                      </Link>
-                    </div>
-                    <div className="text-[11px] text-ink-muted mt-0.5 truncate font-sans">
-                      Internal: {camp.title}
-                    </div>
-                  </td>
-
-                  <td className="py-3 px-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-none text-[10px] font-sans font-bold uppercase ${
-                        camp.status === CampaignStatus.SENT
-                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-300'
-                          : camp.status === CampaignStatus.SENDING
-                          ? 'bg-sky-50 text-sky-800 border border-sky-300'
-                          : camp.status === CampaignStatus.SCHEDULED
-                          ? 'bg-amber-50 text-amber-800 border border-amber-300'
-                          : camp.status === CampaignStatus.FAILED
-                          ? 'bg-rose-50 text-rose-800 border border-rose-300'
-                          : 'bg-editorial-sand text-ink-body border border-editorial-hairline'
-                      }`}
+                <tr key={camp.id}>
+                  <td className="max-w-[26rem]">
+                    <Link
+                      href={`/admin/campaigns/${camp.id}/preview`}
+                      className="font-serif text-[1rem] leading-snug text-ink hover:text-clay transition-colors line-clamp-2"
                     >
-                      {camp.status === CampaignStatus.SENT && <CheckCircle2 className="w-3 h-3 text-emerald-600" />}
-                      {camp.status === CampaignStatus.FAILED && <AlertTriangle className="w-3 h-3 text-rose-600" />}
-                      {camp.status === CampaignStatus.SCHEDULED && <Clock className="w-3 h-3 text-amber-600" />}
-                      <span>{camp.status}</span>
-                    </span>
+                      {camp.subject}
+                    </Link>
+                    <div className="mt-0.5 text-[0.75rem] text-ink-4 truncate">{camp.title}</div>
                   </td>
-
-                  <td className="py-3 px-4 font-mono">
+                  <td className="whitespace-nowrap">
+                    <CampaignStatusWord status={camp.status} />
+                  </td>
+                  <td className="whitespace-nowrap font-sans text-[0.75rem] tabular">
                     {camp.status === CampaignStatus.SENT ? (
-                      <span className="text-emerald-800 font-bold">{camp.recipientCount} sent</span>
+                      <span className="text-ink-2">{camp.recipientCount} sent</span>
                     ) : (
-                      <span className="text-ink-muted">—</span>
+                      <span className="text-ink-4">—</span>
                     )}
                   </td>
-
-                  <td className="py-3 px-4 text-ink-muted font-sans">
-                    {camp.createdBy?.name || 'Editorial Team'}
+                  <td className="whitespace-nowrap text-[0.8125rem]">{camp.createdBy?.name || '—'}</td>
+                  <td className="whitespace-nowrap font-sans text-[0.71875rem] tabular">
+                    <div className="text-ink-2">{formatDate(camp.sentAt || camp.createdAt)}</div>
+                    <div className="text-ink-4">{camp.sentAt ? 'Sent' : 'Created'}</div>
                   </td>
-
-                  <td className="py-3 px-4 text-ink-muted font-mono text-[11px]">
-                    <div>{formatDate(camp.sentAt || camp.createdAt)}</div>
-                    <div className="text-[10px] text-ink-muted/70">
-                      {camp.sentAt ? 'Dispatched' : 'Drafted'}
-                    </div>
-                  </td>
-
-                  <td className="py-3 px-4 text-right">
-                    <CampaignRowActions
-                      campaignId={camp.id}
-                      status={camp.status}
-                    />
+                  <td className="text-right">
+                    <CampaignRowActions campaignId={camp.id} status={camp.status} />
                   </td>
                 </tr>
               ))}
@@ -177,4 +109,3 @@ export default async function AdminCampaignsPage() {
     </div>
   );
 }
-

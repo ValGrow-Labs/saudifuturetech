@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Clock, Calendar } from 'lucide-react';
 import { SiteHeader } from '@/components/public/SiteHeader';
 import { SiteFooter } from '@/components/public/SiteFooter';
 import { MainContainer } from '@/components/public/MainContainer';
@@ -13,12 +12,11 @@ import { SocialShareButtons } from '@/components/public/SocialShareButtons';
 import { AuthorBioCard } from '@/components/public/AuthorBioCard';
 import { RelatedArticles } from '@/components/public/RelatedArticles';
 import { NewsletterBanner } from '@/components/public/NewsletterBanner';
-import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { getArticleBySlug, getRelatedArticles, getAllArticleSlugs } from '@/lib/data';
 import { formatDate, formatReadingTime } from '@/lib/utils';
-import { SITE_NAME } from '@/lib/constants';
 import { getCanonicalUrl, DEFAULT_SEO } from '@/lib/seo/config';
 import { NewsArticleJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld';
+import type { ArticleSection } from '@/types';
 
 // Next.js ISR: Revalidate article every 60 seconds
 export const revalidate = 60;
@@ -42,8 +40,8 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
   if (!article) {
     return {
-      title: `Article Not Found | ${DEFAULT_SEO.siteName}`,
-      description: 'The requested technology report could not be found.',
+      title: `Article not found | ${DEFAULT_SEO.siteName}`,
+      description: 'We couldn’t find this story.',
       robots: { index: false, follow: false },
     };
   }
@@ -87,6 +85,121 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   };
 }
 
+function sectionId(heading: string, idx: number) {
+  const base = heading
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 48);
+  return `s${idx + 1}-${base}`;
+}
+
+/** One section of the body: heading, paragraphs and any inserts, in reading order. */
+function BodySection({ section, idx }: { section: ArticleSection; idx: number }) {
+  return (
+    <section aria-labelledby={section.heading ? sectionId(section.heading, idx) : undefined}>
+      {section.heading && (
+        <h2
+          id={sectionId(section.heading, idx)}
+          className="scroll-mt-28 mt-14 mb-5 font-serif text-display-sm text-ink"
+        >
+          {section.heading}
+        </h2>
+      )}
+
+      {section.subheading && (
+        <p className="-mt-2 mb-5 font-serif italic text-[1.1875rem] leading-snug text-ink-3">{section.subheading}</p>
+      )}
+
+      {section.paragraphs.map((para, pIdx) => (
+        <p key={pIdx} className={idx === 0 && pIdx === 0 ? 'drop-cap' : undefined}>
+          {para}
+        </p>
+      ))}
+
+      {section.pullQuote && (
+        <figure className="my-10 border-l-2 border-clay pl-6 sm:pl-8">
+          <blockquote>
+            <p className="font-serif italic text-[1.625rem] sm:text-[2rem] leading-[1.22] tracking-[-0.01em] text-ink">
+              “{section.pullQuote.quote}”
+            </p>
+          </blockquote>
+          {section.pullQuote.attribution && (
+            <figcaption className="meta mt-4 not-italic">— {section.pullQuote.attribution}</figcaption>
+          )}
+        </figure>
+      )}
+
+      {section.inlineImage && (
+        <figure className="my-10">
+          <div className="relative aspect-[3/2] overflow-hidden bg-paper-band">
+            <Image
+              src={section.inlineImage.url}
+              alt={section.inlineImage.alt}
+              fill
+              sizes="(max-width: 768px) 100vw, 680px"
+              className="object-cover img-warm"
+            />
+          </div>
+          {section.inlineImage.caption && <figcaption className="meta mt-2">{section.inlineImage.caption}</figcaption>}
+        </figure>
+      )}
+
+      {section.takeaway && (
+        <aside className="my-10 border-t border-ink pt-3 font-sans">
+          <p className="meta uppercase tracking-[0.04em] text-ink">The short version</p>
+          <p className="mt-2 text-[1rem] leading-relaxed text-ink-2">{section.takeaway}</p>
+        </aside>
+      )}
+
+      {section.codeBlock && (
+        <figure className="my-10">
+          <div className="flex items-baseline justify-between border-b border-rule pb-1.5">
+            <span className="meta uppercase tracking-[0.04em]">{section.codeBlock.language}</span>
+          </div>
+          <pre className="overflow-x-auto bg-paper-sheet px-4 py-4 font-mono text-[0.8125rem] leading-relaxed text-ink-2">
+            <code>{section.codeBlock.code}</code>
+          </pre>
+          {section.codeBlock.caption && <figcaption className="meta mt-2">{section.codeBlock.caption}</figcaption>}
+        </figure>
+      )}
+
+      {section.table && (
+        <div className="my-10 -mx-4 sm:mx-0 overflow-x-auto px-4 sm:px-0">
+          <table className="w-full min-w-[30rem] border-collapse text-left font-sans text-[0.875rem] leading-snug">
+            <thead>
+              <tr className="border-b border-ink">
+                {section.table.headers.map((h, hIdx) => (
+                  <th key={hIdx} scope="col" className="meta uppercase tracking-[0.04em] py-2 pr-4 font-normal align-bottom">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {section.table.rows.map((row, rIdx) => (
+                <tr key={rIdx} className="border-b border-rule hover:bg-paper-sheet/60 transition-colors">
+                  {row.map((cell, cIdx) =>
+                    cIdx === 0 ? (
+                      <th key={cIdx} scope="row" className="py-3 pr-4 font-medium text-ink align-top">
+                        {cell}
+                      </th>
+                    ) : (
+                      <td key={cIdx} className="py-3 pr-4 text-ink-2 align-top tabular">
+                        {cell}
+                      </td>
+                    ),
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default async function ArticleDetailPage({ params }: ArticlePageProps) {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
@@ -103,242 +216,155 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
     { label: article.title, current: true },
   ];
 
+  const contents = article.sections
+    .map((s, idx) => (s.heading ? { id: sectionId(s.heading, idx), label: s.heading } : null))
+    .filter((x): x is { id: string; label: string } => x !== null);
+
+  const wasUpdated =
+    article.updatedAt && formatDate(article.updatedAt) !== formatDate(article.publishedAt);
+
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-[#111827]">
-      {/* Schema.org Structured Data */}
+    <>
       <NewsArticleJsonLd article={article} />
       <BreadcrumbJsonLd items={breadcrumbs} />
-
-      {/* Sticky Top Reading Progress Indicator */}
       <ReadingProgressBar />
-
-      {/* Global Header */}
       <SiteHeader />
 
-      {/* Main Reading Canvas */}
-      <main className="flex-1 py-8 sm:py-12 space-y-12 sm:space-y-16">
-        <MainContainer size="default">
-          {/* Breadcrumb Trail */}
-          <div className="pb-6 border-b border-[#E2E8E4]">
-            <Breadcrumbs items={breadcrumbs} />
-          </div>
+      <main id="main" className="flex-1">
+        <MainContainer className="pt-6 md:pt-8 pb-24">
+          <nav aria-label="Breadcrumb" className="meta">
+            <Link href="/" className="hover:text-ink">
+              Home
+            </Link>
+            <span className="mx-2 text-ink-4">/</span>
+            <Link href={`/category/${article.category.slug}`} className="hover:text-ink">
+              {article.category.name}
+            </Link>
+          </nav>
 
-          {/* Article Header Canvas */}
-          <header className="max-w-3xl mx-auto pt-8 pb-6 space-y-5">
-            {/* Category Pill & Reading Time */}
-            <div className="flex items-center gap-3">
-              <CategoryBadge category={article.category} size="md" />
-              <span className="text-xs text-[#4B5563] flex items-center gap-1 font-sans">
-                <Clock className="w-3.5 h-3.5 text-[#C9A227]" />
-                {formatReadingTime(article.readingTimeMinutes)}
-              </span>
-            </div>
+          <article>
+            {/* Headline block */}
+            <header className="mt-10 md:mt-14 grid lg:grid-cols-12 lg:gap-x-10">
+              <div className="lg:col-span-10 xl:col-span-9 rise">
+                <CategoryBadge category={article.category} size="md" />
+                <h1 className="mt-4 font-serif text-display-lg text-ink">{article.title}</h1>
+                <p className="standfirst mt-6 max-w-3xl">{article.excerpt}</p>
+              </div>
 
-            {/* Display Headline */}
-            <h1 className="text-3xl sm:text-5xl lg:text-5xl font-serif font-black text-[#111827] tracking-tight leading-[1.14]">
-              {article.title}
-            </h1>
-
-            {/* Standfirst Excerpt */}
-            <p className="text-lg sm:text-2xl text-[#111827] font-serif italic leading-relaxed pt-1">
-              {article.excerpt}
-            </p>
-
-            {/* Byline & Sharing Bar */}
-            <div className="pt-6 border-t border-[#E2E8E4] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              {/* Author Info */}
-              <div className="flex items-center gap-3.5">
-                {article.author.avatarUrl && (
-                  <Link
-                    href={`/author/${article.author.slug}`}
-                    className="relative w-11 h-11 rounded-full overflow-hidden bg-[#F1F5F2] border border-[#E2E8E4] shrink-0 hover:border-[#0B6E4F] transition-colors"
-                  >
-                    <Image
-                      src={article.author.avatarUrl}
-                      alt={article.author.displayName}
-                      fill
-                      sizes="44px"
-                      className="object-cover"
-                    />
-                  </Link>
-                )}
-
-                <div>
-                  <Link
-                    href={`/author/${article.author.slug}`}
-                    className="text-xs sm:text-sm font-bold text-[#111827] hover:text-[#0B6E4F] transition-colors font-sans block"
-                  >
+              <div className="lg:col-span-12 mt-10 border-t border-rule pt-4 flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
+                <p className="meta leading-relaxed">
+                  By{' '}
+                  <Link href={`/author/${article.author.slug}`} className="text-ink link-rule">
                     {article.author.displayName}
                   </Link>
-                  <div className="flex items-center gap-2 text-[11px] text-[#4B5563] font-sans mt-0.5">
-                    <span>{article.author.title}</span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-[#4B5563]" />
-                      {formatDate(article.publishedAt)}
-                    </span>
-                    {article.updatedAt && (
-                      <>
-                        <span>•</span>
-                        <span className="text-[#C9A227] font-medium">Updated {formatDate(article.updatedAt)}</span>
-                      </>
-                    )}
-                  </div>
+                  {article.author.title && <span className="hidden md:inline">, {article.author.title}</span>}
+                  <span className="mx-2 text-ink-4">·</span>
+                  <time dateTime={article.publishedAt}>{formatDate(article.publishedAt)}</time>
+                  <span className="mx-2 text-ink-4">·</span>
+                  {formatReadingTime(article.readingTimeMinutes)}
+                  {wasUpdated && article.updatedAt && (
+                    <>
+                      <span className="mx-2 text-ink-4">·</span>
+                      Updated <time dateTime={article.updatedAt}>{formatDate(article.updatedAt)}</time>
+                    </>
+                  )}
+                </p>
+                <SocialShareButtons title={article.title} className="lg:hidden" />
+              </div>
+            </header>
+
+            {/* Lead image */}
+            <figure className="mt-8">
+              <div className="relative aspect-[3/2] md:aspect-[16/9] lg:aspect-[2/1] w-full overflow-hidden bg-paper-band">
+                <Image
+                  src={article.coverImageUrl}
+                  alt={article.coverImageAlt}
+                  fill
+                  priority
+                  sizes="(max-width: 1344px) 100vw, 1344px"
+                  className="object-cover img-warm"
+                />
+              </div>
+              {(article.coverImageCaption || article.imageCredit) && (
+                <figcaption className="mt-2.5 flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-6 text-[0.8125rem] leading-snug text-ink-3">
+                  {article.coverImageCaption && <span className="max-w-2xl">{article.coverImageCaption}</span>}
+                  {article.imageCredit && <span className="meta shrink-0">{article.imageCredit}</span>}
+                </figcaption>
+              )}
+            </figure>
+
+            {/* Body */}
+            <div className="mt-12 md:mt-16 grid lg:grid-cols-12 lg:gap-x-10">
+              <aside className="hidden lg:block lg:col-span-3">
+                <div className="sticky top-28 space-y-10">
+                  {contents.length > 1 && (
+                    <nav aria-label="In this story" className="border-t-2 border-ink pt-3">
+                      <p className="meta uppercase tracking-[0.04em]">In this story</p>
+                      <ol className="mt-3">
+                        {contents.map((c, i) => (
+                          <li key={c.id} className="border-b border-rule">
+                            <a
+                              href={`#${c.id}`}
+                              className="group grid grid-cols-[1.75rem_1fr] gap-2 py-2.5 text-[0.875rem] leading-snug text-ink-2 hover:text-clay transition-colors"
+                            >
+                              <span className="font-sans tabular text-[0.75rem] text-ink-4 pt-px">
+                                {String(i + 1).padStart(2, '0')}
+                              </span>
+                              <span>{c.label}</span>
+                            </a>
+                          </li>
+                        ))}
+                      </ol>
+                    </nav>
+                  )}
+                  <SocialShareButtons title={article.title} stacked />
+                </div>
+              </aside>
+
+              <div className="lg:col-span-8 lg:col-start-5 xl:col-span-7 xl:col-start-5">
+                <div className="prose-sft max-w-measure text-[1.125rem] sm:text-[1.1875rem]">
+                  {article.sections.map((section, idx) => (
+                    <BodySection key={idx} section={section} idx={idx} />
+                  ))}
+                </div>
+
+                <div className="max-w-measure">
+                  <p aria-hidden className="mt-10 font-serif text-clay text-lg">■</p>
+
+                  {article.tags.length > 0 && (
+                    <div className="mt-10 border-t border-rule pt-4">
+                      <p className="meta uppercase tracking-[0.04em]">Filed under</p>
+                      <ul className="mt-2 flex flex-wrap gap-x-1 gap-y-1 text-[0.9375rem] text-ink">
+                        {article.tags.map((tag, i) => (
+                          <li key={tag}>
+                            <Link href={`/search?q=${encodeURIComponent(tag)}`} className="link-rule hover:text-clay">
+                              {tag}
+                            </Link>
+                            {i < article.tags.length - 1 && <span className="text-ink-4">,</span>}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <AuthorBioCard author={article.author} className="mt-12" />
                 </div>
               </div>
-
-              {/* Social Sharing Controls */}
-              <SocialShareButtons title={article.title} />
             </div>
-          </header>
+          </article>
 
-          {/* Hero Photography in Reading Canvas */}
-          <figure className="max-w-4xl mx-auto my-8 space-y-2">
-            <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#F1F5F2] rounded-md border border-[#E2E8E4]">
-              <Image
-                src={article.coverImageUrl}
-                alt={article.coverImageAlt}
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 900px"
-                className="object-cover"
-              />
-            </div>
-            {article.coverImageCaption && (
-              <figcaption className="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-[#4B5563] font-sans px-1 gap-1">
-                <span>{article.coverImageCaption}</span>
-                {article.imageCredit && <span className="text-[#4B5563]/80">{article.imageCredit}</span>}
-              </figcaption>
-            )}
-          </figure>
-
-          {/* Long-Form Article Body Canvas (65-75 chars per line) */}
-          <div className="max-w-3xl mx-auto space-y-8 font-serif text-[#111827] text-lg sm:text-xl leading-[1.8] pt-2">
-            {article.sections.map((section, idx) => (
-              <section key={idx} className="space-y-6">
-                {section.heading && (
-                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-black text-[#111827] pt-6 tracking-tight">
-                    {section.heading}
-                  </h2>
-                )}
-
-                {section.subheading && (
-                  <h3 className="text-base sm:text-lg font-bold text-[#0B6E4F] font-sans tracking-wider uppercase">
-                    {section.subheading}
-                  </h3>
-                )}
-
-                {section.paragraphs.map((para, pIdx) => (
-                  <p
-                    key={pIdx}
-                    className={`leading-[1.8] ${idx === 0 && pIdx === 0 ? 'drop-cap' : ''}`}
-                  >
-                    {para}
-                  </p>
-                ))}
-
-                {/* Editorial Pull Quote */}
-                {section.pullQuote && (
-                  <blockquote className="my-8 p-6 sm:p-8 bg-[#F1F5F2] rounded-md border-l-4 border-[#C9A227] space-y-2">
-                    <p className="text-xl sm:text-2xl font-bold text-[#111827] font-serif italic leading-snug">
-                      &ldquo;{section.pullQuote.quote}&rdquo;
-                    </p>
-                    {section.pullQuote.attribution && (
-                      <cite className="block text-xs font-bold uppercase tracking-wider text-[#4B5563] font-sans not-italic pt-1">
-                        — {section.pullQuote.attribution}
-                      </cite>
-                    )}
-                  </blockquote>
-                )}
-
-                {/* Technical Key Takeaway Box */}
-                {section.takeaway && (
-                  <div className="my-6 p-5 sm:p-6 bg-white rounded-md border border-[#E2E8E4] space-y-1.5 shadow-xs">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#C9A227] font-sans block">
-                      Architectural Takeaway
-                    </span>
-                    <p className="text-sm sm:text-base text-[#111827] leading-relaxed font-sans font-medium">
-                      {section.takeaway}
-                    </p>
-                  </div>
-                )}
-
-                {/* Technical Comparison Table */}
-                {section.table && (
-                  <div className="my-8 overflow-x-auto bg-white rounded-md border border-[#E2E8E4] shadow-xs">
-                    <table className="w-full text-left text-xs sm:text-sm text-[#111827] font-sans">
-                      <thead className="bg-[#F1F5F2] text-[11px] font-bold uppercase tracking-wider text-[#111827] border-b border-[#E2E8E4]">
-                        <tr>
-                          {section.table.headers.map((h, hIdx) => (
-                            <th key={hIdx} className="px-4 py-3">
-                              {h}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#E2E8E4]">
-                        {section.table.rows.map((row, rIdx) => (
-                          <tr key={rIdx} className="hover:bg-[#F1F5F2]/50 transition-colors">
-                            {row.map((cell, cIdx) => (
-                              <td
-                                key={cIdx}
-                                className={`px-4 py-3.5 ${
-                                  cIdx === 0 ? 'font-bold text-[#111827] font-sans' : 'font-mono text-xs'
-                                }`}
-                              >
-                                {cell}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </section>
-            ))}
-
-            {/* Topic Taxonomy Tags */}
-            <div className="pt-8 mt-12 border-t border-[#E2E8E4]">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#4B5563] font-sans block mb-3">
-                Related Topics & Taxonomy:
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {article.tags.map((tag) => (
-                  <Link
-                    key={tag}
-                    href={`/search?q=${encodeURIComponent(tag)}`}
-                    className="text-xs font-sans px-3 py-1.5 rounded-md bg-[#F1F5F2] border border-[#E2E8E4] text-[#111827] hover:border-[#0B6E4F] hover:text-[#0B6E4F] transition-colors font-medium"
-                  >
-                    #{tag}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Author Biography Card */}
-            <div className="pt-8">
-              <AuthorBioCard author={article.author} />
-            </div>
-          </div>
-
-          {/* Related Articles Section */}
-          <div className="pt-12">
+          <div className="mt-24 md:mt-28 space-y-20 md:space-y-28">
             <RelatedArticles
               articles={relatedArticles}
               categoryName={article.category.name}
               categorySlug={article.category.slug}
             />
+            <NewsletterBanner />
           </div>
-
-          {/* Weekly Dispatch Capture */}
-          <NewsletterBanner />
         </MainContainer>
       </main>
 
-      {/* Global Footer */}
       <SiteFooter />
-    </div>
+    </>
   );
 }
-

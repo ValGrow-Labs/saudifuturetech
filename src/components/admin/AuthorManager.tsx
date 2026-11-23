@@ -2,10 +2,12 @@
 
 import React, { useState, useTransition } from 'react';
 import Image from 'next/image';
-import { Plus, Edit2, Trash2, X, AlertTriangle, UserCheck, UserX } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
+import { PageHeading } from '@/components/ui/PageHeading';
 import { createAuthorAction, updateAuthorAction, deleteAuthorAction } from '@/actions/authors';
 
+import { StatusDot, Note, type Tone } from '@/components/ui/StatusDot';
 interface AuthorItem {
   id: string;
   name: string;
@@ -105,7 +107,7 @@ export function AuthorManager({ authors }: { authors: AuthorItem[] }) {
   };
 
   const handleDelete = (id: string, name: string) => {
-    if (confirm(`Are you sure you want to delete author "${name}"?`)) {
+    if (confirm(`Delete the author "${name}"?`)) {
       setErrorMsg(null);
       startTransition(async () => {
         const res = await deleteAuthorAction(id);
@@ -116,49 +118,43 @@ export function AuthorManager({ authors }: { authors: AuthorItem[] }) {
     }
   };
 
-  return (
-    <div className="space-y-6 font-sans">
-      {errorMsg && (
-        <div className="p-3.5 bg-red-950/40 border border-red-500/40 rounded-sm text-xs text-red-200 flex items-start gap-2.5">
-          <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-          <p className="font-sans text-red-300">{errorMsg}</p>
-        </div>
-      )}
+  const isFormOpen = Boolean(isCreating || editingId);
 
-      {/* Action Header */}
-      <div className="flex justify-end">
-        {!isCreating && !editingId && (
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            onClick={openCreate}
-            className="font-heading uppercase tracking-wider text-xs flex items-center gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Author Byline</span>
+  return (
+    <div className="space-y-6">
+      <PageHeading title="Authors" description="Bylines shown on articles, with bios and linked login accounts.">
+        {!isFormOpen && (
+          <Button type="button" onClick={openCreate}>
+            Add author
           </Button>
         )}
-      </div>
+      </PageHeading>
 
-      {/* Create / Edit Form Modal / Card */}
-      {(isCreating || editingId) && (
-        <form onSubmit={handleSubmit} className="p-5 bg-brand-surface border border-brand-yellow/40 rounded-sm space-y-4 shadow-lg">
-          <div className="flex items-center justify-between border-b border-sft pb-3">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-brand-yellow font-heading">
-              {editingId ? 'Edit Contributor Profile' : 'New Contributor Profile'}
-            </h3>
-            <button type="button" onClick={closeForm} className="text-sft-text-muted hover:text-brand-cloud">
-              <X className="w-4 h-4" />
+      {errorMsg && !isFormOpen && (
+        <Note tone="error" onDismiss={() => setErrorMsg(null)}>
+          {errorMsg}
+        </Note>
+      )}
+
+      {/* Create / edit form */}
+      {isFormOpen && (
+        <form onSubmit={handleSubmit} className="panel p-5 space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="panel-title">{editingId ? 'Edit author' : 'New author'}</h2>
+            <button type="button" onClick={closeForm} className="row-action">
+              Close
             </button>
           </div>
 
+          {errorMsg && <Note tone="error">{errorMsg}</Note>}
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase text-sft-text-muted font-heading">
-                Full Name *
+            <div>
+              <label htmlFor="au-name" className="field-label">
+                Name
               </label>
               <input
+                id="au-name"
                 type="text"
                 value={formName}
                 onChange={(e) => {
@@ -172,196 +168,193 @@ export function AuthorManager({ authors }: { authors: AuthorItem[] }) {
                     );
                   }
                 }}
-                placeholder="e.g. Tariq Al-Mansoor"
+                placeholder="Tariq Al-Mansoor"
                 required
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-1.5 text-xs text-brand-cloud focus:border-brand-yellow focus:outline-none"
+                className="field"
               />
             </div>
-
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase text-sft-text-muted font-heading">
-                URL Slug *
+            <div>
+              <label htmlFor="au-slug" className="field-label">
+                Slug
               </label>
               <input
+                id="au-slug"
                 type="text"
                 value={formSlug}
                 onChange={(e) => setFormSlug(e.target.value)}
                 placeholder="tariq-al-mansoor"
                 required
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-1.5 text-xs font-mono text-brand-cloud focus:border-brand-yellow focus:outline-none"
+                className="field font-sans"
               />
             </div>
-
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase text-sft-text-muted font-heading">
-                Editorial Title *
+            <div>
+              <label htmlFor="au-title" className="field-label">
+                Job title
               </label>
               <input
+                id="au-title"
                 type="text"
                 value={formTitle}
                 onChange={(e) => setFormTitle(e.target.value)}
-                placeholder="e.g. Senior Technology Analyst"
+                placeholder="Senior technology reporter"
                 required
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-1.5 text-xs text-brand-cloud focus:border-brand-yellow focus:outline-none"
+                className="field"
               />
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase text-sft-text-muted font-heading">
-                Avatar Photo URL
+            <div>
+              <label htmlFor="au-avatar" className="field-label">
+                Photo URL
               </label>
               <input
+                id="au-avatar"
                 type="url"
                 value={formAvatar}
                 onChange={(e) => setFormAvatar(e.target.value)}
-                placeholder="https://..."
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-1.5 text-xs font-mono text-brand-cloud focus:border-brand-yellow focus:outline-none"
+                placeholder="https://"
+                className="field font-sans text-[0.8125rem]"
               />
             </div>
-
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase text-sft-text-muted font-heading">
+            <div>
+              <label htmlFor="au-location" className="field-label">
                 Location
               </label>
               <input
+                id="au-location"
                 type="text"
                 value={formLocation}
                 onChange={(e) => setFormLocation(e.target.value)}
                 placeholder="Riyadh, Saudi Arabia"
-                className="w-full bg-brand-dark border border-sft rounded-sm px-3 py-1.5 text-xs text-brand-cloud focus:border-brand-yellow focus:outline-none"
+                className="field"
               />
             </div>
-
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase text-sft-text-muted font-heading">
-                Social Links (Twitter / LinkedIn)
-              </label>
-              <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label htmlFor="au-twitter" className="field-label">
+                  X / Twitter
+                </label>
                 <input
+                  id="au-twitter"
                   type="text"
                   value={formTwitter}
                   onChange={(e) => setFormTwitter(e.target.value)}
                   placeholder="@handle"
-                  className="bg-brand-dark border border-sft rounded-sm px-2 py-1.5 text-xs text-brand-cloud focus:border-brand-yellow focus:outline-none"
+                  className="field"
                 />
+              </div>
+              <div>
+                <label htmlFor="au-linkedin" className="field-label">
+                  LinkedIn
+                </label>
                 <input
+                  id="au-linkedin"
                   type="text"
                   value={formLinkedin}
                   onChange={(e) => setFormLinkedin(e.target.value)}
-                  placeholder="linkedin-slug"
-                  className="bg-brand-dark border border-sft rounded-sm px-2 py-1.5 text-xs text-brand-cloud focus:border-brand-yellow focus:outline-none"
+                  placeholder="profile-slug"
+                  className="field"
                 />
               </div>
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="block text-[11px] font-bold uppercase text-sft-text-muted font-heading">
-              Journalist Bio
+          <div>
+            <label htmlFor="au-bio" className="field-label">
+              Bio
             </label>
             <textarea
+              id="au-bio"
               rows={3}
               value={formBio}
               onChange={(e) => setFormBio(e.target.value)}
-              placeholder="Detailed editorial biography..."
-              className="w-full bg-brand-dark border border-sft rounded-sm p-2 text-xs text-brand-cloud focus:border-brand-yellow focus:outline-none"
+              placeholder="Two or three sentences on what they cover."
+              className="field"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-sft">
-            <Button type="button" variant="outline" size="sm" onClick={closeForm} className="text-xs">
+          <div className="flex items-center justify-end gap-2 pt-1">
+            <Button type="button" variant="ghost" onClick={closeForm}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="sm"
-              disabled={isPending}
-              className="text-xs font-heading uppercase"
-            >
-              {isPending ? 'Saving...' : editingId ? 'Update Author' : 'Create Author'}
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Saving…' : editingId ? 'Save changes' : 'Create author'}
             </Button>
           </div>
         </form>
       )}
 
-      {/* Authors Table */}
-      <div className="bg-brand-surface rounded-sm border border-sft overflow-hidden shadow-sm">
-        <table className="w-full text-left border-collapse text-xs">
+      <p className="meta">{authors.length} authors</p>
+
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="data-table min-w-[820px]">
           <thead>
-            <tr className="border-b border-sft bg-brand-dark/60 text-sft-text-muted font-heading uppercase tracking-wider text-[11px]">
-              <th className="py-3 px-4 font-bold">Contributor</th>
-              <th className="py-3 px-4 font-bold">Desk Title</th>
-              <th className="py-3 px-4 font-bold">Articles</th>
-              <th className="py-3 px-4 font-bold">User Account Link</th>
-              <th className="py-3 px-4 font-bold">Location</th>
-              <th className="py-3 px-4 font-bold text-right">Actions</th>
+            <tr>
+              <th>Author</th>
+              <th>Job title</th>
+              <th className="text-right">Articles</th>
+              <th>Login</th>
+              <th>Location</th>
+              <th className="text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-sft/50">
+          <tbody>
+            {authors.length === 0 && (
+              <tr>
+                <td colSpan={6} className="py-10">
+                  <p className="font-serif text-lg text-ink">No authors yet.</p>
+                  <p className="mt-1 text-sm text-ink-3">Add one so articles can carry a byline.</p>
+                </td>
+              </tr>
+            )}
             {authors.map((author) => (
-              <tr key={author.id} className="hover:bg-brand-dark/40 text-brand-cloud transition-editorial">
-                <td className="py-3 px-4">
+              <tr key={author.id}>
+                <td>
                   <div className="flex items-center gap-3">
                     {author.avatar ? (
-                      <div className="w-8 h-8 rounded-full overflow-hidden bg-brand-dark border border-sft relative shrink-0">
-                        <Image src={author.avatar} alt={author.name} fill sizes="32px" className="object-cover" />
+                      <div className="relative w-8 h-8 shrink-0 overflow-hidden rounded-full bg-paper-band">
+                        <Image src={author.avatar} alt="" fill sizes="32px" className="object-cover img-warm" />
                       </div>
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-brand-dark border border-sft flex items-center justify-center font-bold text-brand-yellow">
+                      <div className="w-8 h-8 shrink-0 rounded-full bg-paper-band flex items-center justify-center font-serif text-ink-3">
                         {author.name.charAt(0)}
                       </div>
                     )}
-                    <div>
-                      <div className="font-bold font-heading">{author.name}</div>
-                      <div className="text-[11px] text-sft-text-muted font-mono">/{author.slug}</div>
+                    <div className="min-w-0">
+                      <button
+                        type="button"
+                        onClick={() => openEdit(author)}
+                        className="font-serif text-[1.0625rem] leading-snug text-ink text-left whitespace-nowrap hover:text-clay transition-colors"
+                      >
+                        {author.name}
+                      </button>
+                      <p className="whitespace-nowrap font-sans text-[0.71875rem] text-ink-4">/{author.slug}</p>
                     </div>
                   </div>
                 </td>
-
-                <td className="py-3 px-4 text-sft-text-body">{author.title}</td>
-
-                <td className="py-3 px-4 font-mono">
-                  <span className="px-2 py-0.5 rounded-xs bg-brand-dark border border-sft text-[11px]">
-                    {author._count.articles} stories
-                  </span>
-                </td>
-
-                <td className="py-3 px-4">
+                <td className="text-ink-2">{author.title}</td>
+                <td className="text-right font-sans tabular text-ink-2">{author._count.articles}</td>
+                <td className="whitespace-nowrap">
                   {author.user ? (
-                    <div className="flex items-center gap-1.5 text-emerald-400">
-                      <UserCheck className="w-3.5 h-3.5 shrink-0" />
-                      <span className="font-mono text-[11px] truncate max-w-[140px]">{author.user.email}</span>
-                    </div>
+                    <span className="font-sans text-[0.8125rem] text-ink-2 truncate inline-block max-w-[240px] align-bottom">
+                      {author.user.email}
+                    </span>
                   ) : (
-                    <div className="flex items-center gap-1.5 text-sft-text-muted">
-                      <UserX className="w-3.5 h-3.5 shrink-0" />
-                      <span className="text-[11px]">Unlinked</span>
-                    </div>
+                    <StatusDot tone="ink">No login</StatusDot>
                   )}
                 </td>
-
-                <td className="py-3 px-4 text-sft-text-muted">{author.location || '—'}</td>
-
-                <td className="py-3 px-4 text-right space-x-1">
-                  <button
-                    type="button"
-                    onClick={() => openEdit(author)}
-                    className="p-1.5 rounded-sm hover:bg-brand-surface text-sft-text-muted hover:text-brand-cloud"
-                    title="Edit Profile"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(author.id, author.name)}
-                    className="p-1.5 rounded-sm hover:bg-red-950/20 text-red-400/80 hover:text-red-300"
-                    title="Delete Author"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                <td className="text-ink-3">{author.location || '—'}</td>
+                <td className="text-right whitespace-nowrap">
+                  <div className="flex items-center justify-end gap-4">
+                    <button type="button" onClick={() => openEdit(author)} className="row-action">
+                      Edit
+                    </button>
+                    <a href={`/author/${author.slug}`} target="_blank" rel="noopener noreferrer" className="row-action">
+                      View ↗
+                    </a>
+                    <button type="button" onClick={() => handleDelete(author.id, author.name)} className="row-action-danger">
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -371,4 +364,3 @@ export function AuthorManager({ authors }: { authors: AuthorItem[] }) {
     </div>
   );
 }
-
