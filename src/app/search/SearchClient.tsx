@@ -174,7 +174,7 @@ export const SearchClient: React.FC<SearchClientProps> = ({ initialData }) => {
         <label htmlFor="search-page-input" className="kicker block mb-3">
           Search reporting, startups, investors and grants
         </label>
-        <div className="flex items-end gap-3 sm:gap-4 border-b-2 border-ink focus-within:border-clay transition-colors pb-2">
+        <div className="flex items-end gap-3 sm:gap-4 rule-dot-b focus-within:border-clay transition-colors pb-2">
           <input
             id="search-page-input"
             type="search"
@@ -363,7 +363,7 @@ export const SearchClient: React.FC<SearchClientProps> = ({ initialData }) => {
               : TABS.find((t) => t.value === activeCategory)!.noun[1]}
             {trimmed && <> for &ldquo;{trimmed}&rdquo;</>}
           </p>
-          <ul className="border-t-2 border-ink">
+          <ul className="rule-dot-t">
             {activeCategory === 'startups' && data.startups.map((s) => <StartupRow key={s.id} startup={s} />)}
             {activeCategory === 'investors' && data.investors.map((i) => <InvestorRow key={i.id} investor={i} />)}
             {activeCategory === 'opportunities' &&
@@ -398,7 +398,7 @@ function ResultGroup({
 }) {
   return (
     <section aria-label={title}>
-      <div className="border-t-2 border-ink pt-4 pb-1 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+      <div className="rule-dot-t pt-4 pb-1 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
         <h2 className="font-serif text-display-sm text-ink">
           {title}
           <span className="ml-3 font-sans text-sm tabular text-ink-4 align-middle">{count}</span>
@@ -423,7 +423,7 @@ const StartupRow: React.FC<{ startup: any }> = ({ startup }) => (
   <li className="group border-b border-rule">
     <Link href={`/startup/${startup.slug}`} className={cn(rowLink, 'md:grid md:grid-cols-[minmax(0,16rem)_minmax(0,1fr)_auto] md:gap-x-8 md:items-baseline')}>
       <p>
-        <span className="font-serif text-[1.25rem] leading-snug text-ink headline-link">{startup.name}</span>
+        <span className="font-serif font-bold text-[1.25rem] leading-snug text-ink headline-link">{startup.name}</span>
         {startup.crVerified && (
           <span className="ml-2 font-sans text-[0.65rem] text-moss align-middle" title="Commercial registration confirmed">
             CR ✓
@@ -449,7 +449,7 @@ const InvestorRow: React.FC<{ investor: any }> = ({ investor }) => {
     <li className="group border-b border-rule">
       <Link href={`/investor/${investor.slug}`} className={cn(rowLink, 'md:grid md:grid-cols-[minmax(0,16rem)_minmax(0,1fr)_auto] md:gap-x-8 md:items-baseline')}>
         <div>
-          <p className="font-serif text-[1.25rem] leading-snug text-ink headline-link">{investor.name}</p>
+          <p className="font-serif font-bold text-[1.25rem] leading-snug text-ink headline-link">{investor.name}</p>
           <p className="mt-1 text-[0.8125rem] text-ink-3">
             {[investorTypeLabel(investor.type), investor.hqLocation].filter(Boolean).join(' · ')}
           </p>
@@ -476,13 +476,13 @@ const OpportunityRow: React.FC<{ opportunity: any }> = ({ opportunity }) => {
       >
         <div className="font-sans tabular text-sm">
           <span className={closed ? 'text-ink-3' : 'text-ink'}>{d.date}</span>
-          <span className={cn('block text-[0.71875rem] mt-0.5', d.urgent ? 'text-clay' : 'text-ink-3')}>
-            {d.urgent && <span className="inline-block w-1.5 h-1.5 rounded-full bg-clay mr-1.5 align-middle" />}
+          <span className={cn('block text-[0.71875rem] mt-0.5', d.urgent ? 'text-alert' : 'text-ink-3')}>
+            {d.urgent && <span className="inline-block w-1.5 h-1.5 rounded-full bg-alert mr-1.5 align-middle" />}
             {d.note}
           </span>
         </div>
         <div className="min-w-0">
-          <p className="font-serif text-[1.25rem] leading-snug text-ink headline-link">{opportunity.title}</p>
+          <p className="font-serif font-bold text-[1.25rem] leading-snug text-ink headline-link">{opportunity.title}</p>
           <p className="mt-1 text-sm text-ink-3">
             {[opportunity.organization, opportunity.category && opportunityTypeLabel(opportunity.category)]
               .filter(Boolean)
@@ -499,7 +499,7 @@ const ArticleRow: React.FC<{ article: any }> = ({ article }) => (
   <li className="group border-b border-rule">
     <Link href={`/article/${article.slug}`} className={cn(rowLink, 'max-w-4xl')}>
       {article.category?.name && <p className="kicker mb-1.5">{article.category.name}</p>}
-      <p className="font-serif text-[1.375rem] leading-snug text-ink headline-link">{article.title}</p>
+      <p className="font-serif font-bold text-[1.375rem] leading-snug text-ink headline-link">{article.title}</p>
       {article.excerpt && (
         <p className="mt-2 max-w-measure text-[0.9375rem] leading-relaxed text-ink-3 line-clamp-2">{article.excerpt}</p>
       )}

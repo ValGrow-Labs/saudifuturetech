@@ -139,7 +139,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
             </p>
           </header>
 
-          <div className="mt-10 grid gap-12 border-t-2 border-ink pt-8 lg:grid-cols-12 lg:gap-10">
+          <div className="mt-10 grid gap-12 rule-dot-t pt-8 lg:grid-cols-12 lg:gap-10">
             {/* Key facts */}
             <aside className="lg:col-span-4 lg:order-last lg:border-l lg:border-rule lg:pl-10">
               <div className="lg:sticky lg:top-24">
@@ -147,7 +147,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
                 <dl className="text-sm">
                   <Fact label="Deadline">
                     <span className="font-sans tabular text-ink">{d.date}</span>
-                    <span className={cn('block font-sans text-[0.75rem] mt-0.5', d.urgent ? 'text-clay' : 'text-ink-3')}>
+                    <span className={cn('block font-sans text-[0.75rem] mt-0.5', d.urgent ? 'text-alert' : 'text-ink-3')}>
                       {d.urgent && (
                         <span className="live-dot inline-block w-1.5 h-1.5 rounded-full bg-clay mr-1.5 align-middle" />
                       )}
@@ -235,7 +235,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
 
           {related.length > 0 && (
             <section aria-labelledby="related" className="mt-20 md:mt-28">
-              <div className="border-t-2 border-ink pt-4 mb-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div className="rule-dot-t pt-4 mb-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <h2 id="related" className="font-serif text-display-sm text-ink">
                   More in {opp.categoryRel?.name || 'this section'}
                 </h2>
@@ -253,11 +253,11 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
                         href={`/opportunity/${rel.slug}`}
                         className="group grid gap-x-6 gap-y-1 py-4 md:grid-cols-[8.5rem_minmax(0,1fr)_14rem] md:items-baseline -mx-3 px-3 transition-colors hover:bg-paper-sheet/60"
                       >
-                        <span className={cn('font-sans tabular text-sm', rd.urgent ? 'text-clay' : 'text-ink-3')}>
+                        <span className={cn('font-sans tabular text-sm', rd.urgent ? 'text-alert' : 'text-ink-3')}>
                           {rd.date}
                         </span>
                         <span className="min-w-0">
-                          <span className="block font-serif text-[1.125rem] leading-snug text-ink headline-link">
+                          <span className="block font-serif font-bold text-[1.125rem] leading-snug text-ink headline-link">
                             {rel.title}
                           </span>
                           <span className="block text-sm text-ink-3 mt-0.5">{rel.organization}</span>

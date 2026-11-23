@@ -208,7 +208,7 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
     <div>
       {/* Filters */}
       <div role="search" aria-label="Filter the register" className="space-y-7">
-        <div className="flex items-end gap-4 border-b-2 border-ink focus-within:border-clay transition-colors">
+        <div className="flex items-end gap-4 rule-dot-b focus-within:border-clay transition-colors">
           <label htmlFor="startup-search" className="sr-only">
             Search companies
           </label>
@@ -323,7 +323,7 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
 
       {/* Register */}
       {filteredItems.length === 0 ? (
-        <div className="border-t-2 border-ink border-b border-b-rule py-14 md:py-20">
+        <div className="rule-dot-t border-b border-b-rule py-14 md:py-20">
           <p className="font-serif text-display-sm text-ink max-w-xl">No companies match these filters.</p>
           <p className="mt-3 max-w-xl text-[0.9375rem] leading-relaxed text-ink-3">
             The register is small and checked by hand, so narrow searches often come up empty. Try a broader stage or
@@ -344,14 +344,14 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
         </div>
       ) : (
         <div>
-          <div className={cn('hidden md:grid gap-6 border-t-2 border-ink border-b border-b-ink py-3 meta', COLS)}>
+          <div className={cn('hidden md:grid gap-6 rule-dot-t border-b border-b-ink py-3 meta', COLS)}>
             <span>Company</span>
             <span>What it does</span>
             <span>City</span>
             <span className="text-right">Founded</span>
             <span className="text-right">Stage</span>
           </div>
-          <ul className="border-t-2 border-ink md:border-t-0">
+          <ul className="rule-dot-t md:border-t-0">
             {filteredItems.map((item) => (
               <li key={item.id} data-testid="startup-card" className="group border-b border-rule">
                 <Link
@@ -372,7 +372,7 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
                         className="inline-block align-[-0.4rem] mr-2.5 h-7 w-7 object-contain bg-paper-sheet border border-rule"
                       />
                     )}
-                    <span className="font-serif text-[1.3125rem] leading-snug text-ink headline-link">{item.name}</span>
+                    <span className="font-serif font-bold text-[1.3125rem] leading-snug text-ink headline-link">{item.name}</span>
                     {item.crVerified && (
                       <span
                         className="ml-2 font-sans text-[0.65rem] text-moss align-middle whitespace-nowrap"

@@ -128,7 +128,7 @@ export default async function InvestorDetailPage({ params }: PageProps) {
             </p>
           </header>
 
-          <div className="mt-10 grid gap-12 border-t-2 border-ink pt-8 lg:grid-cols-12 lg:gap-10">
+          <div className="mt-10 grid gap-12 rule-dot-t pt-8 lg:grid-cols-12 lg:gap-10">
             {/* Key facts */}
             <aside className="lg:col-span-4 lg:order-last lg:border-l lg:border-rule lg:pl-10">
               <div className="lg:sticky lg:top-24">
@@ -273,7 +273,7 @@ export default async function InvestorDetailPage({ params }: PageProps) {
 
           {related.length > 0 && (
             <section aria-labelledby="related" className="mt-20 md:mt-28">
-              <div className="border-t-2 border-ink pt-4 mb-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div className="rule-dot-t pt-4 mb-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <h2 id="related" className="font-serif text-display-sm text-ink">
                   Other {typeLabel.toLowerCase()} investors
                 </h2>
@@ -289,7 +289,7 @@ export default async function InvestorDetailPage({ params }: PageProps) {
                       href={`/investor/${rel.slug}`}
                       className="group grid gap-x-6 gap-y-1 py-4 md:grid-cols-[minmax(0,1fr)_16rem_10rem] md:items-baseline -mx-3 px-3 transition-colors hover:bg-paper-sheet/60"
                     >
-                      <span className="font-serif text-[1.125rem] leading-snug text-ink headline-link">{rel.name}</span>
+                      <span className="font-serif font-bold text-[1.125rem] leading-snug text-ink headline-link">{rel.name}</span>
                       <span className="text-sm text-ink-2">{rel.checkSizeRange || 'Ticket not disclosed'}</span>
                       <span className="text-sm text-ink-3">{rel.hqLocation}</span>
                     </Link>

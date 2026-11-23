@@ -6,7 +6,7 @@ export const NewsletterBanner: React.FC<{ className?: string }> = ({ className }
   <section
     id="newsletter"
     aria-labelledby="newsletter-banner"
-    className={`border-t-2 border-ink pt-6 grid gap-8 md:grid-cols-12 md:items-end ${className ?? ''}`}
+    className={`rule-dot-t pt-6 grid gap-8 md:grid-cols-12 md:items-end ${className ?? ''}`}
   >
     <div className="md:col-span-7">
       <p className="kicker mb-2">The Sunday Brief</p>

@@ -649,7 +649,7 @@ export function ArticleEditorForm({
                   type="checkbox"
                   checked={featured}
                   onChange={(e) => setFeatured(e.target.checked)}
-                  className="mt-0.5 accent-[#A63D24]"
+                  className="mt-0.5 accent-[#0B6E45]"
                 />
                 <span>
                   Lead story
@@ -661,7 +661,7 @@ export function ArticleEditorForm({
                   type="checkbox"
                   checked={isEditorsPick}
                   onChange={(e) => setIsEditorsPick(e.target.checked)}
-                  className="mt-0.5 accent-[#A63D24]"
+                  className="mt-0.5 accent-[#0B6E45]"
                 />
                 <span>Editor&rsquo;s pick</span>
               </label>
@@ -670,7 +670,7 @@ export function ArticleEditorForm({
                   type="checkbox"
                   checked={isTrending}
                   onChange={(e) => setIsTrending(e.target.checked)}
-                  className="mt-0.5 accent-[#A63D24]"
+                  className="mt-0.5 accent-[#0B6E45]"
                 />
                 <span>Trending</span>
               </label>

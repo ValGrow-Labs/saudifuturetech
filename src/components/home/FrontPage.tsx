@@ -21,7 +21,7 @@ export function FrontPage({ lead, secondary }: FrontPageProps) {
     <section aria-labelledby="lead-story" className="grid gap-y-10 lg:grid-cols-12 lg:gap-x-10">
       {/* Lead */}
       <article className="group lg:col-span-8 rise">
-        <Link href={`/article/${lead.slug}`} tabIndex={-1} aria-hidden className="relative block aspect-[16/10] lg:aspect-[2/1] overflow-hidden bg-paper-band">
+        <Link href={`/article/${lead.slug}`} tabIndex={-1} aria-hidden className="relative block aspect-[16/10] lg:aspect-[2/1] overflow-hidden rounded-md bg-paper-band">
           {lead.coverImageUrl && (
             <Image
               src={lead.coverImageUrl}
@@ -61,7 +61,7 @@ export function FrontPage({ lead, secondary }: FrontPageProps) {
         {second && (
           <article className="group pb-6 border-b border-rule rise" style={{ animationDelay: '80ms' }}>
             {second.coverImageUrl && (
-              <Link href={`/article/${second.slug}`} tabIndex={-1} aria-hidden className="relative block aspect-[3/2] overflow-hidden bg-paper-band mb-4">
+              <Link href={`/article/${second.slug}`} tabIndex={-1} aria-hidden className="relative block aspect-[3/2] overflow-hidden rounded-md bg-paper-band mb-4">
                 <Image src={second.coverImageUrl} alt="" fill sizes="(max-width: 1024px) 100vw, 30vw" className="object-cover img-warm" />
               </Link>
             )}

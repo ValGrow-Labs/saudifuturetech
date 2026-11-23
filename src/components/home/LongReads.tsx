@@ -12,7 +12,7 @@ export function LongReads({ articles }: { articles: ArticlePreview[] }) {
 
   return (
     <section aria-labelledby="long-reads">
-      <div className="border-t-2 border-ink pt-4 mb-8 flex items-end justify-between gap-4">
+      <div className="rule-dot-t pt-4 mb-5 flex items-end justify-between gap-4">
         <div>
           <p className="kicker mb-2">Chosen by the editors</p>
           <h2 id="long-reads" className="font-serif text-display-md text-ink">
@@ -25,12 +25,12 @@ export function LongReads({ articles }: { articles: ArticlePreview[] }) {
         </Link>
       </div>
 
-      <article className="group grid gap-8 md:grid-cols-12 md:items-center pb-10 border-b border-rule">
+      <article className="group grid gap-8 md:grid-cols-12 md:items-center pb-6 border-b border-rule">
         <Link
           href={`/article/${feature.slug}`}
           tabIndex={-1}
           aria-hidden
-          className="relative block md:col-span-7 aspect-[4/3] md:aspect-[16/11] overflow-hidden bg-paper-band"
+          className="relative block md:col-span-7 aspect-[4/3] md:aspect-[16/11] overflow-hidden rounded-md bg-paper-band"
         >
           {feature.coverImageUrl && (
             <Image src={feature.coverImageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 58vw" className="object-cover img-warm transition-transform duration-[1200ms] ease-out group-hover:scale-[1.02]" />
@@ -53,7 +53,7 @@ export function LongReads({ articles }: { articles: ArticlePreview[] }) {
       {others.length > 0 && (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-10">
           {others.slice(0, 3).map((a) => (
-            <article key={a.id} className="group py-6 border-b border-rule lg:border-b-0 lg:[&:not(:first-child)]:border-l lg:[&:not(:first-child)]:pl-10 lg:[&:not(:first-child)]:-ml-0">
+            <article key={a.id} className="group py-4 border-b border-rule lg:border-b-0 lg:[&:not(:first-child)]:border-l lg:[&:not(:first-child)]:pl-10 lg:[&:not(:first-child)]:-ml-0">
               <CategoryBadge category={a.category} />
               <h3 className="mt-2 font-serif text-[1.3125rem] leading-snug text-ink">
                 <Link href={`/article/${a.slug}`} className="headline-link">

@@ -98,7 +98,7 @@ export default async function AboutPage() {
           <div className="mt-14 md:mt-16 grid gap-y-16 lg:grid-cols-12 lg:gap-x-10">
             {/* Left rail: contents */}
             <nav aria-label="On this page" className="hidden lg:block lg:col-span-3">
-              <div className="sticky top-24 border-t-2 border-ink pt-4">
+              <div className="sticky top-24 rule-dot-t pt-4">
                 <p className="meta mb-3">On this page</p>
                 <ol className="space-y-2 text-sm">
                   {[
@@ -142,7 +142,7 @@ export default async function AboutPage() {
                         href={`/category/${cat.slug}`}
                         className="grid gap-x-8 gap-y-1 py-4 -mx-3 px-3 sm:grid-cols-[13rem_minmax(0,1fr)] sm:items-baseline transition-colors hover:bg-paper-sheet/60"
                       >
-                        <span className="font-serif text-[1.25rem] text-ink headline-link">{cat.name}</span>
+                        <span className="font-serif font-bold text-[1.25rem] text-ink headline-link">{cat.name}</span>
                         <span className="text-[0.9375rem] text-ink-3">{SECTION_NOTES[cat.slug] ?? cat.description}</span>
                       </Link>
                     </li>
@@ -195,7 +195,7 @@ export default async function AboutPage() {
                           href={`/author/${a.slug}`}
                           className="grid gap-x-8 gap-y-0.5 py-4 -mx-3 px-3 sm:grid-cols-[13rem_minmax(0,1fr)] sm:items-baseline transition-colors hover:bg-paper-sheet/60"
                         >
-                          <span className="font-serif text-[1.25rem] text-ink headline-link">{a.displayName}</span>
+                          <span className="font-serif font-bold text-[1.25rem] text-ink headline-link">{a.displayName}</span>
                           <span className="text-[0.9375rem] text-ink-3">{a.title}</span>
                         </Link>
                       </li>

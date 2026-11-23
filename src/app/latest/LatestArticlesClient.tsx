@@ -69,7 +69,7 @@ export const LatestArticlesClient: React.FC<LatestArticlesClientProps> = ({ init
           </div>
         </div>
 
-        <label className="relative mb-3 flex items-center gap-2 border-b-2 border-ink focus-within:border-clay lg:w-72 shrink-0 transition-colors">
+        <label className="relative mb-3 flex items-center gap-2 rule-dot-b focus-within:border-clay lg:w-72 shrink-0 transition-colors">
           <span className="sr-only">Filter by headline, summary or writer</span>
           <svg aria-hidden viewBox="0 0 24 24" className="w-4 h-4 text-ink-3" fill="none" stroke="currentColor" strokeWidth={1.25}>
             <circle cx="11" cy="11" r="7" />
@@ -138,7 +138,7 @@ export const LatestArticlesClient: React.FC<LatestArticlesClientProps> = ({ init
                     href={`/article/${article.slug}`}
                     tabIndex={-1}
                     aria-hidden
-                    className="relative block aspect-square sm:aspect-[4/3] overflow-hidden bg-paper-band self-start"
+                    className="relative block aspect-square sm:aspect-[4/3] overflow-hidden rounded-md bg-paper-band self-start"
                   >
                     <Image
                       src={article.coverImageUrl}

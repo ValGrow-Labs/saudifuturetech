@@ -648,7 +648,7 @@ export const StartupManager: React.FC<StartupManagerProps> = ({ startups, catego
                       type="checkbox"
                       checked={formData.crVerified || false}
                       onChange={(e) => setFormData({ ...formData, crVerified: e.target.checked })}
-                      className="accent-[#A63D24]"
+                      className="accent-[#0B6E45]"
                     />
                     CR confirmed with the Ministry of Commerce
                   </label>
@@ -754,7 +754,7 @@ export const StartupManager: React.FC<StartupManagerProps> = ({ startups, catego
                       type="checkbox"
                       checked={formData.isPublished}
                       onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                      className="accent-[#A63D24]"
+                      className="accent-[#0B6E45]"
                     />
                     Published
                   </label>
@@ -763,7 +763,7 @@ export const StartupManager: React.FC<StartupManagerProps> = ({ startups, catego
                       type="checkbox"
                       checked={formData.isFeatured}
                       onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
-                      className="accent-[#A63D24]"
+                      className="accent-[#0B6E45]"
                     />
                     Feature on homepage
                   </label>

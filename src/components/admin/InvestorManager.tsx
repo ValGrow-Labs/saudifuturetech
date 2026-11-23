@@ -606,7 +606,7 @@ export const InvestorManager: React.FC<InvestorManagerProps> = ({ initialInvesto
                         type="checkbox"
                         checked={formData.isCmaAuthorized}
                         onChange={(e) => setFormData({ ...formData, isCmaAuthorized: e.target.checked })}
-                        className="accent-[#A63D24]"
+                        className="accent-[#0B6E45]"
                       />
                       Authorised by the CMA
                     </label>
@@ -632,7 +632,7 @@ export const InvestorManager: React.FC<InvestorManagerProps> = ({ initialInvesto
                         type="checkbox"
                         checked={formData.isSvcPartner}
                         onChange={(e) => setFormData({ ...formData, isSvcPartner: e.target.checked })}
-                        className="accent-[#A63D24]"
+                        className="accent-[#0B6E45]"
                       />
                       SVC partner or co-investee
                     </label>
@@ -793,7 +793,7 @@ export const InvestorManager: React.FC<InvestorManagerProps> = ({ initialInvesto
                       type="checkbox"
                       checked={formData.isActiveInvesting}
                       onChange={(e) => setFormData({ ...formData, isActiveInvesting: e.target.checked })}
-                      className="accent-[#A63D24]"
+                      className="accent-[#0B6E45]"
                     />
                     Actively investing
                   </label>
@@ -802,7 +802,7 @@ export const InvestorManager: React.FC<InvestorManagerProps> = ({ initialInvesto
                       type="checkbox"
                       checked={formData.isFeatured}
                       onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
-                      className="accent-[#A63D24]"
+                      className="accent-[#0B6E45]"
                     />
                     Featured
                   </label>
@@ -811,7 +811,7 @@ export const InvestorManager: React.FC<InvestorManagerProps> = ({ initialInvesto
                       type="checkbox"
                       checked={formData.isPublished}
                       onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                      className="accent-[#A63D24]"
+                      className="accent-[#0B6E45]"
                     />
                     Published
                   </label>

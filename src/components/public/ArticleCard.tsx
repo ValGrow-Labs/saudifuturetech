@@ -36,7 +36,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
           href={`/article/${article.slug}`}
           tabIndex={-1}
           aria-hidden
-          className="relative block aspect-[3/2] overflow-hidden bg-paper-band mb-4"
+          className="relative block aspect-[3/2] overflow-hidden rounded-md bg-paper-band mb-4"
         >
           <Image
             src={article.coverImageUrl}

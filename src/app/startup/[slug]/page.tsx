@@ -160,7 +160,7 @@ export default async function StartupDetailPage({ params }: PageProps) {
             <p className="standfirst mt-4 max-w-2xl">{startup.tagline}</p>
           </header>
 
-          <div className="mt-10 md:mt-12 border-t-2 border-ink pt-8 grid gap-12 lg:grid-cols-12 lg:gap-10 items-start">
+          <div className="mt-10 md:mt-12 rule-dot-t pt-8 grid gap-12 lg:grid-cols-12 lg:gap-10 items-start">
             {/* Fact sheet — first on mobile, sticky rail on desktop */}
             <aside className="lg:col-span-4 lg:order-2 lg:border-l lg:border-rule lg:pl-10 lg:sticky lg:top-24">
               <h2 className="meta mb-3">Key facts</h2>
@@ -294,7 +294,7 @@ export default async function StartupDetailPage({ params }: PageProps) {
 
           {related.length > 0 && (
             <section aria-labelledby="related" className="mt-20 md:mt-28">
-              <div className="border-t-2 border-ink pt-4 mb-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div className="rule-dot-t pt-4 mb-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <p className="kicker mb-2">The register</p>
                   <h2 id="related" className="font-serif text-display-sm md:text-display-md text-ink">
@@ -313,7 +313,7 @@ export default async function StartupDetailPage({ params }: PageProps) {
                       href={`/startup/${rel.slug}`}
                       className="grid gap-x-6 gap-y-1 py-5 -mx-3 px-3 md:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_7.5rem_6.5rem] md:items-baseline transition-colors hover:bg-paper-sheet/60"
                     >
-                      <span className="font-serif text-[1.3125rem] leading-snug text-ink headline-link">{rel.name}</span>
+                      <span className="font-serif font-bold text-[1.3125rem] leading-snug text-ink headline-link">{rel.name}</span>
                       <span className="text-[0.9375rem] leading-snug text-ink-2">{rel.tagline}</span>
                       <span className="meta md:hidden">
                         {rel.hqCity} · <span className="text-ink">{stageLabel(rel.stage)}</span>

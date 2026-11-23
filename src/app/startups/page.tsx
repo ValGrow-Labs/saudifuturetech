@@ -127,7 +127,7 @@ export default async function StartupsPage({ searchParams }: PageProps) {
             />
           </div>
 
-          <aside className="mt-20 md:mt-24 border-t-2 border-ink pt-5 grid gap-6 md:grid-cols-12 md:items-baseline">
+          <aside className="mt-20 md:mt-24 rule-dot-t pt-5 grid gap-6 md:grid-cols-12 md:items-baseline">
             <h2 className="md:col-span-5 font-serif text-display-sm text-ink">Building a company in Saudi Arabia?</h2>
             <div className="md:col-span-7 md:border-l md:border-rule md:pl-10">
               <p className="text-[0.9375rem] leading-relaxed text-ink-2 max-w-xl">

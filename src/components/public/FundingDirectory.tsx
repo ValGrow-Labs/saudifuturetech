@@ -188,7 +188,7 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
     <div>
       {/* Filter bar */}
       <div className="space-y-6">
-        <label className="flex items-center gap-3 border-b-2 border-ink pb-2 focus-within:border-clay transition-colors">
+        <label className="flex items-center gap-3 rule-dot-b pb-2 focus-within:border-clay transition-colors">
           <span className="sr-only">Search investors</span>
           <SearchGlyph />
           <input
@@ -271,7 +271,7 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
       </div>
 
       {filteredItems.length === 0 ? (
-        <div className="mt-3 border-t-2 border-ink py-14">
+        <div className="mt-3 rule-dot-t py-14">
           <p className="font-serif text-[1.5rem] leading-snug text-ink">No investors match these filters.</p>
           <button type="button" onClick={handleResetFilters} className="group mt-3 inline-flex items-center gap-2 text-sm text-ink">
             <span className="link-rule">Clear filters</span>
@@ -280,7 +280,7 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
         </div>
       ) : (
         <div className="mt-3">
-          <div className={cn('hidden md:grid gap-6 border-t-2 border-ink border-b border-rule py-3 meta', COLS)}>
+          <div className={cn('hidden md:grid gap-6 rule-dot-t border-b border-rule py-3 meta', COLS)}>
             <span>Investor</span>
             <span>Ticket size</span>
             <span>Stages</span>
@@ -289,7 +289,7 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
             <span className="sr-only">Details</span>
           </div>
 
-          <ul className="border-t-2 border-ink md:border-t-0">
+          <ul className="rule-dot-t md:border-t-0">
             {filteredItems.map((item) => {
               const stages = Array.isArray(item.targetStages) ? (item.targetStages as string[]) : [];
               const sectors = Array.isArray(item.targetSectors) ? (item.targetSectors as string[]) : [];
@@ -308,7 +308,7 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
                   >
                     {/* Investor */}
                     <div className="min-w-0">
-                      <Link href={`/investor/${item.slug}`} className="font-serif text-[1.25rem] leading-snug text-ink headline-link">
+                      <Link href={`/investor/${item.slug}`} className="font-serif font-bold text-[1.25rem] leading-snug text-ink headline-link">
                         {item.name}
                       </Link>
                       <p className="mt-1 text-sm text-ink-3">

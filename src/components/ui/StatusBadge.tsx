@@ -9,7 +9,7 @@ interface StatusBadgeProps {
 
 const CONFIG: Record<ArticleStatus, { label: string; text: string; dot: string }> = {
   DRAFT: { label: 'Draft', text: 'text-ink-3', dot: 'bg-ink-4' },
-  IN_REVIEW: { label: 'In review', text: 'text-clay', dot: 'bg-clay' },
+  IN_REVIEW: { label: 'In review', text: 'text-alert', dot: 'bg-alert' },
   SCHEDULED: { label: 'Scheduled', text: 'text-ink', dot: 'bg-ink' },
   PUBLISHED: { label: 'Published', text: 'text-moss', dot: 'bg-moss' },
   ARCHIVED: { label: 'Archived', text: 'text-ink-4', dot: 'bg-rule' },

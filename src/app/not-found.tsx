@@ -30,26 +30,26 @@ export default function NotFound() {
           </div>
 
           <div className="mt-20 md:mt-24 grid gap-12 md:grid-cols-2 md:gap-x-10">
-            <nav aria-label="Directory" className="border-t-2 border-ink pt-4">
+            <nav aria-label="Directory" className="rule-dot-t pt-4">
               <p className="meta mb-3">Directory and reporting</p>
               <ul className="border-t border-rule">
                 {NAV_LINKS.map((l) => (
                   <li key={l.href} className="group border-b border-rule">
                     <Link href={l.href} className="flex items-baseline justify-between py-3">
-                      <span className="font-serif text-[1.25rem] text-ink headline-link">{l.label}</span>
+                      <span className="font-serif font-bold text-[1.25rem] text-ink headline-link">{l.label}</span>
                       <span aria-hidden className="text-ink-4 group-hover:text-clay transition-colors">→</span>
                     </Link>
                   </li>
                 ))}
               </ul>
             </nav>
-            <nav aria-label="Sections" className="border-t-2 border-ink pt-4 md:border-l-0">
+            <nav aria-label="Sections" className="rule-dot-t pt-4 md:border-l-0">
               <p className="meta mb-3">Sections</p>
               <ul className="border-t border-rule">
                 {EDITORIAL_CATEGORIES.map((cat) => (
                   <li key={cat.slug} className="group border-b border-rule">
                     <Link href={`/category/${cat.slug}`} className="flex items-baseline justify-between py-3">
-                      <span className="font-serif text-[1.25rem] text-ink headline-link">{cat.name}</span>
+                      <span className="font-serif font-bold text-[1.25rem] text-ink headline-link">{cat.name}</span>
                       <span aria-hidden className="text-ink-4 group-hover:text-clay transition-colors">→</span>
                     </Link>
                   </li>

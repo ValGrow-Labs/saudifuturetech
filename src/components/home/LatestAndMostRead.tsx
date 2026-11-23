@@ -15,7 +15,7 @@ export function LatestAndMostRead({ latest, mostRead }: Props) {
   return (
     <section className="grid gap-14 lg:grid-cols-12 lg:gap-10">
       <div className="lg:col-span-8">
-        <div className="border-t-2 border-ink pt-4 mb-2 flex items-end justify-between">
+        <div className="rule-dot-t pt-4 mb-2 flex items-end justify-between">
           <h2 className="font-serif text-display-sm md:text-display-md text-ink">Latest</h2>
           <Link href="/latest" className="group inline-flex items-center gap-2 text-sm text-ink">
             <span className="link-rule">Everything we’ve published</span>
@@ -25,7 +25,7 @@ export function LatestAndMostRead({ latest, mostRead }: Props) {
         <ul>
           {latest.map((a) => (
             <li key={a.id} className="group border-b border-rule">
-              <article className="grid grid-cols-[1fr_6.5rem] sm:grid-cols-[6.5rem_1fr_9rem] gap-x-6 gap-y-2 py-6">
+              <article className="grid grid-cols-[1fr_6.5rem] sm:grid-cols-[6.5rem_1fr_9rem] gap-x-6 gap-y-2 py-4">
                 <time dateTime={a.publishedAt} className="hidden sm:block meta pt-1">
                   {formatDate(a.publishedAt)}
                 </time>
@@ -42,7 +42,7 @@ export function LatestAndMostRead({ latest, mostRead }: Props) {
                   </p>
                 </div>
                 {a.coverImageUrl && (
-                  <Link href={`/article/${a.slug}`} tabIndex={-1} aria-hidden className="relative block aspect-square sm:aspect-[4/3] overflow-hidden bg-paper-band self-start">
+                  <Link href={`/article/${a.slug}`} tabIndex={-1} aria-hidden className="relative block aspect-square sm:aspect-[4/3] overflow-hidden rounded-md bg-paper-band self-start">
                     <Image src={a.coverImageUrl} alt="" fill sizes="144px" className="object-cover img-warm" />
                   </Link>
                 )}
@@ -53,8 +53,8 @@ export function LatestAndMostRead({ latest, mostRead }: Props) {
       </div>
 
       <aside className="lg:col-span-4" aria-labelledby="most-read">
-        <div className="lg:sticky lg:top-24">
-          <div className="border-t-2 border-ink pt-4 mb-2">
+        <div className="lg:sticky lg:top-28 bezel"><div className="bezel-core p-5">
+          <div className="rule-dot-t pt-4 mb-2">
             <h2 id="most-read" className="font-serif text-display-sm text-ink">
               Most read
             </h2>
@@ -63,17 +63,17 @@ export function LatestAndMostRead({ latest, mostRead }: Props) {
           <ol>
             {mostRead.slice(0, 5).map((item, i) => (
               <li key={item.slug + i} className="group border-b border-rule">
-                <Link href={`/article/${item.slug}`} className="grid grid-cols-[2.75rem_1fr] gap-3 py-5">
-                  <span className="font-serif text-[2.25rem] leading-none text-clay tabular">{i + 1}</span>
+                <Link href={`/article/${item.slug}`} className="grid grid-cols-[2.75rem_1fr] gap-3 py-3.5">
+                  <span className="font-serif font-bold text-[2.25rem] leading-none text-gold tabular">{i + 1}</span>
                   <span>
-                    <span className="block font-serif text-[1.125rem] leading-snug text-ink headline-link">{item.title}</span>
+                    <span className="block font-serif font-bold text-[1.0625rem] leading-snug text-ink headline-link">{item.title}</span>
                     <span className="meta block mt-1.5">{item.category}</span>
                   </span>
                 </Link>
               </li>
             ))}
           </ol>
-        </div>
+        </div></div>
       </aside>
     </section>
   );

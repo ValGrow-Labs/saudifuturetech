@@ -240,7 +240,7 @@ export function UserManager({ users, authors, currentUserId }: UserManagerProps)
               type="checkbox"
               checked={isActive}
               onChange={(e) => setIsActive(e.target.checked)}
-              className="accent-[#A63D24]"
+              className="accent-[#0B6E45]"
             />
             Active (can sign in)
           </label>

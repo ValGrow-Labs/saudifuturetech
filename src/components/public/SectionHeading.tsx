@@ -28,7 +28,7 @@ export const SectionHeading: React.FC<SectionHeadingProps> = ({
   className,
   as: Tag = 'h2',
 }) => (
-  <div className={cn('border-t-2 border-ink pt-4 mb-8', className)}>
+  <div className={cn('rule-dot-t pt-4 mb-8', className)}>
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="max-w-2xl">
         {kicker && <p className="kicker mb-2">{kicker}</p>}

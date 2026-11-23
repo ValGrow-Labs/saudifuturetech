@@ -15,42 +15,64 @@ import type { Config } from 'tailwindcss';
  * this palette so admin screens inherit the system without rewrites.
  */
 
+// Broadsheet theme: cream newsprint, near-black ink, Saudi green section labels.
 const paper = {
-  DEFAULT: '#F2EEE5',
-  sheet: '#FAF8F3',
-  band: '#EAE4D8',
-  deep: '#E2DBCC',
+  DEFAULT: '#F8F1DE',
+  sheet: '#FCF8EC',
+  band: '#F1E8CF',
+  deep: '#E8DDBF',
 };
 
 const ink = {
-  DEFAULT: '#1A1714',
-  2: '#3A352F',
-  3: '#6F675D',
-  4: '#9A9186',
+  DEFAULT: '#141414',
+  2: '#3B3832',
+  3: '#6A6458',
+  4: '#9B9381',
   // legacy aliases
-  high: '#1A1714',
-  body: '#3A352F',
-  muted: '#6F675D',
-  faint: '#9A9186',
+  high: '#141414',
+  body: '#3B3832',
+  muted: '#6A6458',
+  faint: '#9B9381',
 };
 
 const rule = {
-  DEFAULT: '#D8D0C1',
-  strong: '#1A1714',
-  soft: '#E4DDD0',
+  DEFAULT: '#CBBF9F',
+  strong: '#141414',
+  soft: '#DDD3B8',
 };
 
+// The accent: Saudi green.
 const clay = {
-  DEFAULT: '#A63D24',
-  dark: '#86301B',
-  tint: '#F0DFD5',
-  wash: '#F6ECE5',
+  DEFAULT: '#11603F',
+  dark: '#0C4A30',
+  tint: '#DCE8D9',
+  wash: '#EAF0E2',
 };
 
-const moss = {
-  DEFAULT: '#3F6B52',
-  tint: '#DFE8DF',
+// Urgency only: closing deadlines, items waiting for review.
+// Urgency only: closing deadlines, items waiting for review.
+const alert = {
+  DEFAULT: '#B3361F',
+  dark: '#8F2B18',
+  tint: '#F2D9CF',
 };
+
+// Open / live / confirmed.
+const moss = {
+  DEFAULT: '#1D7A4E',
+  tint: '#DDEBDD',
+};
+
+// Gold highlights: rules, numerals, the masthead line.
+const gold = {
+  DEFAULT: '#9A7430',
+  dark: '#7C5D26',
+};
+
+// Fixed colours that do not follow the theme: for type over photographs
+// and the always-dark footer.
+const night = { DEFAULT: '#1B1813', 2: '#24201A' };
+const snow = { DEFAULT: '#F4F1EA' };
 
 const config: Config = {
   darkMode: ['class'],
@@ -66,7 +88,11 @@ const config: Config = {
         ink,
         rule,
         clay,
+        alert,
         moss,
+        gold,
+        night,
+        snow,
 
         // ---- legacy families, remapped ----
         editorial: {
@@ -115,7 +141,7 @@ const config: Config = {
           text: { high: ink.DEFAULT, body: ink[2], muted: ink[3], dark: ink.DEFAULT },
           border: {
             subtle: rule.DEFAULT,
-            medium: '#C9BFAE',
+            medium: '#BFB290',
             hover: clay.DEFAULT,
             yellow: clay.DEFAULT,
           },
@@ -130,19 +156,19 @@ const config: Config = {
         },
       },
       fontFamily: {
-        serif: ['var(--font-serif)', 'Georgia', 'serif'],
-        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-serif)', 'var(--font-arabic)', 'Georgia', 'serif'],
+        sans: ['var(--font-sans)', 'var(--font-arabic)', 'system-ui', 'sans-serif'],
         mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
         // legacy aliases
-        heading: ['var(--font-serif)', 'Georgia', 'serif'],
-        codec: ['var(--font-serif)', 'Georgia', 'serif'],
-        editorial: ['var(--font-serif)', 'Georgia', 'serif'],
-        lato: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        heading: ['var(--font-serif)', 'var(--font-arabic)', 'Georgia', 'serif'],
+        codec: ['var(--font-serif)', 'var(--font-arabic)', 'Georgia', 'serif'],
+        editorial: ['var(--font-serif)', 'var(--font-arabic)', 'Georgia', 'serif'],
+        lato: ['var(--font-sans)', 'var(--font-arabic)', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         // Display scale for the serif — tight leading, negative tracking.
-        'display-xl': ['clamp(2.75rem, 5.2vw, 4.75rem)', { lineHeight: '1.02', letterSpacing: '-0.025em' }],
-        'display-lg': ['clamp(2.25rem, 4vw, 3.5rem)', { lineHeight: '1.05', letterSpacing: '-0.022em' }],
+        'display-xl': ['clamp(2.75rem, 5.2vw, 4.75rem)', { lineHeight: '1.02', letterSpacing: '-0.018em' }],
+        'display-lg': ['clamp(2.25rem, 4vw, 3.5rem)', { lineHeight: '1.05', letterSpacing: '-0.016em' }],
         'display-md': ['clamp(1.75rem, 2.8vw, 2.5rem)', { lineHeight: '1.1', letterSpacing: '-0.018em' }],
         'display-sm': ['clamp(1.375rem, 2vw, 1.75rem)', { lineHeight: '1.18', letterSpacing: '-0.012em' }],
         micro: ['0.6875rem', { lineHeight: '1rem', letterSpacing: '0.02em' }],
@@ -171,8 +197,8 @@ const config: Config = {
       },
       boxShadow: {
         // tinted to the paper, never pure black
-        lift: '0 1px 0 rgba(26,23,20,0.04), 0 8px 24px -12px rgba(74,52,30,0.18)',
-        'card-hover': '0 1px 0 rgba(26,23,20,0.04), 0 12px 32px -16px rgba(74,52,30,0.22)',
+        lift: 'none',
+        'card-hover': '0 1px 2px rgba(60,45,20,0.07), 0 26px 52px -22px rgba(60,45,20,0.32)',
       },
     },
   },

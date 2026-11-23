@@ -13,7 +13,7 @@ const C = {
   ink2: '#3A352F',
   ink3: '#6F675D',
   rule: '#D8D0C1',
-  clay: '#A63D24',
+  clay: '#0B6B43',
 };
 
 const SERIF = "Georgia, 'Times New Roman', serif";

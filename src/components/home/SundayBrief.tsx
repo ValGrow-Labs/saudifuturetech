@@ -4,8 +4,8 @@ import { NewsletterForm } from '@/components/public/NewsletterForm';
 /** Newsletter sign-up as an editorial note on a slightly deeper paper band — not a "CTA box". */
 export function SundayBrief() {
   return (
-    <section id="newsletter" aria-labelledby="sunday-brief" className="bg-paper-band border-y border-rule">
-      <div className="mx-auto max-w-[84rem] px-4 sm:px-6 lg:px-10 py-16 md:py-20 grid gap-10 lg:grid-cols-12 items-end">
+    <section id="newsletter" aria-labelledby="sunday-brief" className="bg-paper-band rule-dot-t rule-dot-b relative">
+      <div className="mx-auto max-w-[112rem] px-4 sm:px-6 lg:px-10 py-10 md:py-12 grid gap-10 lg:grid-cols-12 items-end">
         <div className="lg:col-span-7">
           <p className="kicker mb-3">Newsletter · Sundays, 7am Riyadh</p>
           <h2 id="sunday-brief" className="font-serif text-display-lg text-ink">

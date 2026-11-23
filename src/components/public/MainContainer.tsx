@@ -9,7 +9,7 @@ interface MainContainerProps extends React.HTMLAttributes<HTMLDivElement> {
 /** Page container. `default` matches the masthead width; `narrow` is a reading column. */
 export const MainContainer: React.FC<MainContainerProps> = ({ size = 'default', className, children, ...props }) => {
   const widths = {
-    default: 'max-w-[84rem] px-4 sm:px-6 lg:px-10',
+    default: 'max-w-[112rem] px-4 sm:px-6 lg:px-10',
     wide: 'max-w-[90rem] px-4 sm:px-6 lg:px-10',
     narrow: 'max-w-3xl px-4 sm:px-6',
   };

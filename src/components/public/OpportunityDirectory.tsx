@@ -279,7 +279,7 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
     <div>
       {/* Filter bar */}
       <div className="space-y-6">
-        <label className="flex items-center gap-3 border-b-2 border-ink pb-2 focus-within:border-clay transition-colors">
+        <label className="flex items-center gap-3 rule-dot-b pb-2 focus-within:border-clay transition-colors">
           <span className="sr-only">Search programmes</span>
           <SearchGlyph />
           <input
@@ -368,7 +368,7 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
       </div>
 
       {filteredItems.length === 0 ? (
-        <div className="mt-3 border-t-2 border-ink py-14">
+        <div className="mt-3 rule-dot-t py-14">
           <p className="font-serif text-[1.5rem] leading-snug text-ink">No programmes match these filters.</p>
           <button
             type="button"
@@ -381,7 +381,7 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
         </div>
       ) : (
         <div className="mt-3">
-          <div className={cn('hidden md:grid gap-6 border-t-2 border-ink border-b border-rule py-3 meta', COLS)}>
+          <div className={cn('hidden md:grid gap-6 rule-dot-t border-b border-rule py-3 meta', COLS)}>
             <span>Deadline</span>
             <span>Programme</span>
             <span>Value</span>
@@ -390,7 +390,7 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
             <span className="sr-only">Details</span>
           </div>
 
-          <ul className="border-t-2 border-ink md:border-t-0">
+          <ul className="rule-dot-t md:border-t-0">
             {filteredItems.map((item) => {
               const d = deadlineInfo(item.deadline, item.isExpired ? 'CLOSED' : item.status);
               const st = statusWord(item, d.urgent, d.closed);
@@ -410,7 +410,7 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
                     {/* Deadline */}
                     <div className="font-sans tabular text-sm">
                       <span className={cn(d.closed ? 'text-ink-4' : 'text-ink')}>{d.date}</span>
-                      <span className={cn('block text-[0.71875rem] mt-0.5', d.urgent ? 'text-clay' : 'text-ink-3')}>
+                      <span className={cn('block text-[0.71875rem] mt-0.5', d.urgent ? 'text-alert' : 'text-ink-3')}>
                         {d.urgent && (
                           <span className="live-dot inline-block w-1.5 h-1.5 rounded-full bg-clay mr-1.5 align-middle" />
                         )}
@@ -427,7 +427,7 @@ export const OpportunityDirectory: React.FC<OpportunityDirectoryProps> = ({
                     <div className="col-span-2 md:col-span-1 min-w-0">
                       <Link
                         href={`/opportunity/${item.slug}`}
-                        className="font-serif text-[1.25rem] leading-snug text-ink headline-link"
+                        className="font-serif font-bold text-[1.25rem] leading-snug text-ink headline-link"
                       >
                         {item.title}
                       </Link>
@@ -542,12 +542,12 @@ function StatusWord({ word, tone }: { word: string; tone: 'moss' | 'clay' | 'fai
       className={cn(
         'inline-flex items-center gap-1.5 font-sans text-[0.75rem]',
         tone === 'moss' && 'text-moss',
-        tone === 'clay' && 'text-clay',
+        tone === 'clay' && 'text-alert',
         tone === 'faint' && 'text-ink-4'
       )}
     >
       {tone !== 'faint' && (
-        <span className={cn('inline-block w-1.5 h-1.5 rounded-full', tone === 'moss' ? 'bg-moss' : 'bg-clay')} />
+        <span className={cn('inline-block w-1.5 h-1.5 rounded-full', tone === 'moss' ? 'bg-moss' : 'bg-alert')} />
       )}
       {word}
     </span>

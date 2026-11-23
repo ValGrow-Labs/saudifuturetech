@@ -1,4 +1,5 @@
 import React from 'react';
+import { SECTION_NAMES_AR } from '@/lib/arabic';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -114,10 +115,15 @@ export default async function CategoryArchivePage({ params }: CategoryPageProps)
             </nav>
 
             {/* Section masthead */}
-            <header className="mt-10 md:mt-14 grid gap-8 lg:grid-cols-12 lg:gap-x-10 lg:items-end pb-8 border-b-2 border-ink">
+            <header className="mt-10 md:mt-14 grid gap-8 lg:grid-cols-12 lg:gap-x-10 lg:items-end pb-8 rule-dot-b">
               <div className="lg:col-span-8">
                 <p className="kicker mb-3">Section</p>
                 <h1 className="font-serif text-display-xl text-ink">{category.name}</h1>
+                {SECTION_NAMES_AR[category.slug] && (
+                  <p lang="ar" dir="rtl" className="mt-2 text-left font-sans text-[1.375rem] text-gold">
+                    {SECTION_NAMES_AR[category.slug]}
+                  </p>
+                )}
                 {category.description && (
                   <p className="mt-5 max-w-2xl font-serif text-[1.25rem] leading-snug text-ink-3">{category.description}</p>
                 )}
@@ -170,7 +176,7 @@ export default async function CategoryArchivePage({ params }: CategoryPageProps)
                         href={`/article/${leadArticle.slug}`}
                         tabIndex={-1}
                         aria-hidden
-                        className="relative block aspect-[16/10] lg:aspect-[16/9] overflow-hidden bg-paper-band"
+                        className="relative block aspect-[16/10] lg:aspect-[16/9] overflow-hidden rounded-md bg-paper-band"
                       >
                         {leadArticle.coverImageUrl && (
                           <Image
@@ -218,7 +224,7 @@ export default async function CategoryArchivePage({ params }: CategoryPageProps)
                                 href={`/article/${article.slug}`}
                                 tabIndex={-1}
                                 aria-hidden
-                                className="relative block aspect-[3/2] overflow-hidden bg-paper-band mb-4"
+                                className="relative block aspect-[3/2] overflow-hidden rounded-md bg-paper-band mb-4"
                               >
                                 <Image
                                   src={article.coverImageUrl}
@@ -255,7 +261,7 @@ export default async function CategoryArchivePage({ params }: CategoryPageProps)
                 {archiveArticles.length > 0 && (
                   <section aria-labelledby="section-archive" className="mt-20 md:mt-28 grid lg:grid-cols-12 lg:gap-x-10">
                     <div className="lg:col-span-8">
-                      <div className="border-t-2 border-ink pt-4 mb-2">
+                      <div className="rule-dot-t pt-4 mb-2">
                         <h2 id="section-archive" className="font-serif text-display-sm md:text-display-md text-ink">
                           Earlier in {category.name}
                         </h2>
@@ -287,7 +293,7 @@ export default async function CategoryArchivePage({ params }: CategoryPageProps)
                                   href={`/article/${article.slug}`}
                                   tabIndex={-1}
                                   aria-hidden
-                                  className="relative block aspect-square sm:aspect-[4/3] overflow-hidden bg-paper-band self-start"
+                                  className="relative block aspect-square sm:aspect-[4/3] overflow-hidden rounded-md bg-paper-band self-start"
                                 >
                                   <Image src={article.coverImageUrl} alt="" fill sizes="144px" className="object-cover img-warm" />
                                 </Link>
@@ -306,7 +312,7 @@ export default async function CategoryArchivePage({ params }: CategoryPageProps)
           {/* Other sections, as an index */}
           {otherCategories.length > 0 && (
             <section aria-labelledby="other-sections">
-              <div className="border-t-2 border-ink pt-4 mb-2">
+              <div className="rule-dot-t pt-4 mb-2">
                 <h2 id="other-sections" className="font-serif text-display-sm md:text-display-md text-ink">
                   Other sections
                 </h2>
@@ -316,7 +322,7 @@ export default async function CategoryArchivePage({ params }: CategoryPageProps)
                   <li key={cat.id} className="border-b border-rule">
                     <Link href={`/category/${cat.slug}`} className="group grid grid-cols-[1fr_auto] gap-4 items-baseline py-5">
                       <span className="min-w-0">
-                        <span className="block font-serif text-[1.375rem] leading-tight text-ink headline-link">
+                        <span className="block font-serif font-bold text-[1.375rem] leading-tight text-ink headline-link">
                           {cat.name}
                         </span>
                         {cat.description && (

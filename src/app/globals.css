@@ -3,16 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --paper: #F2EEE5;
-  --sheet: #FAF8F3;
-  --band: #EAE4D8;
-  --ink: #1A1714;
-  --ink-2: #3A352F;
-  --ink-3: #6F675D;
-  --ink-4: #9A9186;
-  --rule: #D8D0C1;
-  --clay: #A63D24;
-  --clay-dark: #86301B;
+  /* Broadsheet: cream newsprint, near-black ink, Saudi green labels */
+  --paper: #F8F1DE;
+  --sheet: #FCF8EC;
+  --band: #F1E8CF;
+  --ink: #141414;
+  --ink-2: #3B3832;
+  --ink-3: #6A6458;
+  --ink-4: #9B9381;
+  --rule: #CBBF9F;
+  --clay: #11603F;
+  --clay-dark: #0C4A30;
+  --gold: #9A7430;
+  --night: #1B1813;
 }
 
 /* Lenis smooth scrolling */
@@ -46,9 +49,10 @@ html.lenis body {
   }
 
   body {
-    background-color: var(--paper);
+    /* transparent so the fixed ambient glow (body::before) shows; html carries the colour */
+    background-color: transparent;
     color: var(--ink-2);
-    font-family: var(--font-sans), system-ui, sans-serif;
+    font-family: var(--font-sans), var(--font-arabic), system-ui, sans-serif;
     font-feature-settings: 'ss01', 'cv11';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -57,15 +61,15 @@ html.lenis body {
   }
 
   h1, h2, h3, h4 {
-    font-family: var(--font-serif), Georgia, serif;
+    font-family: var(--font-serif), var(--font-arabic), Georgia, serif;
     color: var(--ink);
-    font-weight: 500;
-    letter-spacing: -0.015em;
+    font-weight: 700;
+    letter-spacing: -0.012em;
     text-wrap: balance;
   }
 
   h5, h6 {
-    font-family: var(--font-sans), system-ui, sans-serif;
+    font-family: var(--font-sans), var(--font-arabic), system-ui, sans-serif;
     color: var(--ink);
     font-weight: 600;
   }
@@ -76,7 +80,7 @@ html.lenis body {
 
   ::selection {
     background-color: var(--clay);
-    color: var(--sheet);
+    color: var(--paper);
   }
 
   :focus-visible {
@@ -94,18 +98,19 @@ html.lenis body {
 @layer components {
   /* Small label above a headline. Sentence case, mono, never shouty. */
   .kicker {
-    font-family: var(--font-sans), system-ui, sans-serif;
+    display: inline-block;
+    font-family: var(--font-sans), var(--font-arabic), system-ui, sans-serif;
     font-size: 0.75rem;
     line-height: 1rem;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--clay);
   }
 
   /* Metadata line: dates, read times, sources. */
   .meta {
-    font-family: var(--font-sans), system-ui, sans-serif;
+    font-family: var(--font-sans), var(--font-arabic), system-ui, sans-serif;
     font-size: 0.8125rem;
     line-height: 1.15rem;
     color: var(--ink-3);
@@ -118,7 +123,7 @@ html.lenis body {
     background-size: 0% 1px;
     background-position: 0 100%;
     background-repeat: no-repeat;
-    transition: background-size 260ms cubic-bezier(0.22, 1, 0.36, 1), color 160ms;
+    transition: background-size 260ms cubic-bezier(0.32, 0.72, 0, 1), color 160ms;
   }
   .link-rule:hover,
   .group:hover .link-rule {
@@ -127,7 +132,7 @@ html.lenis body {
 
   /* Headline hover: shift to clay. */
   .headline-link {
-    transition: color 160ms ease;
+    transition: color 160ms cubic-bezier(0.32, 0.72, 0, 1);
   }
   .group:hover .headline-link,
   .headline-link:hover {
@@ -141,13 +146,13 @@ html.lenis body {
     justify-content: center;
     gap: 0.5rem;
     background: var(--ink);
-    color: var(--sheet);
-    font-family: var(--font-sans), system-ui, sans-serif;
+    color: var(--paper);
+    font-family: var(--font-sans), var(--font-arabic), system-ui, sans-serif;
     font-size: 0.875rem;
-    font-weight: 500;
-    padding: 0.625rem 1.125rem;
+    font-weight: 600;
+    padding: 0.625rem 1.25rem;
     border-radius: 2px;
-    transition: background-color 180ms ease, transform 120ms ease;
+    transition: background-color 180ms cubic-bezier(0.32, 0.72, 0, 1), transform 120ms cubic-bezier(0.32, 0.72, 0, 1);
   }
   .btn-primary:hover {
     background: var(--clay);
@@ -161,17 +166,17 @@ html.lenis body {
     align-items: center;
     gap: 0.5rem;
     color: var(--ink);
-    font-family: var(--font-sans), system-ui, sans-serif;
+    font-family: var(--font-sans), var(--font-arabic), system-ui, sans-serif;
     font-size: 0.875rem;
     font-weight: 500;
     padding: 0.625rem 1rem;
-    border: 1px solid var(--ink);
+    border: 1px solid rgba(20, 20, 20, 0.35);
     border-radius: 2px;
-    transition: background-color 180ms ease, color 180ms ease, transform 120ms ease;
+    transition: background-color 180ms cubic-bezier(0.32, 0.72, 0, 1), color 180ms cubic-bezier(0.32, 0.72, 0, 1), transform 120ms cubic-bezier(0.32, 0.72, 0, 1);
   }
   .btn-quiet:hover {
     background: var(--ink);
-    color: var(--sheet);
+    color: var(--paper);
   }
   .btn-quiet:active {
     transform: translateY(1px);
@@ -179,7 +184,7 @@ html.lenis body {
 
   /* Article body typography */
   .prose-sft {
-    font-family: var(--font-serif), Georgia, serif;
+    font-family: var(--font-serif), var(--font-arabic), Georgia, serif;
     font-size: 1.1875rem;
     line-height: 1.7;
     color: var(--ink-2);
@@ -193,7 +198,7 @@ html.lenis body {
   /* Field label: sentence case, small, ink-2. Not uppercase. */
   .field-label {
     display: block;
-    font-family: var(--font-sans), system-ui, sans-serif;
+    font-family: var(--font-sans), var(--font-arabic), system-ui, sans-serif;
     font-size: 0.8125rem;
     font-weight: 500;
     color: var(--ink);
@@ -218,19 +223,19 @@ html.lenis body {
     border: 1px solid var(--rule);
     border-radius: 2px;
     padding: 0.5rem 0.75rem;
-    font-family: var(--font-sans), system-ui, sans-serif;
+    font-family: var(--font-sans), var(--font-arabic), system-ui, sans-serif;
     font-size: 0.875rem;
     line-height: 1.4;
     color: var(--ink);
-    transition: border-color 150ms ease, box-shadow 150ms ease;
+    transition: border-color 150ms cubic-bezier(0.32, 0.72, 0, 1), box-shadow 150ms cubic-bezier(0.32, 0.72, 0, 1);
   }
   .field:hover {
-    border-color: #C9BFAE;
+    border-color: #BFB290;
   }
   .field:focus {
     outline: none;
     border-color: var(--ink);
-    box-shadow: 0 0 0 3px rgba(26, 23, 20, 0.08);
+    box-shadow: 0 0 0 3px rgba(17, 96, 63, 0.14);
   }
   .field[aria-invalid='true'] {
     border-color: var(--clay);
@@ -258,7 +263,7 @@ html.lenis body {
     border-radius: 2px;
   }
   .panel-title {
-    font-family: var(--font-serif), Georgia, serif;
+    font-family: var(--font-serif), var(--font-arabic), Georgia, serif;
     font-size: 1.125rem;
     color: var(--ink);
   }
@@ -271,7 +276,7 @@ html.lenis body {
     font-size: 0.875rem;
   }
   .data-table thead th {
-    font-family: var(--font-sans), system-ui, sans-serif;
+    font-family: var(--font-sans), var(--font-arabic), system-ui, sans-serif;
     font-size: 0.75rem;
     font-weight: 500;
     color: var(--ink-3);
@@ -286,17 +291,17 @@ html.lenis body {
     color: var(--ink-2);
   }
   .data-table tbody tr {
-    transition: background-color 120ms ease;
+    transition: background-color 120ms cubic-bezier(0.32, 0.72, 0, 1);
   }
   .data-table tbody tr:hover {
-    background: rgba(250, 248, 243, 0.7);
+    background: rgba(60, 45, 20, 0.035);
   }
 
   /* Small text action in tables: "Edit", "Preview", "Delete". */
   .row-action {
     font-size: 0.8125rem;
     color: var(--ink-2);
-    transition: color 150ms ease;
+    transition: color 150ms cubic-bezier(0.32, 0.72, 0, 1);
   }
   .row-action:hover {
     color: var(--clay);
@@ -304,7 +309,7 @@ html.lenis body {
   .row-action-danger {
     font-size: 0.8125rem;
     color: var(--ink-3);
-    transition: color 150ms ease;
+    transition: color 150ms cubic-bezier(0.32, 0.72, 0, 1);
   }
   .row-action-danger:hover {
     color: var(--clay);
@@ -318,14 +323,14 @@ html.lenis body {
     border-color: var(--rule);
   }
   .border-sft-medium {
-    border-color: #C9BFAE;
+    border-color: #BFB290;
   }
   .border-sft-hover {
     border-color: var(--clay);
   }
 
   .drop-cap::first-letter {
-    font-family: var(--font-serif), Georgia, serif;
+    font-family: var(--font-serif), var(--font-arabic), Georgia, serif;
     float: left;
     font-size: 4.6rem;
     line-height: 0.82;
@@ -335,7 +340,7 @@ html.lenis body {
   }
 
   .standfirst {
-    font-family: var(--font-serif), Georgia, serif;
+    font-family: var(--font-serif), var(--font-arabic), Georgia, serif;
     font-size: 1.3125rem;
     line-height: 1.5;
     color: var(--ink-2);
@@ -343,7 +348,7 @@ html.lenis body {
   }
 
   .transition-editorial {
-    transition: all 180ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition: all 180ms cubic-bezier(0.32, 0.72, 0, 1);
   }
 
   .tabular {
@@ -357,14 +362,14 @@ html.lenis body {
     inset: 0;
     pointer-events: none;
     z-index: 60;
-    opacity: 0.35;
+    opacity: 0.28;
     mix-blend-mode: multiply;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.38 0 0 0 0 0.3 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   /* Image treatment: slightly warmed so stock photography sits on the paper. */
   .img-warm {
-    filter: saturate(0.82) contrast(1.02) sepia(0.06);
+    filter: saturate(0.94) contrast(1.03);
   }
 }
 
@@ -380,7 +385,7 @@ html.lenis body {
   }
 }
 .rise {
-  animation: rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: rise 700ms cubic-bezier(0.32, 0.72, 0, 1) both;
 }
 
 @keyframes pulse-dot {
@@ -429,4 +434,87 @@ html.lenis body {
   .link-rule {
     transition: none;
   }
+}
+
+/* ======================= Premium layer ======================= */
+
+/* Ambient city glow behind everything: emerald + gold orbs on the night sky. */
+body::before {
+  content: none;
+}
+
+/* Double-bezel: an outer tray holding an inner plate, concentric radii. */
+.bezel {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.bezel-core {
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+  overflow: hidden;
+}
+.bezel-sm { padding: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.bezel-sm > .bezel-core { border-radius: 0; }
+
+/* Trailing arrow inside its own circle, for pill buttons and links. */
+.btn-orb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.125rem;
+  background: transparent;
+  transition: transform 500ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.group:hover .btn-orb { transform: translate(2px, -1px) scale(1.06); }
+.btn-primary:active, .btn-quiet:active { transform: scale(0.98); }
+
+/* Scroll reveal: heavy fade-up with a blur that resolves. */
+.reveal {
+  /* Never hidden: content is always visible; it only settles upward slightly. */
+  transform: translateY(1.25rem);
+  transition: transform 700ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.reveal.is-in { transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { transform: none; transition: none; }
+}
+
+/* Header over the homepage hero photo: light text with a soft shadow. */
+.on-hero { text-shadow: 0 1px 14px rgba(0, 0, 0, 0.45); }
+.on-hero :is(a, span, p, .meta):not(.btn-primary):not(.btn-orb):not([lang='ar']) { color: rgba(244, 241, 234, 0.92) !important; }
+.on-hero a:hover:not(.btn-primary) { color: #FFFFFF !important; }
+.on-hero [lang='ar'] { color: #E3C27F !important; border-color: rgba(255, 255, 255, 0.2) !important; }
+.on-hero form[role='search'] { background: rgba(6, 9, 13, 0.35); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18); }
+.on-hero form[role='search'] input { color: #F4F1EA; }
+.on-hero form[role='search'] input::placeholder { color: rgba(244, 241, 234, 0.65); }
+.on-hero form[role='search'] svg { color: rgba(244, 241, 234, 0.75); }
+.on-hero button[aria-controls='mobile-nav'] { background: rgba(255, 255, 255, 0.12); }
+.on-hero button[aria-controls='mobile-nav'] span { background: #F4F1EA; }
+
+/* Scrolling headline ticker (pauses on hover; still for reduced motion). */
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.ticker-track { animation: ticker 60s linear infinite; }
+.ticker:hover .ticker-track { animation-play-state: paused; }
+.ticker { mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent); }
+@media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }
+
+/* Newspaper dotted rules */
+.rule-dot-t { border-top: 1px dotted #A89C7C; }
+.rule-dot-b { border-bottom: 1px dotted #A89C7C; }
+.rule-dot-l { border-left: 1px dotted #A89C7C; }
+.rule-dot-r { border-right: 1px dotted #A89C7C; }
+
+/* Modern touch: a small square marks every section label */
+.kicker::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 0.45rem;
+  vertical-align: 1px;
+  border-radius: 1px;
+  background: currentColor;
 }

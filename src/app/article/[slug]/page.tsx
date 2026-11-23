@@ -132,7 +132,7 @@ function BodySection({ section, idx }: { section: ArticleSection; idx: number })
 
       {section.inlineImage && (
         <figure className="my-10">
-          <div className="relative aspect-[3/2] overflow-hidden bg-paper-band">
+          <div className="relative aspect-[3/2] overflow-hidden rounded-md bg-paper-band">
             <Image
               src={section.inlineImage.url}
               alt={section.inlineImage.alt}
@@ -275,7 +275,7 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
 
             {/* Lead image */}
             <figure className="mt-8">
-              <div className="relative aspect-[3/2] md:aspect-[16/9] lg:aspect-[2/1] w-full overflow-hidden bg-paper-band">
+              <div className="relative aspect-[3/2] md:aspect-[16/9] lg:aspect-[2/1] w-full overflow-hidden rounded-md bg-paper-band">
                 <Image
                   src={article.coverImageUrl}
                   alt={article.coverImageAlt}
@@ -298,7 +298,7 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
               <aside className="hidden lg:block lg:col-span-3">
                 <div className="sticky top-28 space-y-10">
                   {contents.length > 1 && (
-                    <nav aria-label="In this story" className="border-t-2 border-ink pt-3">
+                    <nav aria-label="In this story" className="rule-dot-t pt-3">
                       <p className="meta uppercase tracking-[0.04em]">In this story</p>
                       <ol className="mt-3">
                         {contents.map((c, i) => (

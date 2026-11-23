@@ -22,7 +22,7 @@ export function GrantLedger({ opportunities, total }: { opportunities: Opportuni
   return (
     <section aria-labelledby="grant-ledger" className="grid gap-10 lg:grid-cols-12">
       <div className="lg:col-span-3">
-        <div className="border-t-2 border-ink pt-4 lg:sticky lg:top-24">
+        <div className="lg:sticky lg:top-28">
           <p className="kicker mb-2">The grant desk</p>
           <h2 id="grant-ledger" className="font-serif text-display-md text-ink">
             Closing soon
@@ -37,40 +37,41 @@ export function GrantLedger({ opportunities, total }: { opportunities: Opportuni
         </div>
       </div>
 
-      <ol className="lg:col-span-9 border-t-2 border-ink">
+      <div className="lg:col-span-9 bezel">
+      <ol className="bezel-core divide-y divide-dotted divide-ink/30 px-5 md:px-8">
         {rows.map((o) => {
           const when = dateParts(o.deadline);
           const left = daysUntil(o.deadline);
           const urgent = left !== null && left >= 0 && left <= 14;
           const value = splitValue(o.fundingAmount);
           return (
-            <li key={o.id} className="border-b border-rule">
+            <li key={o.id}>
               <Link
                 href={`/opportunity/${o.slug}`}
-                className="group grid grid-cols-[4.5rem_1fr] md:grid-cols-[5.5rem_1fr_15rem] gap-x-5 md:gap-x-8 gap-y-3 py-6"
+                className="group grid grid-cols-[4.5rem_1fr] md:grid-cols-[5.5rem_1fr_15rem] gap-x-5 md:gap-x-8 gap-y-2 py-4"
               >
                 {/* Calendar date */}
                 <div className="row-span-2 md:row-span-1 leading-none">
                   {when ? (
                     <>
-                      <span className="block font-serif text-[2.75rem] md:text-[3.25rem] text-ink tabular">{when.day}</span>
+                      <span className="block font-serif font-bold text-[2.75rem] md:text-[3.25rem] text-ink tabular">{when.day}</span>
                       <span className="block mt-1.5 text-[0.8125rem] text-ink-3">
                         {when.month} {when.year}
                       </span>
                     </>
                   ) : (
-                    <span className="block font-serif italic text-xl text-ink-2 pt-2">Rolling</span>
+                    <span className="block font-serif font-bold text-xl text-ink-2 pt-2">Rolling</span>
                   )}
                 </div>
 
                 {/* Programme */}
                 <div className="min-w-0 md:pt-1">
-                  <p className="font-serif text-[1.375rem] leading-snug text-ink headline-link">{o.title}</p>
+                  <p className="font-serif font-bold text-[1.375rem] leading-snug text-ink headline-link">{o.title}</p>
                   <p className="mt-1.5 text-sm text-ink-3">
                     {o.organization} · {opportunityTypeLabel(o.category)}
                   </p>
                   {left !== null && left >= 0 && (
-                    <p className={cn('mt-2 font-serif italic text-[0.9375rem]', urgent ? 'text-clay' : 'text-ink-3')}>
+                    <p className={cn('mt-2 text-[0.8125rem] font-semibold', urgent ? 'text-alert' : 'text-ink-3')}>
                       {left === 0 ? 'Closes today' : left === 1 ? 'Closes tomorrow' : `Closes in ${left} days`}
                     </p>
                   )}
@@ -78,7 +79,7 @@ export function GrantLedger({ opportunities, total }: { opportunities: Opportuni
 
                 {/* Value */}
                 <div className="md:pt-1">
-                  <p className="font-serif text-[1.1875rem] text-ink leading-snug">{value.lead}</p>
+                  <p className="text-[1rem] font-semibold text-ink leading-snug">{value.lead}</p>
                   {value.rest && <p className="mt-0.5 text-[0.8125rem] text-ink-3 leading-snug">{value.rest}</p>}
                   <p className="mt-1.5 text-[0.8125rem] text-ink-3">{equityWords(o.equityTaken)}</p>
                 </div>
@@ -87,6 +88,7 @@ export function GrantLedger({ opportunities, total }: { opportunities: Opportuni
           );
         })}
       </ol>
+      </div>
     </section>
   );
 }

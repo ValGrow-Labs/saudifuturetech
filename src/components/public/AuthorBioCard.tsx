@@ -49,7 +49,7 @@ export const AuthorBioCard: React.FC<AuthorBioCardProps> = ({ author, className,
         </div>
         {author.avatarUrl && (
           <div className="order-first md:order-none md:col-span-4 lg:col-span-3 lg:col-start-10 md:border-l md:border-rule md:pl-8">
-            <div className="relative aspect-[4/5] w-24 md:w-full max-w-[14rem] overflow-hidden bg-paper-band">
+            <div className="relative aspect-[4/5] w-24 md:w-full max-w-[14rem] overflow-hidden rounded-md bg-paper-band">
               <Image src={author.avatarUrl} alt={author.displayName} fill sizes="224px" className="object-cover img-warm" />
             </div>
           </div>
@@ -66,7 +66,7 @@ export const AuthorBioCard: React.FC<AuthorBioCardProps> = ({ author, className,
             href={`/author/${author.slug}`}
             tabIndex={-1}
             aria-hidden
-            className="relative block aspect-square overflow-hidden bg-paper-band"
+            className="relative block aspect-square overflow-hidden rounded-md bg-paper-band"
           >
             <Image src={author.avatarUrl} alt="" fill sizes="80px" className="object-cover img-warm" />
           </Link>

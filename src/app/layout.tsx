@@ -1,27 +1,42 @@
 import type { Metadata } from 'next';
-import { Newsreader, Geist, Geist_Mono } from 'next/font/google';
+import { Source_Serif_4, IBM_Plex_Sans, IBM_Plex_Sans_Arabic, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import { SmoothScrollProvider } from '@/components/providers/SmoothScrollProvider';
 
-// Newsreader — display & reading serif (optical sizes for headlines vs. body)
-const serif = Newsreader({
+// IBM Plex — one family across serif, sans, Arabic and mono, so Latin and
+// Arabic text sit together properly. Engineered rather than decorative, which
+// suits a technology publication.
+
+// Headlines and long-form reading: a classic broadsheet serif
+const serif = Source_Serif_4({
   subsets: ['latin'],
+  weight: ['400', '600', '700', '800', '900'],
+  style: ['normal', 'italic'],
   variable: '--font-serif',
   display: 'swap',
-  style: ['normal', 'italic'],
-  axes: ['opsz'],
 });
 
-// Geist — interface sans
-const sans = Geist({
+// Interface text
+const sans = IBM_Plex_Sans({
   subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  style: ['normal', 'italic'],
   variable: '--font-sans',
   display: 'swap',
 });
 
-// Geist Mono — figures, dates, data labels
-const mono = Geist_Mono({
+// Arabic, designed to match Plex Sans; used automatically for Arabic glyphs
+const arabic = IBM_Plex_Sans_Arabic({
+  subsets: ['arabic'],
+  weight: ['400', '500', '600'],
+  variable: '--font-arabic',
+  display: 'swap',
+});
+
+// Code blocks only
+const mono = IBM_Plex_Mono({
   subsets: ['latin'],
+  weight: ['400'],
   variable: '--font-mono',
   display: 'swap',
 });
@@ -68,8 +83,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${serif.variable} ${sans.variable} ${mono.variable}`}>
-      <body className="grain bg-paper text-ink-2 font-sans antialiased min-h-[100dvh] flex flex-col">
+    <html lang="en" className={`${serif.variable} ${sans.variable} ${arabic.variable} ${mono.variable}`}>
+      <body className="grain text-ink-2 font-sans antialiased min-h-[100dvh] flex flex-col">
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-overlay focus:bg-ink focus:text-paper-sheet focus:px-4 focus:py-2 focus:text-sm"

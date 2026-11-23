@@ -14,7 +14,7 @@ export function StartupRegister({ startups, total }: { startups: StartupItem[]; 
 
   return (
     <section aria-labelledby="startup-register">
-      <div className="border-t-2 border-ink pt-4 mb-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="rule-dot-t pt-4 mb-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="max-w-2xl">
           <p className="kicker mb-2">The register</p>
           <h2 id="startup-register" className="font-serif text-display-md text-ink">
@@ -30,10 +30,10 @@ export function StartupRegister({ startups, total }: { startups: StartupItem[]; 
         </Link>
       </div>
 
-      <ul className="grid md:grid-cols-2 md:gap-x-14">
+      <ul className="mt-5 grid md:grid-cols-2 gap-4">
         {rows.map((s) => (
-          <li key={s.id} className="border-b border-rule">
-            <Link href={`/startup/${s.slug}`} className="group grid grid-cols-[3.25rem_1fr] gap-5 py-7">
+          <li key={s.id} className="bezel-sm rule-dot-b">
+            <Link href={`/startup/${s.slug}`} className="group bezel-core grid grid-cols-[3.25rem_1fr] gap-5 p-5 h-full transition-colors duration-500 hover:bg-paper-deep">
               {s.logoUrl ? (
                 <Image
                   src={s.logoUrl}
@@ -52,8 +52,8 @@ export function StartupRegister({ startups, total }: { startups: StartupItem[]; 
                 </span>
               )}
               <span className="min-w-0">
-                <span className="block font-serif text-[1.5rem] leading-tight text-ink headline-link">{s.name}</span>
-                <span className="block mt-1.5 font-serif italic text-[1.0625rem] leading-snug text-ink-2">
+                <span className="block font-serif font-bold text-[1.5rem] leading-tight text-ink headline-link">{s.name}</span>
+                <span className="block mt-1.5 text-[0.9375rem] leading-snug text-ink-2">
                   {sentenceCase(s.tagline)}
                 </span>
                 <span className="block mt-2.5 text-[0.8125rem] text-ink-3">

@@ -56,9 +56,9 @@ export const ARTICLES: ArticleDetail[] = [
     slug: 'saudi-arabia-sovereign-compute-blueprint-allam',
     excerpt:
       'An in-depth architectural examination of the high-performance computing clusters, liquid-cooled data facilities, and bilingual dataset pipelines powering the Kingdom’s next-generation artificial intelligence initiatives under SDAIA.',
-    coverImageUrl: 'https://images.unsplash.com/photo-1586724237569-f3d0c1dee8c6?auto=format&fit=crop&w=1800&q=80',
-    coverImageAlt: 'Aerial view of central Riyadh with the Kingdom Centre tower',
-    coverImageCaption: 'Riyadh, looking north toward the Kingdom Centre.',
+    coverImageUrl: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=1800&q=80',
+    coverImageAlt: 'Network cables plugged into a patch panel in a data centre',
+    coverImageCaption: 'Inside a data centre: the cabling that national compute runs on.',
     imageCredit: 'Photo via Unsplash Editorial License',
     readingTimeMinutes: 7,
     publishedAt: '2026-11-14T08:00:00Z',

@@ -371,7 +371,7 @@ export const OpportunityManager: React.FC<OpportunityManagerProps> = ({ opportun
 
                     <td className="whitespace-nowrap">
                       <p className="whitespace-nowrap font-sans tabular text-[0.8125rem] text-ink">{dl.date}</p>
-                      <p className={cn('mt-0.5 whitespace-nowrap font-sans tabular text-[0.75rem]', dl.urgent ? 'text-clay' : 'text-ink-3')}>
+                      <p className={cn('mt-0.5 whitespace-nowrap font-sans tabular text-[0.75rem]', dl.urgent ? 'text-alert' : 'text-ink-3')}>
                         {opp.deadline ? dl.note : 'Rolling'}
                       </p>
                     </td>
@@ -727,7 +727,7 @@ export const OpportunityManager: React.FC<OpportunityManagerProps> = ({ opportun
                       type="checkbox"
                       checked={formData.isPublished}
                       onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                      className="accent-[#A63D24]"
+                      className="accent-[#0B6E45]"
                     />
                     Published
                   </label>
@@ -736,7 +736,7 @@ export const OpportunityManager: React.FC<OpportunityManagerProps> = ({ opportun
                       type="checkbox"
                       checked={formData.isFeatured}
                       onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
-                      className="accent-[#A63D24]"
+                      className="accent-[#0B6E45]"
                     />
                     Feature on homepage
                   </label>

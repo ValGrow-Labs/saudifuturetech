@@ -130,7 +130,7 @@ export default async function AuthorProfilePage({ params }: AuthorPageProps) {
 
           <section aria-labelledby="author-stories" className="grid gap-12 lg:grid-cols-12 lg:gap-x-10">
             <div className="lg:col-span-8">
-              <div className="border-t-2 border-ink pt-4 mb-2 flex items-end justify-between gap-4">
+              <div className="rule-dot-t pt-4 mb-2 flex items-end justify-between gap-4">
                 <h2 id="author-stories" className="font-serif text-display-sm md:text-display-md text-ink">
                   Stories by {firstName}
                 </h2>
@@ -174,7 +174,7 @@ export default async function AuthorProfilePage({ params }: AuthorPageProps) {
                             href={`/article/${article.slug}`}
                             tabIndex={-1}
                             aria-hidden
-                            className="relative block aspect-square sm:aspect-[4/3] overflow-hidden bg-paper-band self-start"
+                            className="relative block aspect-square sm:aspect-[4/3] overflow-hidden rounded-md bg-paper-band self-start"
                           >
                             <Image src={article.coverImageUrl} alt="" fill sizes="144px" className="object-cover img-warm" />
                           </Link>
@@ -188,7 +188,7 @@ export default async function AuthorProfilePage({ params }: AuthorPageProps) {
 
             {beats.length > 0 && (
               <aside aria-label="Sections" className="lg:col-span-4 lg:border-l lg:border-rule lg:pl-10">
-                <div className="lg:sticky lg:top-28 border-t-2 border-ink pt-4 lg:border-t-0 lg:pt-0">
+                <div className="lg:sticky lg:top-28 rule-dot-t pt-4 lg:border-t-0 lg:pt-0">
                   <p className="meta uppercase tracking-[0.04em]">Writes for</p>
                   <ul className="mt-3">
                     {beats.map((b) => (
@@ -197,7 +197,7 @@ export default async function AuthorProfilePage({ params }: AuthorPageProps) {
                           href={`/category/${b.slug}`}
                           className="group flex items-baseline justify-between gap-4 py-3"
                         >
-                          <span className="font-serif text-[1.1875rem] text-ink headline-link">{b.name}</span>
+                          <span className="font-serif font-bold text-[1.1875rem] text-ink headline-link">{b.name}</span>
                           <span className="meta">{b.count}</span>
                         </Link>
                       </li>

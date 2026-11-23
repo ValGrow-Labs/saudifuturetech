@@ -23,7 +23,7 @@ export default function Icon() {
         <div style={{ color: '#FAF8F3', fontSize: 24, fontStyle: 'italic', fontFamily: 'serif', lineHeight: 1, marginTop: -2 }}>
           f
         </div>
-        <div style={{ width: 14, height: 2, background: '#A63D24', marginTop: 1 }} />
+        <div style={{ width: 14, height: 2, background: '#0B6B43', marginTop: 1 }} />
       </div>
     ),
     { ...size }

@@ -5,8 +5,8 @@ import { cn } from '@/lib/utils';
 
 export type Tone = 'moss' | 'clay' | 'ink';
 
-export const DOT_BG: Record<Tone, string> = { moss: 'bg-moss', clay: 'bg-clay', ink: 'bg-ink-4' };
-export const DOT_TEXT: Record<Tone, string> = { moss: 'text-moss', clay: 'text-clay', ink: 'text-ink-3' };
+export const DOT_BG: Record<Tone, string> = { moss: 'bg-moss', clay: 'bg-alert', ink: 'bg-ink-4' };
+export const DOT_TEXT: Record<Tone, string> = { moss: 'text-moss', clay: 'text-alert', ink: 'text-ink-3' };
 
 /** Status as a mono word with a 6px dot. */
 export const StatusDot: React.FC<{ tone: Tone; children: React.ReactNode }> = ({ tone, children }) => (

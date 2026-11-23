@@ -86,7 +86,7 @@ export default function NewsletterPage() {
 
           <div className="mt-20 md:mt-24 grid gap-16 lg:grid-cols-12 lg:gap-x-10">
             <section aria-labelledby="what-you-get" className="lg:col-span-5">
-              <div className="border-t-2 border-ink pt-4">
+              <div className="rule-dot-t pt-4">
                 <h2 id="what-you-get" className="font-serif text-display-sm md:text-display-md text-ink">
                   What you get
                 </h2>
@@ -103,7 +103,7 @@ export default function NewsletterPage() {
             </section>
 
             <section aria-labelledby="sample-issue" className="lg:col-span-7 lg:border-l lg:border-rule lg:pl-10">
-              <div className="border-t-2 border-ink pt-4">
+              <div className="rule-dot-t pt-4">
                 <h2 id="sample-issue" className="font-serif text-display-sm md:text-display-md text-ink">
                   How an issue is laid out
                 </h2>

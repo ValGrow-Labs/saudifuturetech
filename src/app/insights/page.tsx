@@ -60,7 +60,7 @@ export default async function InsightsPage() {
               <span>Analysis</span>
             </nav>
 
-            <header className="mt-10 md:mt-14 pb-8 border-b-2 border-ink grid gap-6 lg:grid-cols-12 lg:gap-x-10 lg:items-end">
+            <header className="mt-10 md:mt-14 pb-8 rule-dot-b grid gap-6 lg:grid-cols-12 lg:gap-x-10 lg:items-end">
               <div className="lg:col-span-8">
                 <p className="kicker mb-3">For founders and operators</p>
                 <h1 className="font-serif text-display-lg text-ink">Analysis</h1>
@@ -89,7 +89,7 @@ export default async function InsightsPage() {
                     href={`/article/${lead.slug}`}
                     tabIndex={-1}
                     aria-hidden
-                    className="relative block aspect-[4/3] md:aspect-[16/11] overflow-hidden bg-paper-band"
+                    className="relative block aspect-[4/3] md:aspect-[16/11] overflow-hidden rounded-md bg-paper-band"
                   >
                     {lead.coverImageUrl && (
                       <Image
@@ -131,7 +131,7 @@ export default async function InsightsPage() {
                             href={`/article/${a.slug}`}
                             tabIndex={-1}
                             aria-hidden
-                            className="relative block aspect-[16/9] overflow-hidden bg-paper-band mb-4"
+                            className="relative block aspect-[16/9] overflow-hidden rounded-md bg-paper-band mb-4"
                           >
                             <Image
                               src={a.coverImageUrl}
@@ -161,7 +161,7 @@ export default async function InsightsPage() {
 
           {(bySection.length > 0 || unfiled.length > 0) && (
             <section aria-labelledby="by-section">
-              <div className="border-t-2 border-ink pt-4 mb-2">
+              <div className="rule-dot-t pt-4 mb-2">
                 <h2 id="by-section" className="font-serif text-display-sm md:text-display-md text-ink">
                   By section
                 </h2>
@@ -176,7 +176,7 @@ export default async function InsightsPage() {
                     <div className="lg:col-span-3">
                       {cat ? (
                         <Link href={`/category/${cat.slug}`} className="group inline-flex items-baseline gap-2">
-                          <span className="font-serif text-[1.375rem] leading-tight text-ink headline-link">{cat.name}</span>
+                          <span className="font-serif font-bold text-[1.375rem] leading-tight text-ink headline-link">{cat.name}</span>
                           <span aria-hidden className="text-ink-4 transition-all duration-300 group-hover:text-clay group-hover:translate-x-0.5">
                             →
                           </span>

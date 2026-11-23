@@ -3,13 +3,14 @@ import type { Metadata } from 'next';
 import { SiteHeader } from '@/components/public/SiteHeader';
 import { SiteFooter } from '@/components/public/SiteFooter';
 import { MainContainer } from '@/components/public/MainContainer';
-import { FrontPage } from '@/components/home/FrontPage';
-import { HeroSlideshow } from '@/components/home/HeroSlideshow';
+import { NewsTicker } from '@/components/home/NewsTicker';
+import { NewspaperFront } from '@/components/home/NewspaperFront';
 import { GrantLedger } from '@/components/home/GrantLedger';
 import { StartupRegister } from '@/components/home/StartupRegister';
 import { LongReads } from '@/components/home/LongReads';
 import { SectionIndex } from '@/components/home/SectionIndex';
 import { LatestAndMostRead } from '@/components/home/LatestAndMostRead';
+import { Reveal } from '@/components/public/Reveal';
 import { SundayBrief } from '@/components/home/SundayBrief';
 import { OrganizationJsonLd, WebSiteJsonLd } from '@/lib/seo/json-ld';
 import { getCanonicalUrl, DEFAULT_SEO } from '@/lib/seo/config';
@@ -90,6 +91,17 @@ export default async function HomePage() {
   const latest = stream.length > 4 ? stream.slice(4, 9) : allStream.slice(0, 5);
   const picks = picksSource;
 
+  // Five briefs for "The Kingdom at a Glance": newest first, skipping stories
+  // already on the front page, topped up from trending and editors' picks.
+  const onFront = new Set([lead.id, ...frontColumn.map((a) => a.id)]);
+  const glance: typeof allStream = [];
+  const belowLead: typeof allStream = [];
+  for (const a of [...latest, ...allStream, ...trending, ...picksSource]) {
+    if (onFront.has(a.id) || glance.some((g) => g.id === a.id) || belowLead.some((g) => g.id === a.id)) continue;
+    if (glance.length < 5) glance.push(a);
+    else if (belowLead.length < 2) belowLead.push(a);
+  }
+
   const mostRead = trending.length
     ? trending.map((a) => ({ title: a.title, slug: a.slug, category: a.category.name }))
     : SAMPLE_TRENDING_ITEMS.map((t) => ({ title: t.title, slug: t.categorySlug, category: t.category }));
@@ -144,22 +156,34 @@ export default async function HomePage() {
       <SiteHeader />
 
       <main id="main" className="flex-1">
-        <HeroSlideshow
-          counts={{
-            opportunities: opportunities.filter((o) => o.status !== 'CLOSED').length,
-            startups: startups.length,
-            investors: investors.length,
-          }}
-        />
-        <MainContainer className="pt-14 md:pt-20 space-y-20 md:space-y-28 pb-24">
-          <FrontPage lead={lead} secondary={frontColumn} />
-          {opportunities.length > 0 && <GrantLedger opportunities={opportunities} total={opportunities.length} />}
-          <LongReads articles={picks} />
-          {startups.length > 0 && <StartupRegister startups={startups} total={startups.length} />}
-          <LatestAndMostRead latest={latest} mostRead={mostRead} />
-          <SectionIndex sections={sections} />
+        <NewsTicker items={mostRead.map((m) => ({ title: m.title, href: `/article/${m.slug}`, label: m.category }))} />
+        <MainContainer className="pt-6 md:pt-8 space-y-14 md:space-y-16 pb-14 md:pb-16">
+          <Reveal>
+            <NewspaperFront lead={lead} side={frontColumn} glance={glance} belowLead={belowLead} />
+          </Reveal>
+          {opportunities.length > 0 && (
+            <Reveal>
+              <GrantLedger opportunities={opportunities} total={opportunities.length} />
+            </Reveal>
+          )}
+          <Reveal>
+            <SectionIndex sections={sections} />
+          </Reveal>
+          <Reveal>
+            <LongReads articles={picks} />
+          </Reveal>
+          {startups.length > 0 && (
+            <Reveal>
+              <StartupRegister startups={startups} total={startups.length} />
+            </Reveal>
+          )}
+          <Reveal>
+            <LatestAndMostRead latest={latest} mostRead={mostRead} />
+          </Reveal>
         </MainContainer>
-        <SundayBrief />
+        <Reveal>
+          <SundayBrief />
+        </Reveal>
       </main>
 
       <SiteFooter />
