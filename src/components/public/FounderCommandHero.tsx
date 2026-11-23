@@ -155,18 +155,7 @@ export const FounderCommandHero: React.FC<FounderCommandHeroProps> = ({
                 {/* Real Media Layer (Photo with Ken Burns or Video) */}
                 {slide.src && (
                   <div className="absolute inset-0 overflow-hidden" style={{ contain: 'paint' }}>
-                    {/* Ambient blurred backdrop on mobile to fill vertical height with matching atmospheric lighting */}
-                    <div className="absolute inset-0 overflow-hidden block sm:hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={slide.src}
-                        alt=""
-                        className="w-full h-full object-cover blur-2xl opacity-40 scale-125 block"
-                      />
-                    </div>
-
-                    {/* Desktop full-bleed cinematic picture with Ken Burns effect */}
-                    <div className={`relative w-full h-full overflow-hidden hidden sm:block ${isActive ? 'animate-hero-kb' : ''}`}>
+                    <div className={`relative w-full h-full overflow-hidden ${isActive ? 'animate-hero-kb' : ''}`}>
                       {isVideo ? (
                         <video
                           src={slide.src}
@@ -193,7 +182,7 @@ export const FounderCommandHero: React.FC<FounderCommandHeroProps> = ({
         })}
 
         {/* Cinematic Vignette Shade for Guaranteed WCAG Contrast */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#070d17]/90 via-[#0e1828]/55 to-[#0e1828]/95" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#070d17]/85 via-[#0e1828]/50 to-[#0e1828]/90 pointer-events-none" />
 
         {/* Arabesque Geometric Watermark Pattern */}
         <div
@@ -255,50 +244,6 @@ export const FounderCommandHero: React.FC<FounderCommandHeroProps> = ({
               <span>Explore</span>
               <ArrowRight className="w-4 h-4 text-[#C9A227] transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
-          </div>
-
-          {/* Mobile Running Picture Showcase: 100% full visibility of the running picture with zero edge cropping */}
-          <div className="block sm:hidden w-full pt-3 pb-1">
-            <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden border border-white/20 shadow-2xl bg-[#070d17]/90 backdrop-blur-md">
-              {SLIDES.map((slide, idx) => {
-                const isActive = idx === currentSlide;
-                return (
-                  <div
-                    key={`mobile-showcase-${slide.label}`}
-                    className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                      isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                    }`}
-                  >
-                    {/* Full uncropped image: 100% visible edge-to-edge */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={slide.src}
-                      alt={slide.label}
-                      className="w-full h-full object-contain object-center block"
-                    />
-                    {/* Interactive slide label & dot indicator bar */}
-                    <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-black/70 backdrop-blur-md border border-white/10 text-white">
-                      <span className="font-heading font-bold text-[9px] uppercase tracking-wider text-[#c4a265] truncate pr-2">
-                        {slide.label}
-                      </span>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {SLIDES.map((_, sIdx) => (
-                          <button
-                            key={sIdx}
-                            type="button"
-                            onClick={() => goToSlide(sIdx)}
-                            aria-label={`Slide ${sIdx + 1}`}
-                            className={`h-1.5 rounded-full transition-all ${
-                              sIdx === currentSlide ? 'w-4 bg-[#6fd39a]' : 'w-1.5 bg-white/40'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
           </div>
         </div>
 
