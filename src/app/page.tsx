@@ -33,6 +33,20 @@ import {
 // Next.js ISR: Revalidate homepage every 60 seconds
 export const revalidate = 60;
 
+/**
+ * Directory sections are optional on the front page. If the database can't be
+ * reached (e.g. a Vercel build with no DATABASE_URL), render without them
+ * instead of failing the prerender; ISR fills them in on revalidation.
+ */
+async function orEmpty<T>(p: Promise<T[]>): Promise<T[]> {
+  try {
+    return await p;
+  } catch (error) {
+    console.warn('[HomePage] directory query failed, rendering without it:', String(error).slice(0, 200));
+    return [];
+  }
+}
+
 export const metadata: Metadata = {
   title: 'Saudi Future Tech | Build in the Kingdom. Powered by verified intelligence.',
   description:
@@ -73,8 +87,8 @@ export default async function HomePage() {
     getEditorsPickArticles(4),
     getTrendingArticles(5),
     getAllCategories(),
-    getOpportunities(),
-    getStartups(),
+    orEmpty(getOpportunities()),
+    orEmpty(getStartups()),
   ]);
 
   const activeSecondary = secondaryArticles.length > 0 ? secondaryArticles : SAMPLE_SECONDARY_ARTICLES;
