@@ -11,6 +11,12 @@ export const SmoothScrollProvider: React.FC<SmoothScrollProviderProps> = ({ chil
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
+    // Respect user's motion preference: bypass Lenis if reduced motion is requested
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (motionQuery.matches) {
+      return;
+    }
+
     // Initialize Lenis smooth scrolling with inertia physics mirroring Saudi Makes Future
     const lenis = new Lenis({
       duration: 1.2,
@@ -54,7 +60,21 @@ export const SmoothScrollProvider: React.FC<SmoothScrollProviderProps> = ({ chil
 
     document.addEventListener('click', handleAnchorClick);
 
+    const handleMotionChange = (e: MediaQueryListEvent) => {
+      if (e.matches) {
+        document.removeEventListener('click', handleAnchorClick);
+        cancelAnimationFrame(rafId);
+        lenis.destroy();
+        lenisRef.current = null;
+        if (typeof window !== 'undefined') {
+          (window as unknown as { lenis: unknown }).lenis = null;
+        }
+      }
+    };
+    motionQuery.addEventListener('change', handleMotionChange);
+
     return () => {
+      motionQuery.removeEventListener('change', handleMotionChange);
       document.removeEventListener('click', handleAnchorClick);
       cancelAnimationFrame(rafId);
       lenis.destroy();

@@ -7,11 +7,33 @@ import { MainContainer } from '@/components/public/MainContainer';
 import { getStartups } from '@/lib/founder-intelligence';
 import prisma from '@/lib/prisma';
 import { StartupDirectory, StartupItem } from '@/components/public/StartupDirectory';
+import { getCanonicalUrl, DEFAULT_SEO, DEFAULT_OG_IMAGE } from '@/lib/seo/config';
+import { BreadcrumbJsonLd } from '@/lib/seo/json-ld';
+
+const TITLE = 'Saudi Startup Directory';
+const DESCRIPTION =
+  'A hand-checked register of technology companies founded or based in Saudi Arabia, with stage, city, business model and sources for each listing.';
 
 export const metadata: Metadata = {
-  title: 'Saudi startup directory | Saudi Future Tech',
-  description:
-    'A hand-checked register of technology companies founded or based in Saudi Arabia, with stage, city, business model and sources for each listing.',
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: {
+    canonical: getCanonicalUrl('/startups'),
+  },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: getCanonicalUrl('/startups'),
+    siteName: DEFAULT_SEO.siteName,
+    type: 'website',
+    images: [DEFAULT_OG_IMAGE],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ['/og-image.png'],
+  },
 };
 
 export const dynamic = 'force-dynamic';
@@ -95,8 +117,14 @@ export default async function StartupsPage({ searchParams }: PageProps) {
       : null,
   ].filter(Boolean);
 
+  const breadcrumbs = [
+    { label: 'Home', href: '/' },
+    { label: 'Startups', current: true },
+  ];
+
   return (
     <>
+      <BreadcrumbJsonLd items={breadcrumbs} />
       <SiteHeader />
 
       <main id="main" className="flex-1">

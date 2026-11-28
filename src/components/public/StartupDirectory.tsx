@@ -218,7 +218,7 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
             placeholder="Search by name, product or technology"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 min-w-0 bg-transparent py-3 font-serif text-xl md:text-2xl text-ink placeholder:text-ink-4 focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+            className="flex-1 min-w-0 bg-transparent py-3 px-1.5 font-serif text-xl md:text-2xl text-ink placeholder:text-ink-4 focus:outline-none focus-visible:ring-1 focus-visible:ring-clay/70 rounded-xs [&::-webkit-search-cancel-button]:hidden"
           />
           {searchQuery && (
             <button
@@ -366,13 +366,15 @@ export const StartupDirectory: React.FC<StartupDirectoryProps> = ({
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={item.logoUrl}
-                        alt=""
+                        alt={`${item.name} logo`}
                         width={28}
                         height={28}
+                        loading="lazy"
+                        decoding="async"
                         className="inline-block align-[-0.4rem] mr-2.5 h-7 w-7 object-contain bg-paper-sheet border border-rule"
                       />
                     )}
-                    <span className="font-serif font-bold text-[1.3125rem] leading-snug text-ink headline-link">{item.name}</span>
+                    <h3 className="inline font-serif font-bold text-[1.3125rem] leading-snug text-ink headline-link">{item.name}</h3>
                     {item.crVerified && (
                       <span
                         className="ml-2 font-sans text-[0.65rem] text-moss align-middle whitespace-nowrap"

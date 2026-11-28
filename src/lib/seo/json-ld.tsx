@@ -210,3 +210,143 @@ export const BreadcrumbJsonLd: React.FC<BreadcrumbJsonLdProps> = ({ items }) => 
   );
 };
 
+interface StartupJsonLdProps {
+  startup: {
+    name: string;
+    slug: string;
+    tagline?: string | null;
+    description: string;
+    logoUrl?: string | null;
+    websiteUrl?: string | null;
+    hqCity?: string | null;
+    foundingYear?: number | null;
+  };
+}
+
+/**
+ * Corporation Schema for Verified Saudi Startups
+ */
+export const StartupJsonLd: React.FC<StartupJsonLdProps> = ({ startup }) => {
+  const profileUrl = getCanonicalUrl(`/startup/${startup.slug}`);
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Corporation',
+    name: startup.name,
+    description: startup.tagline || startup.description,
+    url: startup.websiteUrl || profileUrl,
+    mainEntityOfPage: profileUrl,
+    ...(startup.logoUrl && {
+      logo: startup.logoUrl.startsWith('http') ? startup.logoUrl : `${getBaseUrl()}${startup.logoUrl}`,
+    }),
+    ...(startup.foundingYear && {
+      foundingDate: `${startup.foundingYear}`,
+    }),
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: startup.hqCity || 'Riyadh',
+      addressCountry: 'SA',
+    },
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
+    />
+  );
+};
+
+interface OpportunityJsonLdProps {
+  opportunity: {
+    title: string;
+    slug: string;
+    organization: string;
+    description: string;
+    category?: string | null;
+    applicationUrl?: string | null;
+    location?: string | null;
+    deadline?: string | Date | null;
+  };
+}
+
+/**
+ * GovernmentService Schema for Verified Saudi Grants & Acceleration Programs
+ */
+export const OpportunityJsonLd: React.FC<OpportunityJsonLdProps> = ({ opportunity }) => {
+  const pageUrl = getCanonicalUrl(`/opportunity/${opportunity.slug}`);
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'GovernmentService',
+    name: opportunity.title,
+    description: opportunity.description,
+    url: pageUrl,
+    provider: {
+      '@type': 'Organization',
+      name: opportunity.organization,
+    },
+    serviceType: opportunity.category || 'Startup Grant & Acceleration Program',
+    areaServed: {
+      '@type': 'Country',
+      name: 'Saudi Arabia',
+    },
+    ...(opportunity.applicationUrl && {
+      termsOfService: opportunity.applicationUrl,
+    }),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
+    />
+  );
+};
+
+interface InvestorJsonLdProps {
+  investor: {
+    name: string;
+    slug: string;
+    description: string;
+    type?: string | null;
+    logoUrl?: string | null;
+    websiteUrl?: string | null;
+    hqLocation?: string | null;
+    isCmaAuthorized?: boolean;
+    cmaLicenseNumber?: string | null;
+  };
+}
+
+/**
+ * FinancialService Schema for Regulated Saudi Venture Capital & Investors
+ */
+export const InvestorJsonLd: React.FC<InvestorJsonLdProps> = ({ investor }) => {
+  const profileUrl = getCanonicalUrl(`/investor/${investor.slug}`);
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'FinancialService',
+    name: investor.name,
+    description: investor.description,
+    url: investor.websiteUrl || profileUrl,
+    mainEntityOfPage: profileUrl,
+    ...(investor.logoUrl && {
+      logo: investor.logoUrl.startsWith('http') ? investor.logoUrl : `${getBaseUrl()}${investor.logoUrl}`,
+    }),
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: investor.hqLocation || 'Riyadh',
+      addressCountry: 'SA',
+    },
+    areaServed: {
+      '@type': 'Country',
+      name: 'Saudi Arabia',
+    },
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
+    />
+  );
+};
+

@@ -13,6 +13,8 @@ import {
   getStartups,
 } from '@/lib/founder-intelligence';
 import { investorTypeLabel } from '@/lib/labels';
+import { getCanonicalUrl, DEFAULT_SEO, DEFAULT_OG_IMAGE } from '@/lib/seo/config';
+import { BreadcrumbJsonLd } from '@/lib/seo/json-ld';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -35,13 +37,29 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  const title = `${investor.name} — ${investorTypeLabel(investor.type)}`;
+  const description = investor.thesisSummary || investor.description.slice(0, 160);
+  const canonical = getCanonicalUrl(`/investor/${investor.slug}`);
+
   return {
-    title: `${investor.name} — ${investorTypeLabel(investor.type)} | Saudi Future Tech`,
-    description: investor.description.slice(0, 160),
+    title,
+    description,
+    alternates: {
+      canonical,
+    },
     openGraph: {
       title: `${investor.name} — investor profile`,
-      description: investor.description.slice(0, 160),
+      description,
+      url: canonical,
+      siteName: DEFAULT_SEO.siteName,
       type: 'website',
+      images: [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['/og-image.png'],
     },
   };
 }
@@ -98,6 +116,7 @@ export default async function InvestorDetailPage({ params }: PageProps) {
 
   return (
     <>
+      <BreadcrumbJsonLd items={breadcrumbs} />
       <SiteHeader />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />

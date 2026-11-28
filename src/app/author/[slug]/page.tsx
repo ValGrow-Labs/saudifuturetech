@@ -36,13 +36,13 @@ export async function generateMetadata({ params }: AuthorPageProps): Promise<Met
 
   if (!author) {
     return {
-      title: `Writer not found | ${DEFAULT_SEO.siteName}`,
+      title: 'Writer not found',
       description: 'We couldn’t find this writer.',
       robots: { index: false, follow: false },
     };
   }
 
-  const title = `${author.displayName} | ${DEFAULT_SEO.siteName}`;
+  const title = author.displayName;
   const description = author.bio || `${author.displayName} reports for ${DEFAULT_SEO.siteName}.`;
   const authorUrl = getCanonicalUrl(`/author/${author.slug}`);
 
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: AuthorPageProps): Promise<Met
       canonical: authorUrl,
     },
     openGraph: {
-      title,
+      title: `${author.displayName} | ${DEFAULT_SEO.siteName}`,
       description,
       type: 'profile',
       url: authorUrl,
@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: AuthorPageProps): Promise<Met
     },
     twitter: {
       card: 'summary',
-      title,
+      title: `${author.displayName} | ${DEFAULT_SEO.siteName}`,
       description,
       site: DEFAULT_SEO.social.twitter,
       images: author.avatarUrl ? [author.avatarUrl] : undefined,

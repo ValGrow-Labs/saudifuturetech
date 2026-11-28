@@ -196,7 +196,7 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
             placeholder="Search funds, sectors or portfolio"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="min-w-0 flex-1 bg-transparent py-1.5 text-base text-ink placeholder:text-ink-4 focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+            className="min-w-0 flex-1 bg-transparent py-1.5 px-1.5 text-base text-ink placeholder:text-ink-4 focus:outline-none focus-visible:ring-1 focus-visible:ring-clay/70 rounded-xs [&::-webkit-search-cancel-button]:hidden"
           />
           {searchQuery && (
             <button type="button" onClick={() => setSearchQuery('')} className="meta hover:text-ink transition-colors">
@@ -308,9 +308,11 @@ export const FundingDirectory: React.FC<FundingDirectoryProps> = ({
                   >
                     {/* Investor */}
                     <div className="min-w-0">
-                      <Link href={`/investor/${item.slug}`} className="font-serif font-bold text-[1.25rem] leading-snug text-ink headline-link">
-                        {item.name}
-                      </Link>
+                      <h3 className="font-serif font-bold text-[1.25rem] leading-snug text-ink">
+                        <Link href={`/investor/${item.slug}`} className="headline-link">
+                          {item.name}
+                        </Link>
+                      </h3>
                       <p className="mt-1 text-sm text-ink-3">
                         {investorTypeLabel(item.type)} · {item.hqLocation}
                       </p>

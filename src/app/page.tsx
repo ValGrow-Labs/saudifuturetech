@@ -13,7 +13,7 @@ import { LatestAndMostRead } from '@/components/home/LatestAndMostRead';
 import { Reveal } from '@/components/public/Reveal';
 import { SundayBrief } from '@/components/home/SundayBrief';
 import { OrganizationJsonLd, WebSiteJsonLd } from '@/lib/seo/json-ld';
-import { getCanonicalUrl, DEFAULT_SEO } from '@/lib/seo/config';
+import { getCanonicalUrl, DEFAULT_SEO, DEFAULT_OG_IMAGE } from '@/lib/seo/config';
 import {
   getFeaturedArticle,
   getSecondaryArticles,
@@ -50,7 +50,7 @@ async function orEmpty<T>(p: Promise<T[]>): Promise<T[]> {
 
 const TITLE = 'Saudi Future Tech — reporting on technology in Saudi Arabia';
 const DESCRIPTION =
-  'Independent reporting on AI, government platforms, security, cities, finance and energy in Saudi Arabia — with a checked directory of open grants, startups and investors.';
+  'Independent reporting on Saudi technology, AI, and sovereign infrastructure, with a hand-checked directory of active grants, startups, and investors.';
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -63,8 +63,15 @@ export const metadata: Metadata = {
     siteName: DEFAULT_SEO.siteName,
     locale: DEFAULT_SEO.locale,
     type: 'website',
+    images: [DEFAULT_OG_IMAGE],
   },
-  twitter: { card: 'summary_large_image', title: TITLE, description: DESCRIPTION, site: DEFAULT_SEO.social.twitter },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+    site: DEFAULT_SEO.social.twitter,
+    images: ['/og-image.png'],
+  },
 };
 
 export default async function HomePage() {
@@ -156,6 +163,10 @@ export default async function HomePage() {
       <SiteHeader />
 
       <main id="main" className="flex-1">
+        {/* Semantic H1 for Search Engine Discovery & Accessibility */}
+        <h1 className="sr-only">
+          Saudi Future Tech — Verified Intelligence on Technology, Startups and Venture Capital in Saudi Arabia
+        </h1>
         <NewsTicker items={mostRead.map((m) => ({ title: m.title, href: `/article/${m.slug}`, label: m.category }))} />
         <MainContainer className="pt-6 md:pt-8 space-y-14 md:space-y-16 pb-14 md:pb-16">
           <Reveal>

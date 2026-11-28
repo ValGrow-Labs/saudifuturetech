@@ -14,6 +14,8 @@ import {
 import { cn } from '@/lib/utils';
 import { deadlineInfo, opportunityTypeLabel } from '@/lib/labels';
 import { OpportunityCategory } from '@prisma/client';
+import { getCanonicalUrl, DEFAULT_SEO, DEFAULT_OG_IMAGE } from '@/lib/seo/config';
+import { BreadcrumbJsonLd } from '@/lib/seo/json-ld';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -28,7 +30,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const opp = await getOpportunityBySlug(slug, true);
+  const opp = await getOpportunityBySlug(slug, false);
 
   if (!opp) {
     return {
@@ -37,27 +39,35 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const categoryLabel = opportunityTypeLabel(opp.category);
+  const canonical = getCanonicalUrl(`/opportunity/${opp.slug}`);
 
   return {
-    title: `${opp.title} — ${categoryLabel} | Saudi Future Tech`,
+    title: `${opp.title} — ${categoryLabel}`,
     description: opp.description.slice(0, 160),
+    alternates: {
+      canonical,
+    },
     openGraph: {
       title: `${opp.title} — ${opp.organization}`,
       description: opp.description.slice(0, 160),
+      url: canonical,
+      siteName: DEFAULT_SEO.siteName,
       type: 'article',
       locale: 'en_US',
+      images: [DEFAULT_OG_IMAGE],
     },
     twitter: {
       card: 'summary_large_image',
       title: `${opp.title} | Saudi Future Tech`,
       description: opp.description.slice(0, 160),
+      images: ['/og-image.png'],
     },
   };
 }
 
 export default async function OpportunityDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const opp = await getOpportunityBySlug(slug, true);
+  const opp = await getOpportunityBySlug(slug, false);
 
   if (!opp) {
     notFound();
@@ -119,6 +129,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
 
   return (
     <>
+      <BreadcrumbJsonLd items={breadcrumbs} />
       <SiteHeader />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />

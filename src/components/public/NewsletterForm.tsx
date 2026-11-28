@@ -111,7 +111,7 @@ export const NewsletterForm: React.FC<NewsletterFormProps> = ({ variant = 'banne
 
       <label
         className={cn(
-          'flex items-start gap-2.5 text-[0.8125rem] leading-snug cursor-pointer select-none',
+          'flex items-start gap-2.5 text-[0.8125rem] leading-snug cursor-pointer select-none py-1',
           dark ? 'text-snow/60' : 'text-ink-3'
         )}
       >
@@ -121,7 +121,7 @@ export const NewsletterForm: React.FC<NewsletterFormProps> = ({ variant = 'banne
           checked={consent}
           onChange={(e) => setConsent(e.target.checked)}
           disabled={isPending}
-          className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-[#0B6E45]"
+          className="mt-0.5 h-4 w-4 shrink-0 accent-[#0B6E45] cursor-pointer"
         />
         <span>
           Send me the Sunday Brief. I accept the{' '}

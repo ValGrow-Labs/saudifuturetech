@@ -185,7 +185,7 @@ export const SearchClient: React.FC<SearchClientProps> = ({ initialData }) => {
               setCurrentPage(1);
               updateUrl(e.target.value, activeCategory, 1);
             }}
-            className="flex-1 min-w-0 bg-transparent font-serif text-2xl md:text-4xl text-ink placeholder:text-ink-4 focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+            className="flex-1 min-w-0 bg-transparent font-serif text-2xl md:text-4xl text-ink placeholder:text-ink-4 focus:outline-none focus-visible:ring-1 focus-visible:ring-clay/70 rounded-xs [&::-webkit-search-cancel-button]:hidden"
             autoFocus
           />
           {query && (

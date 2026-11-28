@@ -7,7 +7,7 @@ import { MainContainer } from '@/components/public/MainContainer';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { NewsletterBanner } from '@/components/public/NewsletterBanner';
 import { OrganizationJsonLd, BreadcrumbJsonLd } from '@/lib/seo/json-ld';
-import { getCanonicalUrl, DEFAULT_SEO } from '@/lib/seo/config';
+import { getCanonicalUrl, DEFAULT_SEO, DEFAULT_OG_IMAGE } from '@/lib/seo/config';
 import { EDITORIAL_CATEGORIES, SITE_NAME } from '@/lib/constants';
 import { getAllAuthors } from '@/lib/data/authors';
 
@@ -17,7 +17,7 @@ const DESCRIPTION =
   'Saudi Future Tech is an independent publication reporting on technology in Saudi Arabia, with a hand-checked directory of grants, startups and investors.';
 
 export const metadata: Metadata = {
-  title: `About | ${SITE_NAME}`,
+  title: 'About',
   description: DESCRIPTION,
   alternates: {
     canonical: getCanonicalUrl('/about'),
@@ -27,11 +27,13 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
     url: getCanonicalUrl('/about'),
     type: 'website',
+    images: [DEFAULT_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
     title: `About | ${SITE_NAME}`,
     description: DESCRIPTION,
+    images: ['/og-image.png'],
   },
 };
 

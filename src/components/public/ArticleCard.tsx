@@ -40,7 +40,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
         >
           <Image
             src={article.coverImageUrl}
-            alt=""
+            alt={article.coverImageAlt || article.coverImageCaption || ''}
             fill
             priority={priority}
             sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"

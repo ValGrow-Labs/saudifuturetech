@@ -6,11 +6,33 @@ import { getInvestors, InvestorFilters } from '@/lib/founder-intelligence';
 import { FundingDirectory, InvestorItem } from '@/components/public/FundingDirectory';
 import { MainContainer } from '@/components/public/MainContainer';
 import Link from 'next/link';
+import { getCanonicalUrl, DEFAULT_SEO, DEFAULT_OG_IMAGE } from '@/lib/seo/config';
+import { BreadcrumbJsonLd } from '@/lib/seo/json-ld';
+
+const TITLE = 'Investors Backing Saudi Startups';
+const DESCRIPTION =
+  'Venture firms, government funds such as SVC and Sanabil, CMA-licensed fund managers and angel networks investing in Saudi startups, with ticket sizes and stages.';
 
 export const metadata: Metadata = {
-  title: 'Investors backing Saudi startups | Saudi Future Tech',
-  description:
-    'Venture firms, government funds such as SVC and Sanabil, CMA-licensed fund managers and angel networks investing in Saudi startups, with ticket sizes and stages.',
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: {
+    canonical: getCanonicalUrl('/funding'),
+  },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: getCanonicalUrl('/funding'),
+    siteName: DEFAULT_SEO.siteName,
+    type: 'website',
+    images: [DEFAULT_OG_IMAGE],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ['/og-image.png'],
+  },
 };
 
 export const revalidate = 60; // 1-minute ISR
@@ -88,15 +110,21 @@ export default async function FundingPage({ searchParams }: FundingPageProps) {
     isFeatured: inv.isFeatured,
   }));
 
+  const breadcrumbs = [
+    { label: 'Home', href: '/' },
+    { label: 'Funding & Investors', current: true },
+  ];
+
   return (
     <>
+      <BreadcrumbJsonLd items={breadcrumbs} />
       <SiteHeader />
 
       <main id="main" className="flex-1">
         <MainContainer className="pt-8 md:pt-12 pb-24">
           <header className="max-w-3xl">
             <p className="kicker mb-3">The funding desk</p>
-            <h1 className="font-serif text-display-lg text-ink">Investors</h1>
+            <h1 className="font-serif text-display-lg text-ink">Venture Capital & Investors Backing Saudi Startups</h1>
             <p className="mt-4 max-w-2xl text-[1.0625rem] leading-relaxed text-ink-3">
               Venture firms, government funds, corporate investors and angel networks that back startups in Saudi
               Arabia, with their ticket sizes, stages and licensing as published.

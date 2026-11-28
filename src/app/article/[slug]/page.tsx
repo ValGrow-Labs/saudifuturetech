@@ -46,18 +46,19 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     };
   }
 
-  const title = `${article.seoTitle || article.title} | ${DEFAULT_SEO.siteName}`;
+  const articleTitle = article.seoTitle || article.title;
+  const ogTitle = `${articleTitle} | ${DEFAULT_SEO.siteName}`;
   const description = article.seoDescription || article.excerpt;
   const articleUrl = getCanonicalUrl(`/article/${article.slug}`);
 
   return {
-    title,
+    title: articleTitle,
     description,
     alternates: {
       canonical: articleUrl,
     },
     openGraph: {
-      title,
+      title: ogTitle,
       description,
       url: articleUrl,
       siteName: DEFAULT_SEO.siteName,
@@ -77,7 +78,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: ogTitle,
       description,
       site: DEFAULT_SEO.social.twitter,
       images: [article.coverImageUrl],
@@ -108,7 +109,7 @@ function BodySection({ section, idx }: { section: ArticleSection; idx: number })
       )}
 
       {section.subheading && (
-        <p className="-mt-2 mb-5 font-serif italic text-[1.1875rem] leading-snug text-ink-3">{section.subheading}</p>
+        <h3 className="-mt-2 mb-5 font-serif italic text-[1.1875rem] leading-snug text-ink-3">{section.subheading}</h3>
       )}
 
       {section.paragraphs.map((para, pIdx) => (

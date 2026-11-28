@@ -15,17 +15,17 @@ export function TopOrnament() {
   return (
     <div aria-hidden className="select-none pt-3">
       <div className="flex items-end justify-center overflow-hidden text-ink">
-        {/* left districts: grow outwards from the centre */}
-        <div className="flex-1 min-w-0 flex justify-end overflow-hidden">
-          {Array.from({ length: 6 }).map((_, i) => (
+        {/* left districts: grow outwards from the centre on tablet/desktop */}
+        <div className="hidden sm:flex flex-1 min-w-0 justify-end overflow-hidden">
+          {Array.from({ length: 3 }).map((_, i) => (
             <RiyadhSkyline key={i} viewBox={DISTRICT} className={`shrink-0 !w-auto ${h}`} />
           ))}
         </div>
         {/* the landmarks */}
         <RiyadhSkyline className={`shrink-0 !w-auto ${h}`} />
         {/* right districts */}
-        <div className="flex-1 min-w-0 flex justify-start overflow-hidden">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="hidden sm:flex flex-1 min-w-0 justify-start overflow-hidden">
+          {Array.from({ length: 3 }).map((_, i) => (
             <RiyadhSkyline key={i} viewBox={DISTRICT} className={`shrink-0 !w-auto ${h}`} />
           ))}
         </div>

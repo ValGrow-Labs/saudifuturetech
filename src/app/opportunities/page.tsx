@@ -7,14 +7,36 @@ import { MainContainer } from '@/components/public/MainContainer';
 import { getOpportunities } from '@/lib/founder-intelligence';
 import { OpportunityDirectory, OpportunityItem } from '@/components/public/OpportunityDirectory';
 import { daysUntil } from '@/lib/labels';
+import { getCanonicalUrl, DEFAULT_SEO, DEFAULT_OG_IMAGE } from '@/lib/seo/config';
+import { BreadcrumbJsonLd } from '@/lib/seo/json-ld';
 
 import prisma from '@/lib/prisma';
 import { OpportunityCategory, OpportunityStatus } from '@prisma/client';
 
+const TITLE = 'Grants and Programmes for Saudi Founders';
+const DESCRIPTION =
+  'Open grants, accelerators, subsidies and regulatory sandboxes for founders in Saudi Arabia, each checked against the issuing body’s own page.';
+
 export const metadata: Metadata = {
-  title: 'Grants and programmes for Saudi founders | Saudi Future Tech',
-  description:
-    'Open grants, accelerators, subsidies and regulatory sandboxes for founders in Saudi Arabia, each checked against the issuing body’s own page.',
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: {
+    canonical: getCanonicalUrl('/opportunities'),
+  },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: getCanonicalUrl('/opportunities'),
+    siteName: DEFAULT_SEO.siteName,
+    type: 'website',
+    images: [DEFAULT_OG_IMAGE],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ['/og-image.png'],
+  },
 };
 
 export const revalidate = 60; // 1-minute ISR
@@ -92,15 +114,21 @@ export default async function OpportunitiesPage({ searchParams }: PageProps) {
     null
   );
 
+  const breadcrumbs = [
+    { label: 'Home', href: '/' },
+    { label: 'Opportunities', current: true },
+  ];
+
   return (
     <>
+      <BreadcrumbJsonLd items={breadcrumbs} />
       <SiteHeader />
 
       <main id="main" className="flex-1">
         <MainContainer className="pt-8 md:pt-12 pb-24">
           <header className="max-w-3xl">
             <p className="kicker mb-3">The grant desk</p>
-            <h1 className="font-serif text-display-lg text-ink">Grants and programmes</h1>
+            <h1 className="font-serif text-display-lg text-ink">Grants, Accelerators & Support Programmes for Saudi Founders</h1>
             <p className="mt-4 max-w-2xl text-[1.0625rem] leading-relaxed text-ink-3">
               Grants, accelerators, subsidies and regulatory sandboxes open to founders building in Saudi Arabia.
               Each listing links to the issuing body’s own page and shows when we last checked it.

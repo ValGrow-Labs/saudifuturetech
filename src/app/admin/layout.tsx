@@ -3,7 +3,7 @@ import { getCurrentSessionUser } from '@/lib/auth/guard';
 import { AdminClientShell } from '@/components/admin/AdminClientShell';
 
 export const metadata = {
-  title: 'Editorial Backstage | Saudi Future Tech',
+  title: 'Editorial Backstage',
   description: 'Administrative Content Management System & Editorial Operations Portal',
   robots: {
     index: false,

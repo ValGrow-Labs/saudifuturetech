@@ -8,7 +8,7 @@ import { SiteHeader } from '@/components/public/SiteHeader';
 import { SiteFooter } from '@/components/public/SiteFooter';
 import { MainContainer } from '@/components/public/MainContainer';
 import { NewsletterBanner } from '@/components/public/NewsletterBanner';
-import { getCanonicalUrl, DEFAULT_SEO } from '@/lib/seo/config';
+import { getCanonicalUrl, DEFAULT_SEO, DEFAULT_OG_IMAGE } from '@/lib/seo/config';
 import { BreadcrumbJsonLd } from '@/lib/seo/json-ld';
 import {
   getArticlesByCategory,
@@ -16,6 +16,8 @@ import {
   getAllCategorySlugs,
   getAllCategories,
 } from '@/lib/data';
+import { getStartups, getOpportunities } from '@/lib/founder-intelligence';
+import { stageLabel } from '@/lib/labels';
 import { formatDate, formatReadingTime } from '@/lib/utils';
 
 // Next.js ISR: Revalidate category archive every 60 seconds
@@ -46,29 +48,32 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
     };
   }
 
-  const title = `${category.name} | ${DEFAULT_SEO.siteName}`;
+  const pageTitle = category.name;
+  const ogTitle = `${category.name} | ${DEFAULT_SEO.siteName}`;
   const description = category.description;
   const categoryUrl = getCanonicalUrl(`/category/${category.slug}`);
 
   return {
-    title,
+    title: pageTitle,
     description,
     alternates: {
       canonical: categoryUrl,
     },
     openGraph: {
-      title,
+      title: ogTitle,
       description,
       type: 'website',
       url: categoryUrl,
       siteName: DEFAULT_SEO.siteName,
       locale: DEFAULT_SEO.locale,
+      images: [DEFAULT_OG_IMAGE],
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: ogTitle,
       description,
       site: DEFAULT_SEO.social.twitter,
+      images: ['/og-image.png'],
     },
   };
 }
@@ -81,9 +86,11 @@ export default async function CategoryArchivePage({ params }: CategoryPageProps)
     notFound();
   }
 
-  const [articles, allCategories] = await Promise.all([
+  const [articles, allCategories, categoryStartups, categoryOpportunities] = await Promise.all([
     getArticlesByCategory(category.slug),
     getAllCategories(),
+    getStartups({ categorySlug: category.slug }),
+    getOpportunities({ categorySlug: category.slug }),
   ]);
 
   const leadArticle = articles[0];
@@ -181,7 +188,7 @@ export default async function CategoryArchivePage({ params }: CategoryPageProps)
                         {leadArticle.coverImageUrl && (
                           <Image
                             src={leadArticle.coverImageUrl}
-                            alt=""
+                            alt={leadArticle.coverImageAlt || leadArticle.coverImageCaption || ''}
                             fill
                             priority
                             sizes="(max-width: 1024px) 100vw, 66vw"
@@ -228,7 +235,7 @@ export default async function CategoryArchivePage({ params }: CategoryPageProps)
                               >
                                 <Image
                                   src={article.coverImageUrl}
-                                  alt=""
+                                  alt={article.coverImageAlt || article.coverImageCaption || ''}
                                   fill
                                   sizes="(max-width: 1024px) 100vw, 30vw"
                                   className="object-cover img-warm"
@@ -295,7 +302,13 @@ export default async function CategoryArchivePage({ params }: CategoryPageProps)
                                   aria-hidden
                                   className="relative block aspect-square sm:aspect-[4/3] overflow-hidden rounded-md bg-paper-band self-start"
                                 >
-                                  <Image src={article.coverImageUrl} alt="" fill sizes="144px" className="object-cover img-warm" />
+                                  <Image
+                                    src={article.coverImageUrl}
+                                    alt=""
+                                    fill
+                                    sizes="144px"
+                                    className="object-cover img-warm"
+                                  />
                                 </Link>
                               )}
                             </article>
@@ -341,6 +354,69 @@ export default async function CategoryArchivePage({ params }: CategoryPageProps)
                   </li>
                 ))}
               </ul>
+            </section>
+          )}
+
+          {/* Tracked Companies and Programmes in this Sector (Verified Relational Data) */}
+          {(categoryStartups.length > 0 || categoryOpportunities.length > 0) && (
+            <section aria-labelledby="sector-ecosystem" className="rule-dot-t pt-8">
+              <div className="mb-6">
+                <p className="kicker mb-2">Verified Ecosystem Register</p>
+                <h2 id="sector-ecosystem" className="font-serif text-display-sm text-ink">
+                  Ecosystem in {category.name}
+                </h2>
+                <p className="mt-2 text-sm text-ink-3 max-w-2xl">
+                  Hand-checked startups and official founder programmes verified in this sector.
+                </p>
+              </div>
+
+              <div className="grid gap-8 md:grid-cols-2">
+                {categoryStartups.length > 0 && (
+                  <div>
+                    <h3 className="meta border-b border-ink pb-2 uppercase tracking-[0.06em]">
+                      Tracked startups ({categoryStartups.length})
+                    </h3>
+                    <ul className="divide-y divide-rule">
+                      {categoryStartups.map((s) => (
+                        <li key={s.id} className="py-3 flex items-baseline justify-between gap-4">
+                          <Link href={`/startup/${s.slug}`} className="headline-link font-serif font-bold text-[1.0625rem] text-ink">
+                            {s.name}
+                          </Link>
+                          <span className="text-xs text-ink-3 font-sans shrink-0">
+                            {stageLabel(s.stage)} · {s.hqCity}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {categoryOpportunities.length > 0 && (
+                  <div>
+                    <h3 className="meta border-b border-ink pb-2 uppercase tracking-[0.06em]">
+                      Programmes & grants ({categoryOpportunities.length})
+                    </h3>
+                    <ul className="divide-y divide-rule">
+                      {categoryOpportunities.map((o) => (
+                        <li key={o.id} className="py-3 flex items-baseline justify-between gap-4">
+                          <Link href={`/opportunity/${o.slug}`} className="headline-link font-serif font-bold text-[1.0625rem] text-ink">
+                            {o.title}
+                          </Link>
+                          <span className="text-xs text-ink-3 font-sans shrink-0">
+                            {o.status === 'OPEN' ? (
+                              <span className="text-emerald-700 font-semibold">Open</span>
+                            ) : o.status === 'ROLLING' ? (
+                              <span className="text-amber-700 font-semibold">Rolling</span>
+                            ) : (
+                              <span className="text-ink-4">Closed cohort</span>
+                            )}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </section>
           )}
 

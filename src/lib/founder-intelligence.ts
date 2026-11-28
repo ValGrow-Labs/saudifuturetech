@@ -326,14 +326,19 @@ export async function getInvestors(filters: InvestorFilters = {}) {
 }
 
 export async function getInvestorBySlug(slug: string, allowUnpublished = false) {
-  const where: any = { slug };
-  if (!allowUnpublished) {
-    where.isPublished = true;
-  }
+  try {
+    const where: any = { slug };
+    if (!allowUnpublished) {
+      where.isPublished = true;
+    }
 
-  return await prisma.investor.findFirst({
-    where,
-  });
+    return await prisma.investor.findFirst({
+      where,
+    });
+  } catch (error) {
+    console.warn('[FounderIntelligence] getInvestorBySlug DB query failed:', error);
+    return null;
+  }
 }
 
 export async function getAllInvestorSlugs() {
@@ -371,44 +376,49 @@ export async function getRelatedInvestors(excludeId?: string, type?: InvestorTyp
 }
 
 export async function getOpportunityBySlug(slug: string, allowUnpublished = false) {
-  const where: any = { slug };
-  if (!allowUnpublished) {
-    where.isPublished = true;
-  }
+  try {
+    const where: any = { slug };
+    if (!allowUnpublished) {
+      where.isPublished = true;
+    }
 
-  const opp = await prisma.opportunity.findFirst({
-    where,
-    include: {
-      categoryRel: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          accentColor: true,
+    const opp = await prisma.opportunity.findFirst({
+      where,
+      include: {
+        categoryRel: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            accentColor: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  if (!opp) return null;
+    if (!opp) return null;
 
-  const now = new Date();
-  const isExpired = Boolean(opp.deadline && new Date(opp.deadline) < now);
-  const effectiveStatus = isExpired ? OpportunityStatus.CLOSED : opp.status;
+    const now = new Date();
+    const isExpired = Boolean(opp.deadline && new Date(opp.deadline) < now);
+    const effectiveStatus = isExpired ? OpportunityStatus.CLOSED : opp.status;
 
-  return {
-    ...opp,
-    effectiveStatus,
-    isExpired,
-    categoryRel: opp.categoryRel
-      ? {
-          id: opp.categoryRel.id,
-          name: opp.categoryRel.name,
-          slug: opp.categoryRel.slug,
-          color: opp.categoryRel.accentColor || '#39765B',
-        }
-      : null,
-  };
+    return {
+      ...opp,
+      effectiveStatus,
+      isExpired,
+      categoryRel: opp.categoryRel
+        ? {
+            id: opp.categoryRel.id,
+            name: opp.categoryRel.name,
+            slug: opp.categoryRel.slug,
+            color: opp.categoryRel.accentColor || '#39765B',
+          }
+        : null,
+    };
+  } catch (error) {
+    console.warn('[FounderIntelligence] getOpportunityBySlug DB query failed:', error);
+    return null;
+  }
 }
 
 export async function getRelatedOpportunities(categoryId?: string | null, excludeId?: string, limit = 3) {
@@ -460,38 +470,43 @@ export async function getRelatedOpportunities(categoryId?: string | null, exclud
 }
 
 export async function getStartupBySlug(slug: string, allowUnpublished = false) {
-  const where: any = { slug };
-  if (!allowUnpublished) {
-    where.isPublished = true;
-  }
+  try {
+    const where: any = { slug };
+    if (!allowUnpublished) {
+      where.isPublished = true;
+    }
 
-  const s = await prisma.startup.findFirst({
-    where,
-    include: {
-      category: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          accentColor: true,
+    const s = await prisma.startup.findFirst({
+      where,
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            accentColor: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  if (!s) return null;
+    if (!s) return null;
 
-  return {
-    ...s,
-    category: s.category
-      ? {
-          id: s.category.id,
-          name: s.category.name,
-          slug: s.category.slug,
-          color: s.category.accentColor || '#C69B59',
-        }
-      : null,
-  };
+    return {
+      ...s,
+      category: s.category
+        ? {
+            id: s.category.id,
+            name: s.category.name,
+            slug: s.category.slug,
+            color: s.category.accentColor || '#C69B59',
+          }
+        : null,
+    };
+  } catch (error) {
+    console.warn('[FounderIntelligence] getStartupBySlug DB query failed:', error);
+    return null;
+  }
 }
 
 export async function getRelatedStartups(categoryId?: string | null, excludeId?: string, limit = 3) {

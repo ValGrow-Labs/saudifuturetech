@@ -12,7 +12,7 @@ import { ArticlePreviewBanner } from '@/components/admin/ArticlePreviewBanner';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Article preview | Saudi Future Tech',
+  title: 'Article preview',
   robots: {
     index: false,
     follow: false,

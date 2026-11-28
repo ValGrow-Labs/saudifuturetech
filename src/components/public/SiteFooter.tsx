@@ -29,7 +29,7 @@ export const SiteFooter: React.FC = () => {
             </p>
           </div>
           <div className="lg:col-span-5 lg:col-start-8">
-            <p className="font-serif text-2xl text-snow">The Sunday Brief</p>
+            <h2 className="font-serif text-2xl text-snow">The Sunday Brief</h2>
             <p className="mt-2 mb-5 text-sm text-snow/70">
               One email a week: what changed in Saudi tech, which grants are closing, and who raised.
             </p>
@@ -76,7 +76,7 @@ export const SiteFooter: React.FC = () => {
 function FooterCol({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="font-sans text-[0.6875rem] uppercase tracking-[0.06em] text-snow/50 mb-4">{title}</p>
+      <h3 className="font-sans text-[0.6875rem] uppercase tracking-[0.06em] text-snow/50 mb-4">{title}</h3>
       <ul className="space-y-2.5">{children}</ul>
     </div>
   );

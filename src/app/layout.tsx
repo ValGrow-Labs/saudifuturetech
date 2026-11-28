@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Source_Serif_4, IBM_Plex_Sans, IBM_Plex_Sans_Arabic, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import { SmoothScrollProvider } from '@/components/providers/SmoothScrollProvider';
+import { getBaseUrl } from '@/lib/seo/config';
 
 // IBM Plex — one family across serif, sans, Arabic and mono, so Latin and
 // Arabic text sit together properly. Engineered rather than decorative, which
@@ -10,17 +11,15 @@ import { SmoothScrollProvider } from '@/components/providers/SmoothScrollProvide
 // Headlines and long-form reading: a classic broadsheet serif
 const serif = Source_Serif_4({
   subsets: ['latin'],
-  weight: ['400', '600', '700', '800', '900'],
-  style: ['normal', 'italic'],
   variable: '--font-serif',
-  display: 'swap',
+  display: 'optional',
 });
 
 // Interface text
 const sans = IBM_Plex_Sans({
   subsets: ['latin'],
   weight: ['400', '500', '600'],
-  style: ['normal', 'italic'],
+  style: ['normal'],
   variable: '--font-sans',
   display: 'swap',
 });
@@ -28,9 +27,10 @@ const sans = IBM_Plex_Sans({
 // Arabic, designed to match Plex Sans; used automatically for Arabic glyphs
 const arabic = IBM_Plex_Sans_Arabic({
   subsets: ['arabic'],
-  weight: ['400', '500', '600'],
+  weight: ['400', '500'],
   variable: '--font-arabic',
   display: 'swap',
+  preload: false,
 });
 
 // Code blocks only
@@ -39,6 +39,7 @@ const mono = IBM_Plex_Mono({
   weight: ['400'],
   variable: '--font-mono',
   display: 'swap',
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -60,7 +61,10 @@ export const metadata: Metadata = {
     'Middle East Innovation',
   ],
   authors: [{ name: 'Saudi Future Tech Editorial Desk' }],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(getBaseUrl()),
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+  },
   openGraph: {
     title: 'Saudi Future Tech | Technology, AI & Innovation',
     description:
@@ -68,12 +72,21 @@ export const metadata: Metadata = {
     siteName: 'Saudi Future Tech',
     locale: 'en_US',
     type: 'website',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Saudi Future Tech — Intelligence on Technology, Startups and Venture Capital in Saudi Arabia',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Saudi Future Tech | Technology, AI & Innovation',
     description:
       'Independent reporting on technology in Saudi Arabia: AI, government platforms, security, cities, finance and energy — plus a checked directory of grants, startups and investors.',
+    images: ['/og-image.png'],
   },
 };
 

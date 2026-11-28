@@ -80,7 +80,7 @@ export const LatestArticlesClient: React.FC<LatestArticlesClientProps> = ({ init
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
             placeholder="Filter by headline or writer"
-            className="w-full bg-transparent py-2 text-[0.9375rem] text-ink focus:outline-none"
+            className="w-full bg-transparent py-2 px-1.5 text-[0.9375rem] text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-clay/70 rounded-xs"
           />
         </label>
       </div>

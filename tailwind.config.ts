@@ -27,12 +27,12 @@ const ink = {
   DEFAULT: '#141414',
   2: '#3B3832',
   3: '#6A6458',
-  4: '#9B9381',
+  4: '#756C58',
   // legacy aliases
   high: '#141414',
   body: '#3B3832',
   muted: '#6A6458',
-  faint: '#9B9381',
+  faint: '#756C58',
 };
 
 const rule = {

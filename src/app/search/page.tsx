@@ -7,14 +7,14 @@ import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { NewsletterBanner } from '@/components/public/NewsletterBanner';
 import { SearchClient } from './SearchClient';
 import { searchUnifiedEcosystem } from '@/lib/founder-intelligence';
-import { getCanonicalUrl, DEFAULT_SEO } from '@/lib/seo/config';
+import { getCanonicalUrl, DEFAULT_SEO, DEFAULT_OG_IMAGE } from '@/lib/seo/config';
 import { BreadcrumbJsonLd } from '@/lib/seo/json-ld';
 
 const DESCRIPTION =
   'Search Saudi Future Tech’s reporting and its directories of Saudi startups, investors, grants and accelerators in one place.';
 
 export const metadata: Metadata = {
-  title: `Search | ${DEFAULT_SEO.siteName}`,
+  title: 'Search Directory & Reporting',
   description: DESCRIPTION,
   robots: {
     index: false,
@@ -29,6 +29,7 @@ export const metadata: Metadata = {
     type: 'website',
     url: getCanonicalUrl('/search'),
     siteName: DEFAULT_SEO.siteName,
+    images: [DEFAULT_OG_IMAGE],
   },
 };
 

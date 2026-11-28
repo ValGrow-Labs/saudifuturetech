@@ -7,8 +7,10 @@ import { SiteFooter } from '@/components/public/SiteFooter';
 import { MainContainer } from '@/components/public/MainContainer';
 import { CategoryBadge } from '@/components/public/CategoryBadge';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
-import { getStartupBySlug, getAllStartupSlugs, getRelatedStartups } from '@/lib/founder-intelligence';
+import { getStartupBySlug, getAllStartupSlugs, getRelatedStartups, getInvestors } from '@/lib/founder-intelligence';
 import { stageLabel, businessModelLabel } from '@/lib/labels';
+import { getCanonicalUrl, DEFAULT_SEO, DEFAULT_OG_IMAGE } from '@/lib/seo/config';
+import { BreadcrumbJsonLd } from '@/lib/seo/json-ld';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -21,6 +23,25 @@ export async function generateStaticParams() {
   return slugs.map((slug) => ({ slug }));
 }
 
+function findMatchedInvestor(invString: string, investors: { name: string; slug: string }[]) {
+  const clean = invString.toLowerCase().trim();
+  for (const inv of investors) {
+    if (inv.name.toLowerCase() === clean) return inv;
+  }
+  const baseName = clean.replace(/\s*\(.*?\)\s*/g, '').trim();
+  if (baseName.length >= 3) {
+    for (const inv of investors) {
+      if (inv.name.toLowerCase() === baseName) return inv;
+      if (inv.name.toLowerCase().startsWith(baseName + ' ')) return inv;
+      if (baseName.startsWith(inv.name.toLowerCase())) return inv;
+    }
+  }
+  if (clean.includes('saudi venture capital') || clean === 'svc') {
+    return investors.find((i) => i.slug === 'svc-sovereign-fund') || null;
+  }
+  return null;
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const startup = await getStartupBySlug(slug);
@@ -31,13 +52,60 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  // Determine stage display: omit if missing or uninformative
+  const stage = startup.stage ? stageLabel(startup.stage) : null;
+  const validStage = stage && stage !== '—' ? stage : null;
+
+  // Title: omit stage if missing, avoiding '(—)'
+  const title = validStage ? `${startup.name} (${validStage})` : startup.name;
+
+  // Defensive description synthesis:
+  const city = startup.hqCity?.trim() || null;
+  const categoryName = startup.category?.name?.trim() || null;
+
+  const locationPrefix = city ? `${city}-based` : 'Saudi Arabia-based';
+  const stageDescriptor = validStage ? `${validStage} venture` : 'venture';
+
+  const descParts: string[] = [];
+  if (categoryName) {
+    descParts.push(`${startup.name} is a ${locationPrefix} ${stageDescriptor} in ${categoryName}.`);
+  } else {
+    // If category is missing, omit category phrase entirely to prevent repeating "Saudi Arabia"
+    descParts.push(`${startup.name} is a ${locationPrefix} ${stageDescriptor}.`);
+  }
+
+  if (startup.tagline && startup.tagline.trim()) {
+    descParts.push(startup.tagline.trim());
+  } else if (startup.description && startup.description.trim()) {
+    const firstParagraph = startup.description.trim().split(/\n+/)[0].trim();
+    descParts.push(firstParagraph);
+  }
+
+  let description = descParts.join(' ').replace(/\s+/g, ' ').trim();
+  if (description.length > 160) {
+    description = description.slice(0, 157).trimEnd() + '...';
+  }
+  const canonical = getCanonicalUrl(`/startup/${startup.slug}`);
+
   return {
-    title: `${startup.name} (${stageLabel(startup.stage)}) | Saudi startup directory`,
-    description: startup.tagline,
+    title,
+    description,
+    alternates: {
+      canonical,
+    },
     openGraph: {
       title: `${startup.name} — Saudi Future Tech startup register`,
-      description: startup.description.slice(0, 160),
+      description,
+      url: canonical,
+      siteName: DEFAULT_SEO.siteName,
       type: 'website',
+      images: [DEFAULT_OG_IMAGE],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['/og-image.png'],
     },
   };
 }
@@ -61,6 +129,8 @@ export default async function StartupDetailPage({ params }: PageProps) {
   if (!startup) {
     notFound();
   }
+
+  const allInvestors = await getInvestors({ includeUnpublished: false });
 
   const sameSector = await getRelatedStartups(startup.categoryId, startup.id, 3);
   // Fall back to the wider register when nothing else is listed in this sector.
@@ -129,6 +199,7 @@ export default async function StartupDetailPage({ params }: PageProps) {
 
   return (
     <>
+      <BreadcrumbJsonLd items={breadcrumbs} />
       <SiteHeader />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -235,8 +306,27 @@ export default async function StartupDetailPage({ params }: PageProps) {
                     )}
                     {investorList.length > 0 && (
                       <div className="grid grid-cols-[9.5rem_minmax(0,1fr)] gap-4 border-b border-rule py-3">
-                        <dt className="text-[0.8125rem] text-ink-3">Named investors</dt>
-                        <dd className="text-[0.9375rem] text-ink">{investorList.join(', ')}</dd>
+                        <dt className="text-[0.8125rem] text-ink-3">Disclosed investors</dt>
+                        <dd className="text-[0.9375rem] text-ink">
+                          {investorList.map((invName, idx) => {
+                            const matched = findMatchedInvestor(invName, allInvestors);
+                            return (
+                              <React.Fragment key={idx}>
+                                {matched ? (
+                                  <Link
+                                    href={`/investor/${matched.slug}`}
+                                    className="link-rule text-ink hover:text-clay transition-colors"
+                                  >
+                                    {invName}
+                                  </Link>
+                                ) : (
+                                  <span>{invName}</span>
+                                )}
+                                {idx < investorList.length - 1 && <span className="text-ink-4">, </span>}
+                              </React.Fragment>
+                            );
+                          })}
+                        </dd>
                       </div>
                     )}
                   </dl>

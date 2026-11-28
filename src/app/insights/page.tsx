@@ -9,7 +9,7 @@ import { CategoryBadge } from '@/components/public/CategoryBadge';
 import { NewsletterBanner } from '@/components/public/NewsletterBanner';
 import { getAllPublishedArticles, getAllCategories } from '@/lib/data';
 import { BreadcrumbJsonLd } from '@/lib/seo/json-ld';
-import { getCanonicalUrl } from '@/lib/seo/config';
+import { getCanonicalUrl, DEFAULT_SEO, DEFAULT_OG_IMAGE } from '@/lib/seo/config';
 import { formatDate, formatReadingTime } from '@/lib/utils';
 
 export const revalidate = 60;
@@ -17,11 +17,28 @@ export const revalidate = 60;
 const canonicalUrl = getCanonicalUrl('/insights');
 
 export const metadata: Metadata = {
-  title: 'Analysis | Saudi Future Tech',
+  title: 'Technology Analysis & Saudi Ecosystem Reports',
   description:
-    'Longer pieces on regulation, infrastructure and markets for people building technology companies in Saudi Arabia.',
+    'Longer analytical pieces on regulation, sovereign infrastructure, and market dynamics for founders building technology companies in Saudi Arabia.',
   alternates: {
     canonical: canonicalUrl,
+  },
+  openGraph: {
+    title: `Technology Analysis & Saudi Ecosystem Reports | ${DEFAULT_SEO.siteName}`,
+    description:
+      'Longer analytical pieces on regulation, sovereign infrastructure, and market dynamics for founders building technology companies in Saudi Arabia.',
+    type: 'website',
+    url: canonicalUrl,
+    siteName: DEFAULT_SEO.siteName,
+    locale: DEFAULT_SEO.locale,
+    images: [DEFAULT_OG_IMAGE],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `Technology Analysis & Saudi Ecosystem Reports | ${DEFAULT_SEO.siteName}`,
+    description:
+      'Longer analytical pieces on regulation, sovereign infrastructure, and market dynamics for founders building technology companies in Saudi Arabia.',
+    images: ['/og-image.png'],
   },
 };
 
@@ -63,7 +80,7 @@ export default async function InsightsPage() {
             <header className="mt-10 md:mt-14 pb-8 rule-dot-b grid gap-6 lg:grid-cols-12 lg:gap-x-10 lg:items-end">
               <div className="lg:col-span-8">
                 <p className="kicker mb-3">For founders and operators</p>
-                <h1 className="font-serif text-display-lg text-ink">Analysis</h1>
+                <h1 className="font-serif text-display-lg text-ink">Technology Analysis & Saudi Ecosystem Reports</h1>
                 <p className="mt-5 max-w-2xl font-serif text-[1.25rem] leading-snug text-ink-3">
                   Longer pieces on the rules, infrastructure and money that shape building a technology company in
                   Saudi Arabia.
@@ -94,7 +111,7 @@ export default async function InsightsPage() {
                     {lead.coverImageUrl && (
                       <Image
                         src={lead.coverImageUrl}
-                        alt=""
+                        alt={lead.coverImageAlt || lead.coverImageCaption || ''}
                         fill
                         priority
                         sizes="(max-width: 1024px) 100vw, 58vw"
@@ -135,7 +152,7 @@ export default async function InsightsPage() {
                           >
                             <Image
                               src={a.coverImageUrl}
-                              alt=""
+                              alt={a.coverImageAlt || a.coverImageCaption || ''}
                               fill
                               sizes="(max-width: 1024px) 100vw, 40vw"
                               className="object-cover img-warm"

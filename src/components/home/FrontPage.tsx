@@ -25,7 +25,7 @@ export function FrontPage({ lead, secondary }: FrontPageProps) {
           {lead.coverImageUrl && (
             <Image
               src={lead.coverImageUrl}
-              alt=""
+              alt={lead.coverImageAlt || lead.coverImageCaption || ''}
               fill
               priority
               sizes="(max-width: 1024px) 100vw, 66vw"
@@ -62,7 +62,13 @@ export function FrontPage({ lead, secondary }: FrontPageProps) {
           <article className="group pb-6 border-b border-rule rise" style={{ animationDelay: '80ms' }}>
             {second.coverImageUrl && (
               <Link href={`/article/${second.slug}`} tabIndex={-1} aria-hidden className="relative block aspect-[3/2] overflow-hidden rounded-md bg-paper-band mb-4">
-                <Image src={second.coverImageUrl} alt="" fill sizes="(max-width: 1024px) 100vw, 30vw" className="object-cover img-warm" />
+                <Image
+                  src={second.coverImageUrl}
+                  alt={second.coverImageAlt || second.coverImageCaption || ''}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 30vw"
+                  className="object-cover img-warm"
+                />
               </Link>
             )}
             <CategoryBadge category={second.category} />

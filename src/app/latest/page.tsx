@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { NewsletterBanner } from '@/components/public/NewsletterBanner';
 import { LatestArticlesClient } from './LatestArticlesClient';
 import { getAllPublishedArticles, getAllCategories } from '@/lib/data';
-import { getCanonicalUrl, DEFAULT_SEO } from '@/lib/seo/config';
+import { getCanonicalUrl, DEFAULT_SEO, DEFAULT_OG_IMAGE } from '@/lib/seo/config';
 import { BreadcrumbJsonLd } from '@/lib/seo/json-ld';
 
 // Next.js ISR: Revalidate latest wire every 60 seconds
@@ -16,27 +16,29 @@ export const revalidate = 60;
 const latestCanonical = getCanonicalUrl('/latest');
 
 export const metadata: Metadata = {
-  title: `Latest stories | ${DEFAULT_SEO.siteName}`,
+  title: 'Latest Saudi Technology News & Briefings',
   description:
     'Every story from Saudi Future Tech, newest first: AI, government platforms, security, cities, finance and energy in Saudi Arabia.',
   alternates: {
     canonical: latestCanonical,
   },
   openGraph: {
-    title: `Latest stories | ${DEFAULT_SEO.siteName}`,
+    title: `Latest Saudi Technology News & Briefings | ${DEFAULT_SEO.siteName}`,
     description:
       'Every story from Saudi Future Tech, newest first: AI, government platforms, security, cities, finance and energy in Saudi Arabia.',
     type: 'website',
     url: latestCanonical,
     siteName: DEFAULT_SEO.siteName,
     locale: DEFAULT_SEO.locale,
+    images: [DEFAULT_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
-    title: `Latest stories | ${DEFAULT_SEO.siteName}`,
+    title: `Latest Saudi Technology News & Briefings | ${DEFAULT_SEO.siteName}`,
     description:
       'Every story from Saudi Future Tech, newest first: AI, government platforms, security, cities, finance and energy in Saudi Arabia.',
     site: DEFAULT_SEO.social.twitter,
+    images: ['/og-image.png'],
   },
 };
 
@@ -70,7 +72,7 @@ export default async function LatestPage() {
             <header className="mt-10 md:mt-14 mb-10 grid gap-6 lg:grid-cols-12 lg:gap-x-10 lg:items-end">
               <div className="lg:col-span-8">
                 <p className="kicker mb-3">Every story</p>
-                <h1 className="font-serif text-display-lg text-ink">Latest</h1>
+                <h1 className="font-serif text-display-lg text-ink">Latest Technology & Startup News in Saudi Arabia</h1>
                 <p className="mt-5 max-w-2xl font-serif text-[1.25rem] leading-snug text-ink-3">
                   Everything we’ve published across every section, newest first.
                 </p>

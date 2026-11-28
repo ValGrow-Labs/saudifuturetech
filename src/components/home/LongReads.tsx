@@ -33,7 +33,7 @@ export function LongReads({ articles }: { articles: ArticlePreview[] }) {
           className="relative block md:col-span-7 aspect-[4/3] md:aspect-[16/11] overflow-hidden rounded-md bg-paper-band"
         >
           {feature.coverImageUrl && (
-            <Image src={feature.coverImageUrl} alt="" fill sizes="(max-width: 768px) 100vw, 58vw" className="object-cover img-warm transition-transform duration-[1200ms] ease-out group-hover:scale-[1.02]" />
+            <Image src={feature.coverImageUrl} alt={feature.coverImageAlt || feature.coverImageCaption || ''} fill sizes="(max-width: 768px) 100vw, 58vw" className="object-cover img-warm transition-transform duration-[1200ms] ease-out group-hover:scale-[1.02]" />
           )}
         </Link>
         <div className="md:col-span-5">

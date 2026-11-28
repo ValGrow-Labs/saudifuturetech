@@ -37,7 +37,7 @@ export function StartupRegister({ startups, total }: { startups: StartupItem[]; 
               {s.logoUrl ? (
                 <Image
                   src={s.logoUrl}
-                  alt=""
+                  alt={`${s.name} logo`}
                   width={52}
                   height={52}
                   className="h-[3.25rem] w-[3.25rem] object-contain bg-paper-sheet border border-rule"

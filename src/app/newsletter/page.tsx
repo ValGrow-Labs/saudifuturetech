@@ -11,18 +11,19 @@ import { BreadcrumbJsonLd } from '@/lib/seo/json-ld';
 
 const newsletterCanonical = getCanonicalUrl('/newsletter');
 
-const TITLE = `The Sunday Brief newsletter | ${DEFAULT_SEO.siteName}`;
+const PAGE_TITLE = 'The Sunday Brief Newsletter';
+const FULL_TITLE = `${PAGE_TITLE} | ${DEFAULT_SEO.siteName}`;
 const DESCRIPTION =
   'A free weekly email on technology in Saudi Arabia: what changed, which grants close in the next fortnight, and who raised money.';
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: PAGE_TITLE,
   description: DESCRIPTION,
   alternates: {
     canonical: newsletterCanonical,
   },
   openGraph: {
-    title: TITLE,
+    title: FULL_TITLE,
     description: DESCRIPTION,
     type: 'website',
     url: newsletterCanonical,
@@ -31,7 +32,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: TITLE,
+    title: FULL_TITLE,
     description: DESCRIPTION,
     site: DEFAULT_SEO.social.twitter,
   },

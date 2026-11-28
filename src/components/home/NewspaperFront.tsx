@@ -54,6 +54,7 @@ export function NewspaperFront({ lead, side, glance, belowLead = [] }: Newspaper
               <p className="font-serif text-[1.0625rem] leading-snug text-ink-2">
                 <Link
                   href={`/article/${a.slug}`}
+                  prefetch={false}
                   className="font-bold text-ink underline decoration-1 underline-offset-[3px] hover:text-clay"
                 >
                   {a.title},
@@ -69,11 +70,11 @@ export function NewspaperFront({ lead, side, glance, belowLead = [] }: Newspaper
       <article className="group lg:col-span-6 lg:px-8 lg:rule-dot-l lg:rule-dot-r order-1 lg:order-2">
         <div className="text-center">
           <CategoryBadge category={lead.category} />
-          <h1 className="mt-3 font-serif font-bold text-[2.25rem] sm:text-[2.75rem] lg:text-[3.25rem] leading-[1.06] tracking-[-0.015em] text-ink">
-            <Link href={`/article/${lead.slug}`} className="headline-link">
+          <h2 className="mt-3 font-serif font-bold text-[2.25rem] sm:text-[2.75rem] lg:text-[3.25rem] leading-[1.06] tracking-[-0.015em] text-ink">
+            <Link href={`/article/${lead.slug}`} prefetch={false} className="headline-link">
               {lead.title}
             </Link>
-          </h1>
+          </h2>
           <p className="mx-auto mt-4 max-w-2xl font-serif text-[1.3125rem] leading-snug text-ink-2">{lead.excerpt}</p>
           <p className="mt-4 text-[0.8125rem] text-ink-3">
             By <span className="font-semibold text-ink-2">{lead.author.displayName}</span> ·{' '}
@@ -82,10 +83,10 @@ export function NewspaperFront({ lead, side, glance, belowLead = [] }: Newspaper
         </div>
         {lead.coverImageUrl && (
           <figure className="mt-6">
-            <Link href={`/article/${lead.slug}`} tabIndex={-1} aria-hidden className="relative block aspect-[16/10] overflow-hidden rounded-md bg-paper-band">
+            <Link href={`/article/${lead.slug}`} prefetch={false} tabIndex={-1} aria-hidden className="relative block aspect-[16/10] overflow-hidden rounded-md bg-paper-band">
               <Image
                 src={lead.coverImageUrl}
-                alt=""
+                alt={lead.coverImageAlt || lead.coverImageCaption || ''}
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -103,7 +104,7 @@ export function NewspaperFront({ lead, side, glance, belowLead = [] }: Newspaper
               <div key={a.id} className={i > 0 ? 'sm:pl-6 sm:rule-dot-l' : ''}>
                 <CategoryBadge category={a.category} className="!text-[0.6875rem]" />
                 <h3 className="mt-1.5 font-serif font-bold text-[1.25rem] leading-snug text-ink">
-                  <Link href={`/article/${a.slug}`} className="headline-link">
+                  <Link href={`/article/${a.slug}`} prefetch={false} className="headline-link">
                     {a.title}
                   </Link>
                 </h3>
@@ -119,14 +120,20 @@ export function NewspaperFront({ lead, side, glance, belowLead = [] }: Newspaper
         {second && (
           <article className="group pb-6 rule-dot-b">
             <h2 className="font-serif font-bold text-[1.75rem] leading-[1.1] text-ink">
-              <Link href={`/article/${second.slug}`} className="headline-link">
+              <Link href={`/article/${second.slug}`} prefetch={false} className="headline-link">
                 {second.title}
               </Link>
             </h2>
             <p className="mt-3 font-serif text-[1.0625rem] leading-snug text-ink-2">{firstSentence(second.excerpt, 160)}</p>
             {second.coverImageUrl && (
-              <Link href={`/article/${second.slug}`} tabIndex={-1} aria-hidden className="relative mt-4 block aspect-[4/3] overflow-hidden rounded-md bg-paper-band">
-                <Image src={second.coverImageUrl} alt="" fill sizes="(max-width: 1024px) 100vw, 25vw" className="object-cover img-warm" />
+              <Link href={`/article/${second.slug}`} prefetch={false} tabIndex={-1} aria-hidden className="relative mt-4 block aspect-[4/3] overflow-hidden rounded-md bg-paper-band">
+                <Image
+                  src={second.coverImageUrl}
+                  alt={second.coverImageAlt || second.coverImageCaption || ''}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 25vw"
+                  className="object-cover img-warm"
+                />
               </Link>
             )}
           </article>
@@ -137,14 +144,20 @@ export function NewspaperFront({ lead, side, glance, belowLead = [] }: Newspaper
               <div className="min-w-0">
                 <CategoryBadge category={a.category} className="!text-[0.6875rem]" />
                 <h3 className="mt-1 font-serif font-bold text-[1.0625rem] leading-snug text-ink">
-                  <Link href={`/article/${a.slug}`} className="headline-link">
+                  <Link href={`/article/${a.slug}`} prefetch={false} className="headline-link">
                     {a.title}
                   </Link>
                 </h3>
               </div>
               {a.coverImageUrl && (
-                <Link href={`/article/${a.slug}`} tabIndex={-1} aria-hidden className="relative block aspect-square overflow-hidden rounded-md bg-paper-band">
-                  <Image src={a.coverImageUrl} alt="" fill sizes="72px" className="object-cover img-warm" />
+                <Link href={`/article/${a.slug}`} prefetch={false} tabIndex={-1} aria-hidden className="relative block aspect-square overflow-hidden rounded-md bg-paper-band">
+                  <Image
+                    src={a.coverImageUrl}
+                    alt=""
+                    fill
+                    sizes="72px"
+                    className="object-cover img-warm"
+                  />
                 </Link>
               )}
             </li>

@@ -11,14 +11,19 @@ import { getCanonicalUrl, DEFAULT_SEO } from '@/lib/seo/config';
 const DESCRIPTION = 'The terms for using Saudi Future Tech, its reporting and its directories.';
 
 export const metadata: Metadata = {
-  title: `Terms of use | ${DEFAULT_SEO.siteName}`,
+  title: 'Terms of Use',
   description: DESCRIPTION,
   alternates: { canonical: getCanonicalUrl('/terms') },
   openGraph: {
-    title: `Terms of use | ${DEFAULT_SEO.siteName}`,
+    title: `Terms of Use | ${DEFAULT_SEO.siteName}`,
     description: DESCRIPTION,
     url: getCanonicalUrl('/terms'),
     type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: `Terms of Use | ${DEFAULT_SEO.siteName}`,
+    description: DESCRIPTION,
   },
 };
 

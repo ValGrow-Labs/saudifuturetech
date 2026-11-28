@@ -11,7 +11,7 @@ import { getCanonicalUrl, DEFAULT_SEO } from '@/lib/seo/config';
 const DESCRIPTION = 'What Saudi Future Tech collects when you subscribe to the Sunday Brief, and how to remove it.';
 
 export const metadata: Metadata = {
-  title: `Privacy | ${DEFAULT_SEO.siteName}`,
+  title: 'Privacy',
   description: DESCRIPTION,
   alternates: { canonical: getCanonicalUrl('/privacy') },
   openGraph: {
@@ -19,6 +19,11 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
     url: getCanonicalUrl('/privacy'),
     type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: `Privacy | ${DEFAULT_SEO.siteName}`,
+    description: DESCRIPTION,
   },
 };
 
